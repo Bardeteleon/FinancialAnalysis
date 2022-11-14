@@ -8,12 +8,15 @@ class RawStatementExtractor:
     def __init__(self, statement_as_text : str):
         self.__statement_as_text : str = statement_as_text
 
+        self.__year : str = ""
         self.__amounts : List[str] = []
         self.__dates : List[str] = []
         self.__entries : List[RawEntry] = []
     
     def run(self):
+        self.__extract_year()
         self.__extract_dates()
+        self.__merge_year_with_dates()
         self.__extract_amounts()
         self.__init_entries_by_matching_amounts_with_dates()
         self.__extract_comments()
@@ -34,8 +37,16 @@ class RawStatementExtractor:
                     type = StatementType.BALANCE
                 )
 
+    def __extract_year(self):
+        match = re.search("Nr\..+?\d+/(\d{4})", self.__statement_as_text)
+        if match:
+            self.__year = match.group(1)
+
     def __extract_dates(self):
         self.__dates = re.findall("\d{2}\.\d{2}\. \d{2}\.\d{2}\.", self.__statement_as_text)
+
+    def __merge_year_with_dates(self):
+        self.__dates = [date + self.__year for date in self.__dates]
 
     def __extract_amounts(self):
         self.__amounts = re.findall("\d[\d\.]*,\d{2} [HS]", self.__statement_as_text)

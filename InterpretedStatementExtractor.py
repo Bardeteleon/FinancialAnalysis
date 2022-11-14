@@ -34,11 +34,10 @@ class InterpretedStatementExtractor:
                 self.__interpreted_entries[i].amount *= -1 if plus_minus == "S" else +1
     
     def __extract_date(self):
-        year = 2000
         for i, raw_entry in enumerate(self.__raw_entries):
-            match = re.fullmatch("(\d{2})\.(\d{2})\. (\d{2})\.(\d{2})\.", raw_entry.date)
+            match = re.fullmatch("(\d{2})\.(\d{2})\. \d{2}\.\d{2}\.(\d{4})", raw_entry.date)
             if match:
                 day = int(match.group(1))
                 month = int(match.group(2))
-        
+                year = int(match.group(3))
                 self.__interpreted_entries[i].date = datetime.date(year, month, day)

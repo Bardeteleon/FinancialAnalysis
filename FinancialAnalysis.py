@@ -17,6 +17,8 @@ test_file_path : os.PathLike = os.path.join(os.getcwd(), args.filename)
 pdf_reader = PdfReader(str(test_file_path))
 pdf_reader.run()
 
+# print(pdf_reader.get_text())
+
 raw_extractor = RawStatementExtractor(pdf_reader.get_text())
 raw_extractor.run()
 
