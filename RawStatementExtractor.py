@@ -16,10 +16,10 @@ class RawStatementExtractor:
     def run(self):
         self.__extract_year()
         self.__extract_dates()
-        self.__merge_year_with_dates()
         self.__extract_amounts()
         self.__init_entries_by_matching_amounts_with_dates()
         self.__extract_comments()
+        self.__merge_year_with_dates()
     
     def get_raw_entries(self) -> List[RawEntry]:
         return self.__entries
@@ -45,9 +45,6 @@ class RawStatementExtractor:
     def __extract_dates(self):
         self.__dates = re.findall("\d{2}\.\d{2}\. \d{2}\.\d{2}\.", self.__statement_as_text)
 
-    def __merge_year_with_dates(self):
-        self.__dates = [date + self.__year for date in self.__dates]
-
     def __extract_amounts(self):
         self.__amounts = re.findall("\d[\d\.]*,\d{2} [HS]", self.__statement_as_text)
 
@@ -57,8 +54,10 @@ class RawStatementExtractor:
         # Assumption 2: Equal amounts next to each other are Balances ~~~~
         date_index : int = 0
         for i, line in enumerate(self.__amounts):
-            if RawStatementExtractor.__is_first_or_last_index(i, self.__amounts):
+            if RawStatementExtractor.__is_first_or_last_index(i, self.__amounts) or date_index == len(self.__dates):
                 self.__entries.append(RawStatementExtractor.__create_balance_entry(line))
+                if date_index == len(self.__dates): # TODO Find better solution for date/amount matching robustness
+                    break
             elif line == self.__amounts[i-1] or line == self.__amounts[i+1]:
                 self.__entries.append(RawStatementExtractor.__create_balance_entry(line))
             else:
@@ -84,3 +83,7 @@ class RawStatementExtractor:
                 if search_result:
                     statement.comment = search_result.group(0)
                     shrinking_statement = shrinking_statement[(search_result.end(0)-len(end_phrase)):]
+
+    def __merge_year_with_dates(self):
+        for entry in self.__entries:
+            entry.date = entry.date + self.__year

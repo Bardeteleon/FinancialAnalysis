@@ -39,7 +39,8 @@ for input_file in path_interpreter.get_input_files():
 
 
 for entry in interpreted_entries:
-    print(f"{entry.raw.date} -> {entry.date}")
+    print(f"{entry.date} | {entry.amount} | {entry.raw.comment}")
+    # print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.comment}")
 
 # filterd_entries = [entry for entry in interpreted_extractor.get_interpreted_entries() if entry.raw.type == StatementType.TRANSACTION]
 
