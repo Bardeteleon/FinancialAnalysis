@@ -1,4 +1,5 @@
 import re
+import datetime
 from Types import *
 from typing import List
 
@@ -12,6 +13,7 @@ class InterpretedStatementExtractor:
 
     def run(self):
         self.__extract_amount()
+        self.__extract_date()
 
     def get_interpreted_entries(self):
         return self.__interpreted_entries
@@ -30,4 +32,13 @@ class InterpretedStatementExtractor:
                 self.__interpreted_entries[i].amount = float(int(before_comma))
                 self.__interpreted_entries[i].amount += int(after_comma) / 100.0
                 self.__interpreted_entries[i].amount *= -1 if plus_minus == "S" else +1
-                
+    
+    def __extract_date(self):
+        year = 2000
+        for i, raw_entry in enumerate(self.__raw_entries):
+            match = re.fullmatch("(\d{2})\.(\d{2})\. (\d{2})\.(\d{2})\.", raw_entry.date)
+            if match:
+                day = int(match.group(1))
+                month = int(match.group(2))
+        
+                self.__interpreted_entries[i].date = datetime.date(year, month, day)

@@ -30,9 +30,9 @@ raw_extractor.run()
 interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
 interpreted_extractor.run()
 
-# for entry in interpreted_extractor.get_interpreted_entries():
-    # print(f"{entry.raw.amount} -> {entry.amount}")
+for entry in interpreted_extractor.get_interpreted_entries():
+    print(f"{entry.raw.date} -> {entry.date}")
 
-filterd_entries = [entry for entry in interpreted_extractor.get_interpreted_entries() if entry.raw.type == StatementType.TRANSACTION]
+# filterd_entries = [entry for entry in interpreted_extractor.get_interpreted_entries() if entry.raw.type == StatementType.TRANSACTION]
 
-VisualizeStatement.draw_amounts(filterd_entries)
+# VisualizeStatement.draw_amounts(filterd_entries)
