@@ -6,33 +6,39 @@ from RawStatementExtractor import RawStatementExtractor
 from typing import List
 from Types import *
 from VisualizeStatement import VisualizeStatement
+from InputPathInterpreter import InputPathInterpreter
 
 parser = argparse.ArgumentParser(prog="FinancialAnalysis")
-parser.add_argument("filename")
-
+parser.add_argument("input_path")
 args = parser.parse_args()
 
-test_file_path : os.PathLike = os.path.join(os.getcwd(), args.filename)
+path_interpreter = InputPathInterpreter(args.input_path)
+path_interpreter.run()
 
-pdf_reader = PdfReader(str(test_file_path))
-pdf_reader.run()
+interpreted_entries : List[InterpretedEntry] = []
+for input_file in path_interpreter.get_input_files():
 
-# print(pdf_reader.get_text())
+    pdf_reader = PdfReader(str(input_file))
+    pdf_reader.run()
 
-raw_extractor = RawStatementExtractor(pdf_reader.get_text())
-raw_extractor.run()
+    # print(pdf_reader.get_text())
 
-# for entry in raw_extractor.get_raw_entries():
-#     if entry.comment == "unknown":
-#         print("UNKNOWN COMMENT:")
-#     print(entry)
-#     print("")
-# print(f"Count: {len(raw_extractor.get_raw_entries())}")
+    raw_extractor = RawStatementExtractor(pdf_reader.get_text())
+    raw_extractor.run()
 
-interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
-interpreted_extractor.run()
+    # for entry in raw_extractor.get_raw_entries():
+    #     if entry.comment == "unknown":
+    #         print("UNKNOWN COMMENT:")
+    #     print(entry)
+    #     print("")
+    # print(f"Count: {len(raw_extractor.get_raw_entries())}")
 
-for entry in interpreted_extractor.get_interpreted_entries():
+    interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
+    interpreted_extractor.run()
+    interpreted_entries += interpreted_extractor.get_interpreted_entries()
+
+
+for entry in interpreted_entries:
     print(f"{entry.raw.date} -> {entry.date}")
 
 # filterd_entries = [entry for entry in interpreted_extractor.get_interpreted_entries() if entry.raw.type == StatementType.TRANSACTION]
