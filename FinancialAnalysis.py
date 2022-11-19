@@ -42,6 +42,7 @@ for entry in interpreted_entries:
     print(f"{entry.date} | {entry.amount} | {entry.raw.comment}")
     # print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.comment}")
 
-# filterd_entries = [entry for entry in interpreted_extractor.get_interpreted_entries() if entry.raw.type == StatementType.TRANSACTION]
+filterd_entries = [entry for entry in interpreted_entries if entry.raw.type == StatementType.TRANSACTION]
 
 # VisualizeStatement.draw_amounts(filterd_entries)
+# VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
