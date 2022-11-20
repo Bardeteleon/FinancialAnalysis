@@ -69,6 +69,7 @@ class RawStatementExtractor:
         for i, text_in_front_of_amount in enumerate(self.__text_in_front_of_amounts):
             balance_match = re.search(f"(alter Kontostand|neuer Kontostand|Übertrag auf|Übertrag von)", text_in_front_of_amount)
             if balance_match:
+                self.__entries[i].comment = balance_match.group(1)
                 self.__entries[i].type = StatementType.BALANCE
 
     def __detect_if_amount_is_transaction_by_matching_with_dates(self):
@@ -92,9 +93,10 @@ class RawStatementExtractor:
                     end_phrase = self.__entries[i+1].date
                 else:
                     end_phrase = self.__entries[i+1].amount
-                search_result = re.search(f"{re.escape(start_phrase)}.+?{re.escape(statement.amount)}.+?{re.escape(end_phrase)}", shrinking_statement)
+                search_result = re.search(f"{re.escape(start_phrase)}(.+?){re.escape(statement.amount)}(.+?){re.escape(end_phrase)}", shrinking_statement)
                 if search_result:
-                    statement.comment = search_result.group(0)
+                    statement.comment = search_result.group(1) + " " + search_result.group(2)
+                    statement.comment = re.sub("\s+", " ", statement.comment)
                     shrinking_statement = shrinking_statement[(search_result.end(0)-len(end_phrase)):]
 
     def __merge_year_with_dates(self):
