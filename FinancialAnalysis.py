@@ -27,8 +27,6 @@ for input_file in path_interpreter.get_input_files():
     raw_extractor.run()
 
     # for entry in raw_extractor.get_raw_entries():
-    #     if entry.comment == "unknown":
-    #         print("UNKNOWN COMMENT:")
     #     print(entry)
     #     print("")
     # print(f"Count: {len(raw_extractor.get_raw_entries())}")
@@ -38,11 +36,11 @@ for input_file in path_interpreter.get_input_files():
     interpreted_entries += interpreted_extractor.get_interpreted_entries()
 
 
-for entry in interpreted_entries:
-    print(f"{entry.date} | {entry.amount} | {entry.raw.comment}")
+# for entry in interpreted_entries:
+#     print(f"{entry.date} | {entry.amount} | {entry.raw.type}")
     # print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.comment}")
 
 filterd_entries = [entry for entry in interpreted_entries if entry.raw.type == StatementType.TRANSACTION]
 
-# VisualizeStatement.draw_amounts(filterd_entries)
-# VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
+VisualizeStatement.draw_amounts(filterd_entries)
+VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)

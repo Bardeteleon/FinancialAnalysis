@@ -12,16 +12,12 @@ class InputPathInterpreter:
         cwd_joined_input_path = os.path.join(os.getcwd(), self.__input_path)
         input_path = os.path.normpath(self.__input_path)
         if os.path.isdir(input_path) and os.path.isabs(input_path):
-            print("1")
             self.__input_files = self.__find_files_in_directory(input_path)
         elif os.path.isdir(cwd_joined_input_path):
-            print("2")
             self.__input_files = self.__find_files_in_directory(cwd_joined_input_path)
         elif os.path.isfile(input_path) and os.path.isabs(input_path):
-            print("3")
             self.__input_files = [input_path]
         elif os.path.isfile(cwd_joined_input_path):
-            print("4")
             self.__input_files = [cwd_joined_input_path]
         else:
             raise RuntimeError(f"Unable to interpret input_path: {self.__input_path}. It can be an absolute or relative to cwd file or directory with files.")

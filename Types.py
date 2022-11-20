@@ -6,6 +6,7 @@ from typing import List
 class StatementType(Enum):
     TRANSACTION = auto()
     BALANCE = auto() 
+    UNKNOW = auto()
 
 class Tag(Enum):
     SALARY = auto()

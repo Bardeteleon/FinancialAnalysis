@@ -30,7 +30,5 @@ class VisualizeStatement:
                 balance_per_month[formated_date(entry.date)] = entry.amount
 
         x = range(len(balance_per_month))
-        print(balance_per_month.keys())
-        print(balance_per_month.values())
         matplotlib.pyplot.bar(x, balance_per_month.values(), tick_label=list(balance_per_month.keys()))
         matplotlib.pyplot.show()

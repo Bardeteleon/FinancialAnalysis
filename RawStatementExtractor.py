@@ -1,4 +1,6 @@
 import re
+
+from matplotlib.pyplot import text
 from Types import *
 from typing import List
 
@@ -12,12 +14,18 @@ class RawStatementExtractor:
         self.__amounts : List[str] = []
         self.__dates : List[str] = []
         self.__entries : List[RawEntry] = []
+
+        self.__amount_matches = []
+        self.__text_in_front_of_amounts : List[str] = []
     
     def run(self):
         self.__extract_year()
         self.__extract_dates()
         self.__extract_amounts()
-        self.__init_entries_by_matching_amounts_with_dates()
+        self.__extract_text_in_front_of_amounts()
+        self.__init_entries_with_amounts()
+        self.__detect_if_amount_is_balance()
+        self.__detect_if_amount_is_transaction_by_matching_with_dates()
         self.__extract_comments()
         self.__merge_year_with_dates()
     
@@ -28,15 +36,6 @@ class RawStatementExtractor:
     def __is_first_or_last_index(index : int, list : List) -> bool:
         return index == 0 or index == (len(list)-1)
 
-    @staticmethod
-    def __create_balance_entry(amount : str) -> RawEntry:
-        return  RawEntry(
-                    date = "",
-                    amount = amount,
-                    comment = "",
-                    type = StatementType.BALANCE
-                )
-
     def __extract_year(self):
         match = re.search("Nr\..+?\d+/(\d{4})", self.__statement_as_text)
         if match:
@@ -46,28 +45,42 @@ class RawStatementExtractor:
         self.__dates = re.findall("\d{2}\.\d{2}\. \d{2}\.\d{2}\.", self.__statement_as_text)
 
     def __extract_amounts(self):
-        self.__amounts = re.findall("\d[\d\.]*,\d{2} [HS]", self.__statement_as_text)
+        self.__amount_matches = list(re.finditer("\d[\d\.]*,\d{2} [HS]", self.__statement_as_text))
+        for amount_match in self.__amount_matches:
+            self.__amounts.append(amount_match.group(0))
 
-    def __init_entries_by_matching_amounts_with_dates(self):
-        self.__entries : List[RawEntry] = []
-        # Assumption 1: First entry is a Balance
-        # Assumption 2: Equal amounts next to each other are Balances ~~~~
-        date_index : int = 0
-        for i, line in enumerate(self.__amounts):
-            if RawStatementExtractor.__is_first_or_last_index(i, self.__amounts) or date_index == len(self.__dates):
-                self.__entries.append(RawStatementExtractor.__create_balance_entry(line))
-                if date_index == len(self.__dates): # TODO Find better solution for date/amount matching robustness
-                    break
-            elif line == self.__amounts[i-1] or line == self.__amounts[i+1]:
-                self.__entries.append(RawStatementExtractor.__create_balance_entry(line))
-            else:
-                self.__entries.append(RawEntry(
-                    date = self.__dates[date_index],
-                    amount = line,
-                    comment = "unknown",
-                    type = StatementType.TRANSACTION
-                ))
+    def __extract_text_in_front_of_amounts(self):
+        last_amount_match_end = 0
+        for amount_match in self.__amount_matches:    
+            current_amont_match_end = amount_match.end(0)
+            self.__text_in_front_of_amounts.append(self.__statement_as_text[last_amount_match_end:current_amont_match_end])
+            last_amount_match_end = current_amont_match_end
+
+    def __init_entries_with_amounts(self):
+        for amount in self.__amounts:
+            self.__entries.append(RawEntry(
+                date = "",
+                amount = amount,
+                comment = "",
+                type = StatementType.UNKNOW
+            ))
+
+    def __detect_if_amount_is_balance(self):
+        for i, text_in_front_of_amount in enumerate(self.__text_in_front_of_amounts):
+            balance_match = re.search(f"(alter Kontostand|neuer Kontostand|Übertrag auf|Übertrag von)", text_in_front_of_amount)
+            if balance_match:
+                self.__entries[i].type = StatementType.BALANCE
+
+    def __detect_if_amount_is_transaction_by_matching_with_dates(self):
+        date_index = 0
+        for i, text_in_front_of_amount in enumerate(self.__text_in_front_of_amounts):
+            date_match = re.search(f"{re.escape(self.__dates[date_index])}", text_in_front_of_amount)
+            if date_match:
+                self.__entries[i].date = self.__dates[date_index]
+                self.__entries[i].type = StatementType.TRANSACTION
                 date_index += 1
+            if date_index >= len(self.__dates):
+                break
 
     def __extract_comments(self):
         shrinking_statement = self.__statement_as_text
