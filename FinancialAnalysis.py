@@ -32,15 +32,21 @@ for input_file in path_interpreter.get_input_files():
     # print(f"Count: {len(raw_extractor.get_raw_entries())}")
 
     interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
+    interpreted_extractor.load_tag_patterns("tags.json")
     interpreted_extractor.run()
     interpreted_entries += interpreted_extractor.get_interpreted_entries()
 
 
-for entry in interpreted_entries:
-    print(f"{entry.date} | {entry.amount} | {entry.raw.type} | {entry.raw.comment}")
+# for entry in interpreted_entries:
+#     if len(entry.tags) == 0:
+#         print(f"{entry.date} | {entry.amount} | {entry.raw.type} | {entry.raw.comment}")
+#     else:
+#         print(f"{entry.date} | {entry.amount} | {entry.raw.type} | {entry.tags}")
     # print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.comment}")
 
-filterd_entries = [entry for entry in interpreted_entries if entry.raw.type == StatementType.TRANSACTION]
+filterd_entries = [entry    for entry in interpreted_entries 
+                            if      entry.raw.type == StatementType.TRANSACTION 
+                                and Tag.ACCOUNT_SAVINGS not in entry.tags]
 
 # VisualizeStatement.draw_amounts(filterd_entries)
-# VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
+VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)

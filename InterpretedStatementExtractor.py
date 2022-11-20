@@ -1,7 +1,10 @@
 import re
+import os
 import datetime
+import json
 from Types import *
 from typing import List
+
 
 class InterpretedStatementExtractor:
 
@@ -11,9 +14,26 @@ class InterpretedStatementExtractor:
         self.__interpreted_entries : List[InterpretedEntry] = []
         self.__init_interpreted_entries()
 
+        self.__tag_patterns : List[TagPattern] = []
+    
+    def load_tag_patterns(self, config_json : str):
+        config_json_path = os.path.normpath(config_json)
+        if not os.path.isfile(config_json_path):
+            print(f"Warning: File {config_json_path} does not exist")
+        with open(config_json_path, mode="r") as f:
+            tag_patterns_json = json.load(f)
+            if not isinstance(tag_patterns_json, List):
+                print(f"Warning: Expecting a list on first level inside {config_json_path}")
+            for tag_pattern in tag_patterns_json:
+                self.__tag_patterns.append(
+                    TagPattern(
+                        pattern=tag_pattern["pattern"], 
+                        tag=Tag[tag_pattern["tag"]] ) )
+
     def run(self):
         self.__extract_amount()
         self.__extract_date()
+        self.__extract_tags()
 
     def get_interpreted_entries(self):
         return self.__interpreted_entries
@@ -41,3 +61,10 @@ class InterpretedStatementExtractor:
                 month = int(match.group(2))
                 year = int(match.group(3))
                 self.__interpreted_entries[i].date = datetime.date(year, month, day)
+
+    def __extract_tags(self):
+        for entry in self.__interpreted_entries:
+            for tag_pattern in self.__tag_patterns:
+                match = re.search(tag_pattern.pattern, entry.raw.comment)
+                if match:
+                    entry.tags.append(tag_pattern.tag)
