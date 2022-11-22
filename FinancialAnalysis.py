@@ -1,5 +1,6 @@
 import argparse
 import os
+from DataValidator import DataValidator
 from InterpretedStatementExtractor import InterpretedStatementExtractor
 from PdfReader import PdfReader
 from RawStatementExtractor import RawStatementExtractor
@@ -36,6 +37,12 @@ for input_file in path_interpreter.get_input_files():
     interpreted_extractor.run()
     interpreted_entries += interpreted_extractor.get_interpreted_entries()
 
+validator = DataValidator([entry for entry in interpreted_entries if entry.raw.type != StatementType.UNKNOW])
+validation_successfull = validator.validate_amounts_with_balances()
+if validation_successfull:
+    print("Validation OK!")
+else:
+    print("Validation failed!")
 
 # for entry in interpreted_entries:
 #     if len(entry.tags) == 0:
@@ -49,4 +56,4 @@ filterd_entries = [entry    for entry in interpreted_entries
                                 and Tag.ACCOUNT_SAVINGS not in entry.tags]
 
 # VisualizeStatement.draw_amounts(filterd_entries)
-VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
+# VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
