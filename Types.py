@@ -25,6 +25,11 @@ class Tag(Enum):
     INSURANCE = auto()
     PHARMACY = auto()
     OFFLINE_SHOPPING = auto()
+    RESTAURANT = auto()
+    ACTIVITIES = auto()
+    TRAVEL = auto()
+    DONATION = auto()
+    CASH = auto()
 
 @dataclass
 class RawEntry:
