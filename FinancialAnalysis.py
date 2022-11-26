@@ -1,6 +1,7 @@
 import argparse
 import os
 import logging
+import datetime
 from DataValidator import DataValidator
 from InterpretedStatementExtractor import InterpretedStatementExtractor
 from PdfReader import PdfReader
@@ -62,4 +63,6 @@ filterd_entries = [entry    for entry in interpreted_entries
                                 and Tag.ACCOUNT_SAVINGS not in entry.tags]
 
 # VisualizeStatement.draw_amounts(filterd_entries)
-# VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
+VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
+VisualizeStatement.draw_cake_of_month(datetime.date(2022, 4, 1), filterd_entries)
+VisualizeStatement.show()

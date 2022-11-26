@@ -36,6 +36,7 @@ class InterpretedStatementExtractor:
         self.__extract_amount()
         self.__extract_date()
         self.__extract_tags()
+        self.__add_undefined_tag_for_entries_without_tags()
 
     def get_interpreted_entries(self):
         return self.__interpreted_entries
@@ -70,3 +71,8 @@ class InterpretedStatementExtractor:
                 match = re.search(tag_pattern.pattern, entry.raw.comment)
                 if match:
                     entry.tags.append(tag_pattern.tag)
+
+    def __add_undefined_tag_for_entries_without_tags(self):
+        for entry in self.__interpreted_entries:
+            if len(entry.tags) == 0:
+                entry.tags.append(Tag.UNDEFINED)

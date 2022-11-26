@@ -9,6 +9,7 @@ class StatementType(Enum):
     UNKNOW = auto()
 
 class Tag(Enum):
+    UNDEFINED = auto()
     SALARY = auto()
     OTHER_INCOME = auto()
     RENT = auto()
