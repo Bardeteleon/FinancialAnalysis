@@ -2,6 +2,7 @@ import re
 import os
 import datetime
 import json
+import logging
 from Types import *
 from typing import List
 
@@ -19,16 +20,17 @@ class InterpretedStatementExtractor:
     def load_tag_patterns(self, config_json : str):
         config_json_path = os.path.normpath(config_json)
         if not os.path.isfile(config_json_path):
-            print(f"Warning: File {config_json_path} does not exist")
-        with open(config_json_path, mode="r") as f:
-            tag_patterns_json = json.load(f)
-            if not isinstance(tag_patterns_json, List):
-                print(f"Warning: Expecting a list on first level inside {config_json_path}")
-            for tag_pattern in tag_patterns_json:
-                self.__tag_patterns.append(
-                    TagPattern(
-                        pattern=tag_pattern["pattern"], 
-                        tag=Tag[tag_pattern["tag"]] ) )
+            logging.warning(f"File {config_json_path} does not exist")
+        else:
+            with open(config_json_path, mode="r") as f:
+                tag_patterns_json = json.load(f)
+                if not isinstance(tag_patterns_json, List):
+                    logging.warning(f"Expecting a list on first level inside {config_json_path}")
+                for tag_pattern in tag_patterns_json:
+                    self.__tag_patterns.append(
+                        TagPattern(
+                            pattern=tag_pattern["pattern"], 
+                            tag=Tag[tag_pattern["tag"]] ) )
 
     def run(self):
         self.__extract_amount()

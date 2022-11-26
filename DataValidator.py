@@ -2,6 +2,7 @@
 from Types import InterpretedEntry, StatementType
 from typing import *
 import math
+import logging
 
 class DataValidator:
 
@@ -24,14 +25,14 @@ class DataValidator:
             elif curr_start_balance_entry != None:
                 curr_sum += entry.amount
             else:
-                print(f"validate_amounts_with_balance: No validation for {entry}")
+                logging.debug(f"validate_amounts_with_balance: No validation for {entry}")
                 validation_successfull = False
 
             if curr_start_balance_entry != None and curr_end_balance_entry != None:
                 if math.isclose(curr_sum, curr_end_balance_entry.amount):
-                    print(f"validate_amounts_with_balance: Fine between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
+                    logging.debug(f"validate_amounts_with_balance: Fine between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
                 else:
-                    print(f"validate_amounts_with_balance: Something is not ok between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
+                    logging.debug(f"validate_amounts_with_balance: Something is not ok between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
                     validation_successfull = False
                 curr_start_balance_entry = None
                 curr_end_balance_entry = None

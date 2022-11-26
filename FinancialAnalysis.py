@@ -1,5 +1,6 @@
 import argparse
 import os
+import logging
 from DataValidator import DataValidator
 from InterpretedStatementExtractor import InterpretedStatementExtractor
 from PdfReader import PdfReader
@@ -8,6 +9,11 @@ from typing import List
 from Types import *
 from VisualizeStatement import VisualizeStatement
 from InputPathInterpreter import InputPathInterpreter
+
+logging.basicConfig(
+    format="%(levelname)s %(asctime)s - %(message)s",
+    level=logging.INFO
+)
 
 parser = argparse.ArgumentParser(prog="FinancialAnalysis")
 parser.add_argument("input_path")
@@ -40,9 +46,9 @@ for input_file in path_interpreter.get_input_files():
 validator = DataValidator([entry for entry in interpreted_entries if entry.raw.type != StatementType.UNKNOW])
 validation_successfull = validator.validate_amounts_with_balances()
 if validation_successfull:
-    print("Validation OK!")
+    logging.info("Validation OK!")
 else:
-    print("Validation failed!")
+    logging.warning("Validation failed!")
 
 # for entry in interpreted_entries:
 #     if len(entry.tags) == 0:
