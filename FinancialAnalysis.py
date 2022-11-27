@@ -2,9 +2,12 @@ import argparse
 import os
 import logging
 import datetime
-from DataValidator import DataValidator
+from EntrySorter import EntrySorter
+from EntryValidator import EntryValidator
 from InterpretedStatementExtractor import InterpretedStatementExtractor
 from PdfReader import PdfReader
+from EntryPrinter import EntryPrinter
+from EntryFilter import EntryFilter
 from RawStatementExtractor import RawStatementExtractor
 from typing import List
 from Types import *
@@ -29,40 +32,22 @@ for input_file in path_interpreter.get_input_files():
     pdf_reader = PdfReader(str(input_file))
     pdf_reader.run()
 
-    # print(pdf_reader.get_text())
-
     raw_extractor = RawStatementExtractor(pdf_reader.get_text())
     raw_extractor.run()
-
-    # for entry in raw_extractor.get_raw_entries():
-    #     print(entry)
-    #     print("")
-    # print(f"Count: {len(raw_extractor.get_raw_entries())}")
 
     interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
     interpreted_extractor.load_tag_patterns("tags.json")
     interpreted_extractor.run()
     interpreted_entries += interpreted_extractor.get_interpreted_entries()
 
-validator = DataValidator([entry for entry in interpreted_entries if entry.raw.type != StatementType.UNKNOW])
-validation_successfull = validator.validate_amounts_with_balances()
-if validation_successfull:
-    logging.info("Validation OK!")
-else:
-    logging.warning("Validation failed!")
+validator = EntryValidator([entry for entry in interpreted_entries if entry.raw.type != StatementType.UNKNOW])
+validator.validate_amounts_with_balances()
 
-# for entry in interpreted_entries:
-#     if len(entry.tags) == 0:
-#         print(f"{entry.date} | {entry.amount} | {entry.raw.type} | {entry.raw.comment}")
-#     else:
-#         print(f"{entry.date} | {entry.amount} | {entry.raw.type} | {entry.tags}")
-    # print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.comment}")
+EntryPrinter.date_amount_type_comment(EntrySorter.by_amount(EntryFilter.tag_undefined(interpreted_entries)))
 
-filterd_entries = [entry    for entry in interpreted_entries 
-                            if      entry.raw.type == StatementType.TRANSACTION 
-                                and Tag.ACCOUNT_SAVINGS not in entry.tags]
+# filtered_entries = EntryFilter.external_transactions(interpreted_entries)
 
-# VisualizeStatement.draw_amounts(filterd_entries)
-VisualizeStatement.draw_plus_minus_bar_per_month(filterd_entries)
-VisualizeStatement.draw_cake_of_month(datetime.date(2022, 4, 1), filterd_entries)
-VisualizeStatement.show()
+# VisualizeStatement.draw_amounts(filtered_entries)
+# VisualizeStatement.draw_plus_minus_bar_per_month(filtered_entries)
+# VisualizeStatement.draw_cake_of_month(datetime.date(2022, 4, 1), filtered_entries)
+# VisualizeStatement.show()

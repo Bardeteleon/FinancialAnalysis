@@ -4,7 +4,7 @@ from typing import *
 import math
 import logging
 
-class DataValidator:
+class EntryValidator:
 
     def __init__(self, interpreted_entries : List[InterpretedEntry]):
         self.__interpreted_entries = interpreted_entries
@@ -37,4 +37,8 @@ class DataValidator:
                 curr_start_balance_entry = None
                 curr_end_balance_entry = None
                 curr_sum = 0.0
+        if validation_successfull:
+            logging.info("Validation OK!")
+        else:
+            logging.warning("Validation failed!")
         return validation_successfull
