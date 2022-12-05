@@ -10,5 +10,7 @@ class EntryFilter:
                       if     entry.raw.type == StatementType.TRANSACTION 
                          and Tag.ACCOUNT_SAVINGS not in entry.tags]
 
-    def tag_undefined(entries : List[InterpretedEntry]):
-        return [entry for entry in entries if Tag.UNDEFINED in entry.tags]
+    def undefined_transactions(entries : List[InterpretedEntry]):
+        return [entry for entry in entries 
+                      if     entry.raw.type == StatementType.TRANSACTION 
+                         and Tag.UNDEFINED in entry.tags]

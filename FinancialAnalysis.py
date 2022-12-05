@@ -43,11 +43,10 @@ for input_file in path_interpreter.get_input_files():
 validator = EntryValidator([entry for entry in interpreted_entries if entry.raw.type != StatementType.UNKNOW])
 validator.validate_amounts_with_balances()
 
-EntryPrinter.date_amount_type_comment(EntrySorter.by_amount(EntryFilter.tag_undefined(interpreted_entries)))
+# EntryPrinter.date_amount_type_comment(EntrySorter.by_amount(EntryFilter.undefined_transactions(interpreted_entries)))
 
-# filtered_entries = EntryFilter.external_transactions(interpreted_entries)
-
+filtered_entries = EntryFilter.external_transactions(interpreted_entries)
 # VisualizeStatement.draw_amounts(filtered_entries)
-# VisualizeStatement.draw_plus_minus_bar_per_month(filtered_entries)
-# VisualizeStatement.draw_cake_of_month(datetime.date(2022, 4, 1), filtered_entries)
-# VisualizeStatement.show()
+VisualizeStatement.draw_plus_minus_bar_per_month(filtered_entries)
+VisualizeStatement.draw_cake_of_month(datetime.date(2020, 8, 1), filtered_entries)
+VisualizeStatement.show()
