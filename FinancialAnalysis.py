@@ -13,6 +13,9 @@ from typing import List
 from Types import *
 from VisualizeStatement import VisualizeStatement
 from InputPathInterpreter import InputPathInterpreter
+import matplotlib
+
+print(matplotlib.get_backend())
 
 logging.basicConfig(
     format="%(levelname)s %(asctime)s - %(message)s",
@@ -49,5 +52,6 @@ filtered_entries = EntryFilter.external_transactions(interpreted_entries)
 # VisualizeStatement.draw_amounts(filtered_entries)
 # VisualizeStatement.draw_plus_minus_bar_per_month(filtered_entries)
 # VisualizeStatement.draw_cake_of_month(datetime.date(2020, 8, 1), filtered_entries)
-VisualizeStatement.draw_overview(filtered_entries)
-VisualizeStatement.show()
+# VisualizeStatement.draw_overview(filtered_entries)
+# VisualizeStatement.show()
+VisualizeStatement.draw_interactive_overview(filtered_entries)

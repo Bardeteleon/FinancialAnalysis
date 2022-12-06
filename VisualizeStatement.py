@@ -1,9 +1,12 @@
 from typing import List, Dict
 from Types import *
-import matplotlib.pyplot
+import matplotlib
 import numpy
 import datetime
 import logging
+import tkinter
+
+matplotlib.use("TkAgg")
 
 class VisualizeStatement:
 
@@ -76,10 +79,23 @@ class VisualizeStatement:
         ax1 = fig.add_subplot(spec[1,0])
         ax2 = fig.add_subplot(spec[1,1])
         VisualizeStatement.draw_plus_minus_bar_per_month(interpreted_entries, ax0)
-        VisualizeStatement.draw_cake_of_month(datetime.date(2020, 8, 1), interpreted_entries, [ax1, ax2])
+        VisualizeStatement.draw_cake_of_month(datetime.date(2021, 8, 1), interpreted_entries, [ax1, ax2])
+        return fig
     
     @staticmethod
     def show():
         matplotlib.pyplot.show()
+
+    @staticmethod
+    def draw_interactive_overview(interpreted_entries : List[InterpretedEntry]):
+        master = tkinter.Tk()
+        master.title("Financial Analysis")
+
+        fig = VisualizeStatement.draw_overview(interpreted_entries)
+
+        fig_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(fig, master)
+        fig_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
+        tkinter.mainloop()
                     
                 
