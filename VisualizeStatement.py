@@ -5,14 +5,11 @@ import numpy
 import datetime
 import logging
 import tkinter
+from EntryFilter import EntryFilter
 
 matplotlib.use("TkAgg")
 
 class VisualizeStatement:
-
-    @staticmethod
-    def formated_date(date : datetime.date) -> str:
-        return f"{date.year}-{date.month}"
 
     @staticmethod
     def draw_amounts(interpreted_entries : List[InterpretedEntry]):
@@ -24,16 +21,7 @@ class VisualizeStatement:
         ax.plot(x, numpy.zeros(len(x)), color="r")
 
     @staticmethod
-    def draw_plus_minus_bar_per_month(interpreted_entries : List[InterpretedEntry], ax=None):
-
-        balance_per_month : Dict[str, float] = {}
-        for entry in interpreted_entries:
-            month : str = VisualizeStatement.formated_date(entry.date)
-            if month in balance_per_month:
-                balance_per_month[month] += entry.amount
-            else:
-                balance_per_month[month] = entry.amount
-
+    def draw_plus_minus_bar_per_month(balance_per_month : Dict[str, float], ax=None):
         x = range(len(balance_per_month))
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()
@@ -43,11 +31,11 @@ class VisualizeStatement:
         ax.set_xticklabels(list(balance_per_month.keys()), rotation=90)
 
     @staticmethod
-    def draw_cake_of_month(month : datetime.date, interpreted_entries : List[InterpretedEntry], axs=None):
-        requested_month = VisualizeStatement.formated_date(month)
+    def draw_cake_of_month(month : str, interpreted_entries : List[InterpretedEntry], axs=None):
+        requested_month = month # EntryFilter.formated_date(month)
         balance_per_tag : Dict[Tag, float] = {}
         for entry in interpreted_entries:
-            curr_month = VisualizeStatement.formated_date(entry.date)
+            curr_month = EntryFilter.formated_date(entry.date)
             curr_tag = None
             if requested_month == curr_month:
                 if len(entry.tags) == 1:
@@ -72,30 +60,17 @@ class VisualizeStatement:
         # fig.suptitle(f"{requested_month} (Sum: {sum_positive + sum_negative})")
 
     @staticmethod
-    def draw_overview(interpreted_entries : List[InterpretedEntry]):
-        fig = matplotlib.pyplot.figure(layout="constrained")
+    def draw_overview(interpreted_entries : List[InterpretedEntry], month : str, fig=None):
+        if not fig:
+            fig = matplotlib.pyplot.figure(layout="constrained")
         spec = fig.add_gridspec(2,2)
         ax0 = fig.add_subplot(spec[0,:])
         ax1 = fig.add_subplot(spec[1,0])
         ax2 = fig.add_subplot(spec[1,1])
-        VisualizeStatement.draw_plus_minus_bar_per_month(interpreted_entries, ax0)
-        VisualizeStatement.draw_cake_of_month(datetime.date(2021, 8, 1), interpreted_entries, [ax1, ax2])
+        VisualizeStatement.draw_plus_minus_bar_per_month(EntryFilter.balance_per_month(interpreted_entries), ax0)
+        VisualizeStatement.draw_cake_of_month(month, interpreted_entries, [ax1, ax2])
         return fig
     
     @staticmethod
     def show():
         matplotlib.pyplot.show()
-
-    @staticmethod
-    def draw_interactive_overview(interpreted_entries : List[InterpretedEntry]):
-        master = tkinter.Tk()
-        master.title("Financial Analysis")
-
-        fig = VisualizeStatement.draw_overview(interpreted_entries)
-
-        fig_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(fig, master)
-        fig_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-
-        tkinter.mainloop()
-                    
-                

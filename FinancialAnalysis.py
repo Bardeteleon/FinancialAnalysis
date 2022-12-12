@@ -2,8 +2,10 @@ import argparse
 import os
 import logging
 import datetime
+import tkinter
 from EntrySorter import EntrySorter
 from EntryValidator import EntryValidator
+from InteractiveOverviewTkinter import InteractiveOverviewTkinter
 from InterpretedStatementExtractor import InterpretedStatementExtractor
 from PdfReader import PdfReader
 from EntryPrinter import EntryPrinter
@@ -54,4 +56,8 @@ filtered_entries = EntryFilter.external_transactions(interpreted_entries)
 # VisualizeStatement.draw_cake_of_month(datetime.date(2020, 8, 1), filtered_entries)
 # VisualizeStatement.draw_overview(filtered_entries)
 # VisualizeStatement.show()
-VisualizeStatement.draw_interactive_overview(filtered_entries)
+
+master = tkinter.Tk()
+master.protocol("WM_DELETE_WINDOW", master.quit)
+gui = InteractiveOverviewTkinter(master, filtered_entries)
+master.mainloop()
