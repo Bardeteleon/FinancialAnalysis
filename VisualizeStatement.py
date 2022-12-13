@@ -61,6 +61,7 @@ class VisualizeStatement:
 
     @staticmethod
     def draw_overview(interpreted_entries : List[InterpretedEntry], month : str, fig=None):
+        matplotlib.rc("font", size=12)
         if not fig:
             fig = matplotlib.pyplot.figure(layout="constrained")
         spec = fig.add_gridspec(2,2)

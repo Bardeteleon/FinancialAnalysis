@@ -57,7 +57,4 @@ filtered_entries = EntryFilter.external_transactions(interpreted_entries)
 # VisualizeStatement.draw_overview(filtered_entries)
 # VisualizeStatement.show()
 
-master = tkinter.Tk()
-master.protocol("WM_DELETE_WINDOW", master.quit)
-gui = InteractiveOverviewTkinter(master, filtered_entries)
-master.mainloop()
+InteractiveOverviewTkinter(filtered_entries)
