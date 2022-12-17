@@ -1,7 +1,9 @@
 
+import datetime
 import tkinter
 import matplotlib
 from EntryFilter import EntryFilter
+from TimeInterval import MonthInterval, TimeIntervalVariants
 from VisualizeStatement import VisualizeStatement
 
 
@@ -16,7 +18,7 @@ class InteractiveOverviewTkinter():
 
         self.interpreted_entries = interpreted_entries
 
-        self.months = list(EntryFilter.balance_per_month(interpreted_entries).keys())
+        self.months = list(EntryFilter.balance_per_interval(interpreted_entries, TimeIntervalVariants.MONTH).keys())
 
         self.month_var = tkinter.StringVar(self.master)
         self.month_var.set(self.months[-1])
@@ -30,7 +32,7 @@ class InteractiveOverviewTkinter():
         self.confirm_button = tkinter.Button(self.interaction_frame, text="GO", command=self.confirm_button_cmd)
         self.confirm_button.pack(side=tkinter.LEFT, fill=tkinter.X, expand=1)
 
-        self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, self.month_var.get())
+        self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, MonthInterval.from_string(self.month_var.get()))
         self.fig_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.fig, self.master)
         self.fig_canvas.get_tk_widget().pack(side=tkinter.BOTTOM, fill=tkinter.BOTH, expand=1)
 
@@ -39,5 +41,5 @@ class InteractiveOverviewTkinter():
 
     def confirm_button_cmd(self):
         self.fig.clear()
-        self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, self.month_var.get(), self.fig)
+        self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, MonthInterval.from_string(self.month_var.get()), self.fig)
         self.fig_canvas.draw_idle()

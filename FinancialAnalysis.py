@@ -52,7 +52,7 @@ validator.validate_amounts_with_balances()
 
 filtered_entries = EntryFilter.external_transactions(interpreted_entries)
 # VisualizeStatement.draw_amounts(filtered_entries)
-# VisualizeStatement.draw_balance_per_month(filtered_entries)
+# VisualizeStatement.draw_balance_per_interval(filtered_entries)
 # VisualizeStatement.draw_tag_pie(datetime.date(2020, 8, 1), filtered_entries)
 # VisualizeStatement.draw_overview(filtered_entries)
 # VisualizeStatement.show()

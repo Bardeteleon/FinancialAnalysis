@@ -1,4 +1,5 @@
 from typing import List, Dict
+from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 import datetime
 import logging
@@ -30,15 +31,15 @@ class EntryFilter:
         return [entry for entry in entries if entry.amount < 0.0]
 
     @staticmethod
-    def balance_per_month(entries : List[InterpretedEntry]) -> Dict[str, float]:
-        balance_per_month : Dict[str, float] = {}
+    def balance_per_interval(entries : List[InterpretedEntry], interval : TimeIntervalVariants) -> Dict[str, float]:
+        balance_per_time_interval : Dict[str, float] = {}
         for entry in entries:
-            month : str = EntryFilter.formated_date(entry.date)
-            if month in balance_per_month:
-                balance_per_month[month] += entry.amount
+            interval_str : str = TimeInterval.create(interval, entry.date).to_string()
+            if interval_str in balance_per_time_interval:
+                balance_per_time_interval[interval_str] += entry.amount
             else:
-                balance_per_month[month] = entry.amount
-        return balance_per_month
+                balance_per_time_interval[interval_str] = entry.amount
+        return balance_per_time_interval
 
     @staticmethod
     def balance_per_tag_of_month(entries : List[InterpretedEntry], month : str) -> Dict[Tag, float]:
