@@ -21,7 +21,8 @@ class VisualizeStatement:
         ax.plot(x, numpy.zeros(len(x)), color="r")
 
     @staticmethod
-    def draw_plus_minus_bar_per_month(balance_per_month : Dict[str, float], ax=None):
+    def draw_balance_per_month(interpreted_entries : List[InterpretedEntry], ax=None):
+        balance_per_month : Dict[str, float] = EntryFilter.balance_per_month(interpreted_entries)
         x = range(len(balance_per_month))
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()
@@ -31,33 +32,13 @@ class VisualizeStatement:
         ax.set_xticklabels(list(balance_per_month.keys()), rotation=90)
 
     @staticmethod
-    def draw_cake_of_month(month : str, interpreted_entries : List[InterpretedEntry], axs=None):
-        requested_month = month # EntryFilter.formated_date(month)
-        balance_per_tag : Dict[Tag, float] = {}
-        for entry in interpreted_entries:
-            curr_month = EntryFilter.formated_date(entry.date)
-            curr_tag = None
-            if requested_month == curr_month:
-                if len(entry.tags) == 1:
-                    curr_tag = entry.tags[0]
-                elif len(entry.tags) > 1:
-                    logging.warning(f"Entry has more than one tag. Only using first one. {entry}")
-                    curr_tag = entry.tags[0]
-                if curr_tag in balance_per_tag:
-                    balance_per_tag[curr_tag] += entry.amount
-                else:
-                    balance_per_tag[curr_tag] = entry.amount
-        positive_balance_per_tag = {key:value for (key,value) in balance_per_tag.items() if value >= 0}
-        negative_balance_per_tag = {key:abs(value) for (key,value) in balance_per_tag.items() if value < 0}
-        sum_positive = numpy.sum(list(positive_balance_per_tag.values()))
-        sum_negative = -numpy.sum(list(negative_balance_per_tag.values()))
+    def draw_tag_pie(month : str, interpreted_entries : List[InterpretedEntry], axs=None):
+        balance_per_tag : Dict[Tag, float] = EntryFilter.balance_per_tag_of_month(interpreted_entries, month)
+        balance_sum = numpy.sum(list(balance_per_tag.values()))
         if not axs:
-            fig, axs = matplotlib.pyplot.subplots(1, 2)
-        axs[0].set_title(f"Income (Sum: +{sum_positive})")
-        axs[0].pie(positive_balance_per_tag.values(), labels=positive_balance_per_tag.keys())
-        axs[1].set_title(f"Expenses (Sum: {sum_negative})")
-        axs[1].pie(negative_balance_per_tag.values(), labels=negative_balance_per_tag.keys())
-        # fig.suptitle(f"{requested_month} (Sum: {sum_positive + sum_negative})")
+            fig, axs = matplotlib.pyplot.subplots()
+        axs.set_title(f"Sum: {balance_sum}")
+        axs.pie(numpy.abs(list(balance_per_tag.values())), labels=balance_per_tag.keys())
 
     @staticmethod
     def draw_overview(interpreted_entries : List[InterpretedEntry], month : str, fig=None):
@@ -68,8 +49,11 @@ class VisualizeStatement:
         ax0 = fig.add_subplot(spec[0,:])
         ax1 = fig.add_subplot(spec[1,0])
         ax2 = fig.add_subplot(spec[1,1])
-        VisualizeStatement.draw_plus_minus_bar_per_month(EntryFilter.balance_per_month(interpreted_entries), ax0)
-        VisualizeStatement.draw_cake_of_month(month, interpreted_entries, [ax1, ax2])
+        positive_entries = EntryFilter.positive_amount(interpreted_entries)
+        negative_entries = EntryFilter.negative_amount(interpreted_entries)
+        VisualizeStatement.draw_balance_per_month(interpreted_entries, ax0)
+        VisualizeStatement.draw_tag_pie(month, positive_entries, ax1)
+        VisualizeStatement.draw_tag_pie(month, negative_entries, ax2)
         return fig
     
     @staticmethod

@@ -36,6 +36,12 @@ class Tag(Enum):
     SUPERMARKET = auto()
     TRAVEL = auto()
 
+class TimeInterval(Enum):
+    MONTH = auto()
+    QUARTER = auto()
+    HALF_YEAR = auto()
+    YEAR = auto()
+
 @dataclass
 class RawEntry:
     date : str
