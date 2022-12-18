@@ -52,7 +52,7 @@ class VisualizeStatement:
         ax2 = fig.add_subplot(spec[1,1])
         positive_entries = EntryFilter.positive_amount(interpreted_entries)
         negative_entries = EntryFilter.negative_amount(interpreted_entries)
-        VisualizeStatement.draw_balance_per_interval(interpreted_entries, TimeIntervalVariants.QUARTER, ax0)
+        VisualizeStatement.draw_balance_per_interval(interpreted_entries, TimeIntervalVariants.YEAR, ax0)
         VisualizeStatement.draw_tag_pie(interval.to_string(), positive_entries, ax1)
         VisualizeStatement.draw_tag_pie(interval.to_string(), negative_entries, ax2)
         return fig
