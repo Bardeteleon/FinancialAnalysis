@@ -42,7 +42,7 @@ class VisualizeStatement:
         axs.pie(numpy.abs(list(balance_per_tag.values())), labels=balance_per_tag.keys())
 
     @staticmethod
-    def draw_overview(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, fig=None):
+    def draw_overview(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, interval_variant=TimeIntervalVariants.MONTH, fig=None):
         matplotlib.rc("font", size=12)
         if not fig:
             fig = matplotlib.pyplot.figure(layout="constrained")
@@ -52,7 +52,7 @@ class VisualizeStatement:
         ax2 = fig.add_subplot(spec[1,1])
         positive_entries = EntryFilter.positive_amount(interpreted_entries)
         negative_entries = EntryFilter.negative_amount(interpreted_entries)
-        VisualizeStatement.draw_balance_per_interval(interpreted_entries, TimeIntervalVariants.YEAR, ax0)
+        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, ax0)
         VisualizeStatement.draw_tag_pie(interval.to_string(), positive_entries, ax1)
         VisualizeStatement.draw_tag_pie(interval.to_string(), negative_entries, ax2)
         return fig

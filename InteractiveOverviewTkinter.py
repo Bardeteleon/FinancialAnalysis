@@ -20,14 +20,22 @@ class InteractiveOverviewTkinter():
 
         self.months = list(EntryFilter.balance_per_interval(interpreted_entries, TimeIntervalVariants.MONTH).keys())
 
+        self.intervals = [str(interval.name) for interval in TimeIntervalVariants]
+
         self.month_var = tkinter.StringVar(self.master)
         self.month_var.set(self.months[-1])
+
+        self.interval_var = tkinter.StringVar(self.master)
+        self.interval_var.set(self.intervals[0])
 
         self.interaction_frame = tkinter.Frame(self.master)
         self.interaction_frame.pack(side=tkinter.TOP, fill=tkinter.X)
 
         self.month_menu = tkinter.OptionMenu(self.interaction_frame, self.month_var, *self.months)
         self.month_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=1)
+
+        self.interval_menu = tkinter.OptionMenu(self.interaction_frame, self.interval_var, *self.intervals, command=self.interval_menu_cmd)
+        self.interval_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=1)
 
         self.confirm_button = tkinter.Button(self.interaction_frame, text="GO", command=self.confirm_button_cmd)
         self.confirm_button.pack(side=tkinter.LEFT, fill=tkinter.X, expand=1)
@@ -41,5 +49,11 @@ class InteractiveOverviewTkinter():
 
     def confirm_button_cmd(self):
         self.fig.clear()
-        self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, MonthInterval.from_string(self.month_var.get()), self.fig)
+        self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, MonthInterval.from_string(self.month_var.get()), fig=self.fig)
+        self.fig_canvas.draw_idle()
+
+    def interval_menu_cmd(self, choice):
+        selected_interval = TimeIntervalVariants[self.interval_var.get()]
+        self.fig.clear()
+        self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, MonthInterval.from_string(self.month_var.get()), selected_interval, fig=self.fig)
         self.fig_canvas.draw_idle()
