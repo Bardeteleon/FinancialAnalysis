@@ -31,10 +31,10 @@ class EntryFilter:
         return [entry for entry in entries if entry.amount < 0.0]
 
     @staticmethod
-    def balance_per_interval(entries : List[InterpretedEntry], interval : TimeIntervalVariants) -> Dict[str, float]:
+    def balance_per_interval(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants) -> Dict[str, float]:
         balance_per_time_interval : Dict[str, float] = {}
         for entry in entries:
-            interval_str : str = TimeInterval.create(interval, entry.date).to_string()
+            interval_str : str = TimeInterval.create(interval_variant, entry.date).to_string()
             if interval_str in balance_per_time_interval:
                 balance_per_time_interval[interval_str] += entry.amount
             else:
@@ -42,12 +42,12 @@ class EntryFilter:
         return balance_per_time_interval
 
     @staticmethod
-    def balance_per_tag_of_month(entries : List[InterpretedEntry], month : str) -> Dict[Tag, float]:
+    def balance_per_tag_of_interval(entries : List[InterpretedEntry], interval : TimeInterval) -> Dict[Tag, float]:
         balance_per_tag : Dict[Tag, float] = {}
         for entry in entries:
-            curr_month = EntryFilter.formated_date(entry.date)
+            curr_interval = TimeInterval.create(interval.get_variant(), entry.date)
             curr_tag = None
-            if month == curr_month:
+            if interval == curr_interval:
                 if len(entry.tags) == 1:
                     curr_tag = entry.tags[0]
                 elif len(entry.tags) > 1:
