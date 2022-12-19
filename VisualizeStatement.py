@@ -13,6 +13,10 @@ matplotlib.use("TkAgg")
 class VisualizeStatement:
 
     @staticmethod
+    def general_configuration():
+        matplotlib.rc("font", size=12)
+
+    @staticmethod
     def draw_amounts(interpreted_entries : List[InterpretedEntry]):
         fig, ax = matplotlib.pyplot.subplots()
         x = range(len(interpreted_entries))
@@ -42,19 +46,25 @@ class VisualizeStatement:
         axs.pie(numpy.abs(list(balance_per_tag.values())), labels=balance_per_tag.keys())
 
     @staticmethod
-    def draw_overview(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, fig=None):
-        matplotlib.rc("font", size=12)
+    def get_figure_positive_negative_tag_pies(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, fig=None):
         if not fig:
             fig = matplotlib.pyplot.figure(layout="constrained")
-        spec = fig.add_gridspec(2,2)
-        ax0 = fig.add_subplot(spec[0,:])
-        ax1 = fig.add_subplot(spec[1,0])
-        ax2 = fig.add_subplot(spec[1,1])
+        spec = fig.add_gridspec(1,2)
+        ax1 = fig.add_subplot(spec[0,0])
+        ax2 = fig.add_subplot(spec[0,1])
         positive_entries = EntryFilter.positive_amount(interpreted_entries)
         negative_entries = EntryFilter.negative_amount(interpreted_entries)
-        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval.get_variant(), ax0)
         VisualizeStatement.draw_tag_pie(interval, positive_entries, ax1)
         VisualizeStatement.draw_tag_pie(interval, negative_entries, ax2)
+        return fig
+
+    @staticmethod
+    def get_figure_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, fig=None):
+        if not fig:
+            fig = matplotlib.pyplot.figure(layout="constrained")
+        spec = fig.add_gridspec(1,1)
+        ax0 = fig.add_subplot(spec[0,0])
+        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, ax0)
         return fig
     
     @staticmethod
