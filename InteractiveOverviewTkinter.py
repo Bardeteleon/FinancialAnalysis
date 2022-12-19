@@ -38,10 +38,12 @@ class InteractiveOverviewTkinter():
         self.interaction_frame = tkinter.Frame(self.master)
         self.interaction_frame.pack(side=tkinter.TOP, fill=tkinter.X)
 
-        self.pie_interval_menu = tkinter.ttk.OptionMenu(self.interaction_frame, self.pie_interval_var, *self.pie_intervals, command=self.pie_interval_menu_cmd)
+        self.pie_interval_menu = tkinter.ttk.OptionMenu(self.interaction_frame, self.pie_interval_var, command=self.pie_interval_menu_cmd)
+        self.pie_interval_menu.set_menu(self.pie_interval_var.get(), *self.pie_intervals)
         self.pie_interval_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=1)
 
-        self.interval_variant_menu = tkinter.OptionMenu(self.interaction_frame, self.interval_variant_var, *self.interval_variants, command=self.interval_variant_menu_cmd)
+        self.interval_variant_menu = tkinter.ttk.OptionMenu(self.interaction_frame, self.interval_variant_var, command=self.interval_variant_menu_cmd)
+        self.interval_variant_menu.set_menu(self.interval_variant_var.get(), *self.interval_variants)
         self.interval_variant_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=1)
 
         self.fig = VisualizeStatement.draw_overview(self.interpreted_entries, self.get_pie_interval())
