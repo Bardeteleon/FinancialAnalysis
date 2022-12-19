@@ -31,6 +31,10 @@ class EntryFilter:
         return [entry for entry in entries if entry.amount < 0.0]
 
     @staticmethod
+    def tag(entries : List[InterpretedEntry], tag : Tag):
+        return [entry for entry in entries if tag in entry.tags]
+
+    @staticmethod
     def balance_per_interval(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants) -> Dict[str, float]:
         balance_per_time_interval : Dict[str, float] = {}
         for entry in entries:
