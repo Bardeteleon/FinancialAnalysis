@@ -106,7 +106,7 @@ class InteractiveOverviewTkinter():
         return TimeIntervalVariants[self.interval_variant_var.get()]
 
     def get_pie_interval(self) -> TimeInterval:
-        return TimeInterval.from_string(self.get_interval_variant(), self.pie_interval_var.get())
+        return TimeInterval.create_from_string(self.get_interval_variant(), self.pie_interval_var.get())
 
     def add_zero_entry_each_month_with_all_tags(self):
         all_tags = [tag for tag in Tag]
