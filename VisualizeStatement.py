@@ -40,10 +40,13 @@ class VisualizeStatement:
     def draw_tag_pie(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], axs=None):
         balance_per_tag : Dict[Tag, float] = EntryFilter.balance_per_tag_of_interval(interpreted_entries, interval)
         balance_sum = numpy.sum(list(balance_per_tag.values()))
+        balance_per_tag_sorted = dict(sorted(balance_per_tag.items(), key=lambda x: abs(x[1]), reverse=False))
         if not axs:
             fig, axs = matplotlib.pyplot.subplots()
         axs.set_title(f"Sum: {balance_sum}")
-        axs.pie(numpy.abs(list(balance_per_tag.values())), labels=balance_per_tag.keys())
+        axs.pie(numpy.abs(list(balance_per_tag_sorted.values())), labels=balance_per_tag_sorted.keys(), startangle=90)
+        handles, labels = axs.get_legend_handles_labels()
+        axs.legend(handles[::-1], labels[::-1], loc='upper left')
 
     @staticmethod
     def get_figure_positive_negative_tag_pies(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, fig=None):
