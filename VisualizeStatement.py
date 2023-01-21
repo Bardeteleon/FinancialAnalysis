@@ -32,7 +32,7 @@ class VisualizeStatement:
         x = range(len(balance_per_interval))
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()
-        ax.bar(x, balance_per_interval.values())
+        ax.bar(x, balance_per_interval.values(), color=VisualizeStatement.get_common_color(interpreted_entries))
         ax.grid(visible=True)
         ax.set_xticks(x)
         ax.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
@@ -91,3 +91,12 @@ class VisualizeStatement:
         tag_to_color_map = dict(zip(list(Tag), colors_for_all_tags))
         resulting_colors = [tag_to_color_map[tag] for tag in tags]
         return resulting_colors
+
+    @staticmethod
+    def get_common_color(entries : List[InterpretedEntry]):
+        filtered_entries = EntryFilter.no_zero_amount(entries)
+        found_tags = {tag for entry in filtered_entries for tag in entry.tags}
+        if len(found_tags) == 1:
+            return VisualizeStatement.get_colors_for_tags(list(found_tags))[0]
+        else:
+            return None

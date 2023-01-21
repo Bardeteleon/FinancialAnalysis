@@ -31,6 +31,10 @@ class EntryFilter:
         return [entry for entry in entries if entry.amount < 0.0]
 
     @staticmethod
+    def no_zero_amount(entries : List[InterpretedEntry]):
+        return [entry for entry in entries if entry.amount != 0.0]
+
+    @staticmethod
     def tag(entries : List[InterpretedEntry], tag : Tag):
         return [entry for entry in entries if tag in entry.tags]
 
