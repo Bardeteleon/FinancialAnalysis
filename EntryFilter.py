@@ -58,6 +58,8 @@ class EntryFilter:
             if interval == curr_interval:
                 if len(entry.tags) == 1:
                     curr_tag = entry.tags[0]
+                elif entry.amount == 0.0:
+                    continue
                 elif len(entry.tags) > 1:
                     logging.warning(f"Entry has more than one tag. Only using first one. {entry}")
                     curr_tag = entry.tags[0]
