@@ -2,6 +2,7 @@ from typing import List, Dict
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 import matplotlib
+import matplotlib.pyplot
 import numpy
 import datetime
 import logging
@@ -44,7 +45,10 @@ class VisualizeStatement:
         if not axs:
             fig, axs = matplotlib.pyplot.subplots()
         axs.set_title(f"Sum: {balance_sum}")
-        axs.pie(numpy.abs(list(balance_per_tag_sorted.values())), labels=balance_per_tag_sorted.keys(), startangle=90)
+        axs.pie(numpy.abs(list(balance_per_tag_sorted.values())), 
+                labels=balance_per_tag_sorted.keys(), 
+                colors=VisualizeStatement.get_colors_for_tags(list(balance_per_tag_sorted.keys())),
+                startangle=90)
         handles, labels = axs.get_legend_handles_labels()
         axs.legend(handles[::-1], labels[::-1], loc='upper left')
 
@@ -73,3 +77,17 @@ class VisualizeStatement:
     @staticmethod
     def show():
         matplotlib.pyplot.show()
+
+    @staticmethod
+    def generate_colors(n):
+        """Generate a set of n colors with maximum contrast."""
+        cmap = matplotlib.pyplot.cm.get_cmap('hsv', n)
+        colors = cmap(range(n))
+        return colors
+
+    @staticmethod
+    def get_colors_for_tags(tags : List[Tag]):
+        colors_for_all_tags = VisualizeStatement.generate_colors(len(Tag))
+        tag_to_color_map = dict(zip(list(Tag), colors_for_all_tags))
+        resulting_colors = [tag_to_color_map[tag] for tag in tags]
+        return resulting_colors
