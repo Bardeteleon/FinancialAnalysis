@@ -10,6 +10,7 @@ from InterpretedStatementExtractor import InterpretedStatementExtractor
 from PdfReader import PdfReader
 from EntryPrinter import EntryPrinter
 from EntryFilter import EntryFilter
+from EntryWriter import EntryWriter
 from RawStatementExtractor import RawStatementExtractor
 from typing import List
 from Types import *
@@ -49,5 +50,6 @@ validator.validate_amounts_with_balances()
 # EntryPrinter.date_amount_type_comment(EntrySorter.by_amount(EntryFilter.undefined_transactions(interpreted_entries)))
 
 filtered_entries = EntryFilter.external_transactions(interpreted_entries)
+# InteractiveOverviewTkinter(filtered_entries)
 
-InteractiveOverviewTkinter(filtered_entries)
+EntryWriter(filtered_entries).write_to_csv("interpreted_entries.csv")
