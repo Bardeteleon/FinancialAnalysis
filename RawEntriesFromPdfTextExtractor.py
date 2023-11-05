@@ -5,7 +5,7 @@ from Types import *
 from typing import List
 
 
-class RawStatementExtractor:
+class RawEntriesFromPdfTextExtractor:
 
     def __init__(self, statement_as_text : str):
         self.__statement_as_text : str = statement_as_text
@@ -86,7 +86,7 @@ class RawStatementExtractor:
     def __extract_comments(self):
         shrinking_statement = self.__statement_as_text
         for i, statement in enumerate(self.__entries):
-            if not RawStatementExtractor.__is_first_or_last_index(i, self.__entries) and statement.type is StatementType.TRANSACTION:
+            if not RawEntriesFromPdfTextExtractor.__is_first_or_last_index(i, self.__entries) and statement.type is StatementType.TRANSACTION:
                 start_phrase : str = statement.date
                 end_phrase : str = ""
                 if self.__entries[i+1].type is StatementType.TRANSACTION:

@@ -55,10 +55,23 @@ class InterpretedStatementExtractor:
                 self.__interpreted_entries[i].amount = float(int(before_comma))
                 self.__interpreted_entries[i].amount += int(after_comma) / 100.0
                 self.__interpreted_entries[i].amount *= -1 if plus_minus == "S" else +1
+                continue
+            match = re.fullmatch("(-)*([\d]+)(,\d{1,2})", raw_entry.amount)
+            if match:
+                dotted_amount = re.sub(",", ".", raw_entry.amount)
+                self.__interpreted_entries[i].amount = float(dotted_amount)
+                continue
+            
     
     def __extract_date(self):
         for i, raw_entry in enumerate(self.__raw_entries):
             match = re.fullmatch("(\d{2})\.(\d{2})\. \d{2}\.\d{2}\.(\d{4})", raw_entry.date)
+            if match:
+                day = int(match.group(1))
+                month = int(match.group(2))
+                year = int(match.group(3))
+                self.__interpreted_entries[i].date = datetime.date(year, month, day)
+            match = re.fullmatch("(\d{2})\.(\d{2})\.(\d{4})", raw_entry.date)
             if match:
                 day = int(match.group(1))
                 month = int(match.group(2))
