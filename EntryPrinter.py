@@ -22,5 +22,5 @@ class EntryPrinter:
     @staticmethod
     def raw_interpreted_comparison(entries : List[InterpretedEntry]):
         for entry in entries:
-            print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.comment}")
+            print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.identification} -> {entry.card_type} & {entry.account_id}")
         EntryPrinter.count(entries)

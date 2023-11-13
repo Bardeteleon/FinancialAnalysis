@@ -131,7 +131,7 @@ class InteractiveOverviewTkinter():
             curr_month = MonthInterval(entry.date)
             if curr_month != added_zero_month:
                 added_zero_month = curr_month
-                zero_entry = InterpretedEntry(date=entry.date, amount=0.0, tags=all_tags, raw=None)
+                zero_entry = InterpretedEntry(date=entry.date, amount=0.0, tags=all_tags)
                 extended_entries.append(zero_entry)
             extended_entries.append(entry)
         self.interpreted_entries = extended_entries

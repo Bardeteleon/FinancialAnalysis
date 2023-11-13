@@ -35,6 +35,8 @@ class InterpretedStatementExtractor:
     def run(self):
         self.__extract_amount()
         self.__extract_date()
+        self.__extract_card_type()
+        self.__extract_account_id()
         self.__extract_tags()
         self.__add_undefined_tag_for_entries_without_tags()
 
@@ -42,7 +44,7 @@ class InterpretedStatementExtractor:
         return self.__interpreted_entries
 
     def __init_interpreted_entries(self):
-        self.__interpreted_entries = [InterpretedEntry(date = None, amount = 0.0, tags = [], raw = raw_entry) for raw_entry in self.__raw_entries]
+        self.__interpreted_entries = [InterpretedEntry(tags = [], raw = raw_entry) for raw_entry in self.__raw_entries]
 
     def __extract_amount(self):
         for i, raw_entry in enumerate(self.__raw_entries):
@@ -77,6 +79,23 @@ class InterpretedStatementExtractor:
                 month = int(match.group(2))
                 year = int(match.group(3))
                 self.__interpreted_entries[i].date = datetime.date(year, month, day)
+    
+    def __extract_card_type(self):
+        for entry in self.__interpreted_entries:
+            match = re.search("(VISA|Kreditkarte|credit)", entry.raw.identification)
+            if match:
+                entry.card_type = CardType.CREDIT
+            else:
+                entry.card_type = CardType.GIRO
+
+    def __extract_account_id(self):
+        for entry in self.__interpreted_entries:
+            match_iban = re.search("[A-Z]{2}\d{20}", entry.raw.identification)
+            match_half_encrypted_creditcard_number = re.search("\d{4}\*+\d{4}", entry.raw.identification)
+            if match_iban:
+                entry.account_id = match_iban.group(0)
+            elif match_half_encrypted_creditcard_number:
+                entry.account_id = match_half_encrypted_creditcard_number.group(0)
 
     def __extract_tags(self):
         for entry in self.__interpreted_entries:

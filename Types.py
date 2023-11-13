@@ -8,6 +8,10 @@ class StatementType(Enum):
     BALANCE = auto() 
     UNKNOW = auto()
 
+class CardType(Enum):
+    CREDIT = auto()
+    GIRO = auto()
+
 class Tag(Enum):
     UNDEFINED = auto()
     ACCOUNT_EXPENSES = auto()
@@ -41,14 +45,17 @@ class RawEntry:
     date : str
     amount : str
     comment : str
+    identification : str
     type : StatementType
 
 @dataclass
 class InterpretedEntry:
-    date : date
-    amount : float
-    tags : List[Tag]
-    raw : RawEntry
+    date : date = None
+    amount : float = 0.0
+    tags : List[Tag] = None
+    card_type : CardType = None
+    account_id : str = ""
+    raw : RawEntry = None
 
 @dataclass
 class TagPattern:
