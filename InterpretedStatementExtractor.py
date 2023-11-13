@@ -17,15 +17,15 @@ class InterpretedStatementExtractor:
 
         self.__tag_patterns : List[TagPattern] = []
     
-    def load_tag_patterns(self, config_json : str):
-        config_json_path = os.path.normpath(config_json)
-        if not os.path.isfile(config_json_path):
-            logging.warning(f"File {config_json_path} does not exist")
+    def load_tag_patterns(self, tags_json : str):
+        tags_json_path = os.path.normpath(tags_json)
+        if not os.path.isfile(tags_json_path):
+            logging.warning(f"File {tags_json_path} does not exist")
         else:
-            with open(config_json_path, mode="r") as f:
+            with open(tags_json_path, mode="r") as f:
                 tag_patterns_json = json.load(f)
                 if not isinstance(tag_patterns_json, List):
-                    logging.warning(f"Expecting a list on first level inside {config_json_path}")
+                    logging.warning(f"Expecting a list on first level inside {tags_json_path}")
                 for tag_pattern in tag_patterns_json:
                     self.__tag_patterns.append(
                         TagPattern(

@@ -28,6 +28,7 @@ logging.basicConfig(
 parser = argparse.ArgumentParser(prog="FinancialAnalysis")
 parser.add_argument("input_dir_path", help="Path to input directory where statements are stored.")
 parser.add_argument("tags_json_path", help="Path to json file that defines patterns for tagging.")
+parser.add_argument("config_json_path", help="Path to json file that defines various configs.")
 args = parser.parse_args()
 
 args_interpreter = InputArgumentInterpreter(args.input_dir_path, args.tags_json_path)
@@ -43,7 +44,7 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
     csv_reader = CsvReader(input_file)
     csv_reader.run()
 
-    raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content())
+    raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), args.config_json_path)
     raw_extractor.run()
 
     interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
