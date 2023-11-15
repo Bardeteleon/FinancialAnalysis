@@ -37,9 +37,11 @@ args_interpreter.run()
 interpreted_entries_csv : List[InterpretedEntry] = []
 interpreted_entries_pdf : List[InterpretedEntry] = []
 logging.debug(f"Found {len(args_interpreter.get_input_files())} input file")
+input_file_count = 1
 for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 
-    logging.debug(input_file)
+    logging.debug(f"{input_file_count}. {input_file}")
+    input_file_count += 1
 
     csv_reader = CsvReader(input_file)
     csv_reader.run()
@@ -52,20 +54,21 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
     interpreted_extractor.run()
     interpreted_entries_csv += interpreted_extractor.get_interpreted_entries()
 
-for input_file in args_interpreter.get_filtered_input_files("\.pdf$"):
+# for input_file in args_interpreter.get_filtered_input_files("\.pdf$"):
 
-    logging.debug(input_file)
+#     logging.debug(f"{input_file_count}. {input_file}")
+#     input_file_count += 1
 
-    pdf_reader = PdfReader(str(input_file))
-    pdf_reader.run()
+#     pdf_reader = PdfReader(str(input_file))
+#     pdf_reader.run()
 
-    raw_extractor = RawEntriesFromPdfTextExtractor(pdf_reader.get_text())
-    raw_extractor.run()
+#     raw_extractor = RawEntriesFromPdfTextExtractor(pdf_reader.get_text())
+#     raw_extractor.run()
 
-    interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
-    interpreted_extractor.load_tag_patterns(args_interpreter.get_tags_json_file())
-    interpreted_extractor.run()
-    interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
+#     interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
+#     interpreted_extractor.load_tag_patterns(args_interpreter.get_tags_json_file())
+#     interpreted_extractor.run()
+#     interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
 
 # validator = EntryValidator([entry for entry in interpreted_entries if entry.raw.type != StatementType.UNKNOW])
 # validator.validate_amounts_with_balances()
@@ -73,10 +76,10 @@ for input_file in args_interpreter.get_filtered_input_files("\.pdf$"):
 # EntryPrinter.date_amount_type_comment(EntrySorter.by_amount(EntryFilter.undefined_transactions(interpreted_entries)))
 
 filtered_entries_csv = EntryFilter.external_transactions(interpreted_entries_csv)
-filtered_entries_pdf = EntryFilter.external_transactions(interpreted_entries_pdf)
+# filtered_entries_pdf = EntryFilter.external_transactions(interpreted_entries_pdf)
 # InteractiveOverviewTkinter(filtered_entries)
 
 EntryWriter(filtered_entries_csv).write_to_csv("interpreted_entries_csv.csv")
-EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
+# EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
 
-EntryPrinter().raw_interpreted_comparison(filtered_entries_csv)
+# EntryPrinter().raw_interpreted_comparison(filtered_entries_csv)
