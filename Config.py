@@ -9,8 +9,14 @@ class HeadingConfig:
     comment : List[str]
 
 @dataclass
+class Account:
+    name : str 
+    input_file_ident : str
+    transaction_iban : str
+
+@dataclass
 class Config:
-    identifications : List[str]
+    accounts : List[Account]
     headings : List[HeadingConfig]
 
 def read_config(file_path : str) -> Config:

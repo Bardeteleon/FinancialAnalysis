@@ -8,6 +8,12 @@ class StatementType(Enum):
     BALANCE = auto() 
     UNKNOW = auto()
 
+class InterpretedType(Enum):
+    TRANSACTION_INTERNAL = auto()
+    TRANSACTION_EXTERNAL = auto()
+    BALANCE = auto()
+    UNKNOWN = auto()
+
 class CardType(Enum):
     CREDIT = auto()
     GIRO = auto()
@@ -55,6 +61,7 @@ class InterpretedEntry:
     tags : List[Tag] = None
     card_type : CardType = None
     account_id : str = ""
+    type : InterpretedType = InterpretedType.UNKNOWN
     raw : RawEntry = None
 
 @dataclass

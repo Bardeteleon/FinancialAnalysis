@@ -4,6 +4,7 @@ import logging
 import datetime
 import tkinter
 import csv
+from Config import Config, read_config
 from EntrySorter import EntrySorter
 from EntryValidator import EntryValidator
 from InteractiveOverviewTkinter import InteractiveOverviewTkinter
@@ -46,10 +47,12 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
     csv_reader = CsvReader(input_file)
     csv_reader.run()
 
-    raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), args.config_json_path)
+    config : Config = read_config(args.config_json_path)
+
+    raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), config)
     raw_extractor.run()
 
-    interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
+    interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), config)
     interpreted_extractor.load_tag_patterns(args_interpreter.get_tags_json_file())
     interpreted_extractor.run()
     interpreted_entries_csv += interpreted_extractor.get_interpreted_entries()

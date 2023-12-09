@@ -13,7 +13,7 @@ class EntryFilter:
     @staticmethod
     def external_transactions(entries : List[InterpretedEntry]):
         return [entry for entry in entries 
-                      if     entry.raw.type == StatementType.TRANSACTION 
+                      if     entry.type == InterpretedType.TRANSACTION_EXTERNAL 
                          and Tag.ACCOUNT_SAVINGS not in entry.tags]
 
     @staticmethod

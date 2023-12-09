@@ -3,14 +3,16 @@ import os
 import datetime
 import json
 import logging
+from Config import Config
 from Types import *
 from typing import List
 
 
 class InterpretedStatementExtractor:
 
-    def __init__(self, raw_entries : List[RawEntry]):
+    def __init__(self, raw_entries : List[RawEntry], config : Config):
         self.__raw_entries : List[RawEntry] = raw_entries
+        self.__config : Config = config
 
         self.__interpreted_entries : List[InterpretedEntry] = []
         self.__init_interpreted_entries()
@@ -38,6 +40,7 @@ class InterpretedStatementExtractor:
         self.__extract_card_type()
         self.__extract_account_id()
         self.__extract_tags()
+        self.__extract_type()
         self.__add_undefined_tag_for_entries_without_tags()
 
     def get_interpreted_entries(self):
@@ -82,7 +85,7 @@ class InterpretedStatementExtractor:
     
     def __extract_card_type(self):
         for entry in self.__interpreted_entries:
-            match = re.search("(VISA|Kreditkarte|credit)", entry.raw.identification)
+            match = re.search("(VISA|Kreditkarte|credit)", entry.raw.identification) # TODO Config
             if match:
                 entry.card_type = CardType.CREDIT
             else:
@@ -103,6 +106,22 @@ class InterpretedStatementExtractor:
                 match = re.search(tag_pattern.pattern, entry.raw.comment)
                 if match:
                     entry.tags.append(tag_pattern.tag)
+
+    def __extract_type(self):
+        for entry in self.__interpreted_entries:
+            if entry.raw.type == StatementType.BALANCE:
+                entry.type = InterpretedType.BALANCE
+            if entry.raw.type == StatementType.UNKNOW:
+                entry.type = InterpretedType.UNKNOWN
+            elif entry.card_type == CardType.CREDIT:
+                entry.type = InterpretedType.TRANSACTION_INTERNAL if entry.amount > 0.0 else InterpretedType.TRANSACTION_EXTERNAL
+            else:
+                all_internal_ibans_regex = "(" + "|".join(self.__get_internal_ibans()) + ")"
+                match = re.search(all_internal_ibans_regex, entry.raw.comment)
+                entry.type = InterpretedType.TRANSACTION_INTERNAL if match else InterpretedType.TRANSACTION_EXTERNAL
+
+    def __get_internal_ibans(self) -> List[str]:
+        return [account.transaction_iban for account in self.__config.accounts]
 
     def __add_undefined_tag_for_entries_without_tags(self):
         for entry in self.__interpreted_entries:

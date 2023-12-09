@@ -1,7 +1,7 @@
 from sre_parse import State
 from Types import *
 from typing import *
-from Config import read_config, Config
+from Config import Config
 import logging
 import re
 
@@ -12,16 +12,14 @@ class HeadingIndex:
 
 class RawEntriesFromCsvExtractor:
 
-    def __init__(self, csv : List[List[str]], config_json_path : str):
+    def __init__(self, csv : List[List[str]], config : Config):
         self.__csv = csv
-        self.__config_json_path : str = config_json_path
+        self.__config : Config = config
         self.__raw_entries : List[RawEntry] = []
 
     def run(self):
         if len(self.__csv) < 2:
             return
-
-        self.__config : Config = read_config(self.__config_json_path)
 
         self.__heading_index : Optional[HeadingIndex] = self.__find_heading_index() 
         if self.__heading_index is None:
@@ -59,7 +57,7 @@ class RawEntriesFromCsvExtractor:
                 type = StatementType.UNKNOW)
             if raw_entry.amount == "":
                 continue
-            if re.match("Tagessaldo", raw_entry.comment):
+            if re.match("Tagessaldo", raw_entry.comment): # TODO Config
                 raw_entry.type = StatementType.BALANCE
             else:
                 raw_entry.type = StatementType.TRANSACTION
@@ -98,11 +96,11 @@ class RawEntriesFromCsvExtractor:
     def __find_identification_by_name(self) -> str:
         for i, row in enumerate(self.__csv):
             row_as_string = " ".join(row)
-            for name in self.__config.identifications:
-                match_name = re.search(re.escape(name), row_as_string)
+            for account in self.__config.accounts:
+                match_name = re.search(re.escape(account.input_file_ident), row_as_string)
                 if match_name:
-                    logging.debug(f"Found identification name in row {i} '{name}'")
-                    return name
+                    logging.debug(f"Found identification name in row {i} '{account.input_file_ident}'")
+                    return account.input_file_ident
 
     def __get_concatenated_cell_content(self, rows : List[int], columns : List[int]) -> str:
         result : str = ""
