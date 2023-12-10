@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from datetime import date
 from typing import List
+from Tags import Tag
 
 class StatementType(Enum):
     TRANSACTION = auto()
@@ -17,34 +18,6 @@ class InterpretedType(Enum):
 class CardType(Enum):
     CREDIT = auto()
     GIRO = auto()
-
-class Tag(Enum):
-    UNDEFINED = auto()
-    ACCOUNT_EXPENSES = auto()
-    ACCOUNT_SAVINGS = auto()
-    ACCOUNT_RISK = auto()
-    ACTIVITIES = auto()
-    CAR = auto()
-    CASH = auto()
-    CREDIT_CARD = auto()
-    DOCTOR = auto()
-    DONATION = auto()
-    HARDWARE_STORE = auto()
-    HOLIDAY = auto()
-    INSURANCE = auto()
-    INTERNET = auto()
-    MEDIA = auto()
-    OFFLINE_SHOPPING = auto()
-    ONLINE_SHOPPING = auto()
-    OTHER_INCOME = auto()
-    PETROL = auto()
-    PHARMACY = auto()
-    RENT = auto()
-    RESTAURANT = auto()
-    SALARY = auto()
-    SAVINGS = auto()
-    SUPERMARKET = auto()
-    TRAVEL = auto()
 
 @dataclass
 class RawEntry:
@@ -63,8 +36,3 @@ class InterpretedEntry:
     account_id : str = ""
     type : InterpretedType = InterpretedType.UNKNOWN
     raw : RawEntry = None
-
-@dataclass
-class TagPattern:
-    pattern : str
-    tag : Tag

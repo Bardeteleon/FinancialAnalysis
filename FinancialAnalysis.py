@@ -17,6 +17,7 @@ from EntryWriter import EntryWriter
 from RawEntriesFromCsvExtractor import RawEntriesFromCsvExtractor
 from RawEntriesFromPdfTextExtractor import RawEntriesFromPdfTextExtractor
 from typing import List
+from Tags import Tags, load_tags
 from Types import *
 from VisualizeStatement import VisualizeStatement
 from InputArgumentInterpreter import InputArgumentInterpreter
@@ -35,6 +36,9 @@ args = parser.parse_args()
 args_interpreter = InputArgumentInterpreter(args.input_dir_path, args.tags_json_path)
 args_interpreter.run()
 
+config : Config = read_config(args.config_json_path)
+tags : Tags = load_tags(args_interpreter.get_tags_json_file())
+
 interpreted_entries_csv : List[InterpretedEntry] = []
 interpreted_entries_pdf : List[InterpretedEntry] = []
 logging.debug(f"Found {len(args_interpreter.get_input_files())} input file")
@@ -47,13 +51,10 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
     csv_reader = CsvReader(input_file)
     csv_reader.run()
 
-    config : Config = read_config(args.config_json_path)
-
     raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), config)
     raw_extractor.run()
 
-    interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), config)
-    interpreted_extractor.load_tag_patterns(args_interpreter.get_tags_json_file())
+    interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), config, tags)
     interpreted_extractor.run()
     interpreted_entries_csv += interpreted_extractor.get_interpreted_entries()
 
@@ -68,8 +69,7 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 #     raw_extractor = RawEntriesFromPdfTextExtractor(pdf_reader.get_text())
 #     raw_extractor.run()
 
-#     interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries())
-#     interpreted_extractor.load_tag_patterns(args_interpreter.get_tags_json_file())
+#     interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), config, tags)
 #     interpreted_extractor.run()
 #     interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
 
@@ -80,7 +80,7 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 
 filtered_entries_csv = EntryFilter.external_transactions(interpreted_entries_csv)
 # filtered_entries_pdf = EntryFilter.external_transactions(interpreted_entries_pdf)
-InteractiveOverviewTkinter(filtered_entries_csv)
+# InteractiveOverviewTkinter(filtered_entries_csv)
 
 EntryWriter(filtered_entries_csv).write_to_csv("interpreted_entries_csv.csv")
 # EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")

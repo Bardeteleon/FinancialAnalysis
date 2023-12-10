@@ -1,38 +1,22 @@
 import re
-import os
 import datetime
-import json
 import logging
 from Config import Config
+from Tags import TagPattern, Tags
 from Types import *
 from typing import List
 
 
 class InterpretedStatementExtractor:
 
-    def __init__(self, raw_entries : List[RawEntry], config : Config):
+    def __init__(self, raw_entries : List[RawEntry], config : Config, tags : Tags):
         self.__raw_entries : List[RawEntry] = raw_entries
         self.__config : Config = config
 
         self.__interpreted_entries : List[InterpretedEntry] = []
         self.__init_interpreted_entries()
 
-        self.__tag_patterns : List[TagPattern] = []
-    
-    def load_tag_patterns(self, tags_json : str):
-        tags_json_path = os.path.normpath(tags_json)
-        if not os.path.isfile(tags_json_path):
-            logging.warning(f"File {tags_json_path} does not exist")
-        else:
-            with open(tags_json_path, mode="r") as f:
-                tag_patterns_json = json.load(f)
-                if not isinstance(tag_patterns_json, List):
-                    logging.warning(f"Expecting a list on first level inside {tags_json_path}")
-                for tag_pattern in tag_patterns_json:
-                    self.__tag_patterns.append(
-                        TagPattern(
-                            pattern=tag_pattern["pattern"], 
-                            tag=Tag[tag_pattern["tag"]] ) )
+        self.__tag_patterns : List[TagPattern] = tags.tags
 
     def run(self):
         self.__extract_amount()
