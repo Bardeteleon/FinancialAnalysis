@@ -93,16 +93,16 @@ class InterpretedStatementExtractor:
 
     def __extract_type(self):
         for entry in self.__interpreted_entries:
-            if entry.raw.type == StatementType.BALANCE:
-                entry.type = InterpretedType.BALANCE
-            if entry.raw.type == StatementType.UNKNOW:
-                entry.type = InterpretedType.UNKNOWN
+            if entry.raw.type == RawEntryType.BALANCE:
+                entry.type = InterpretedEntryType.BALANCE
+            if entry.raw.type == RawEntryType.UNKNOW:
+                entry.type = InterpretedEntryType.UNKNOWN
             elif entry.card_type == CardType.CREDIT:
-                entry.type = InterpretedType.TRANSACTION_INTERNAL if entry.amount > 0.0 else InterpretedType.TRANSACTION_EXTERNAL
+                entry.type = InterpretedEntryType.TRANSACTION_INTERNAL if entry.amount > 0.0 else InterpretedEntryType.TRANSACTION_EXTERNAL
             else:
                 all_internal_ibans_regex = "(" + "|".join(self.__get_internal_ibans()) + ")"
                 match = re.search(all_internal_ibans_regex, entry.raw.comment)
-                entry.type = InterpretedType.TRANSACTION_INTERNAL if match else InterpretedType.TRANSACTION_EXTERNAL
+                entry.type = InterpretedEntryType.TRANSACTION_INTERNAL if match else InterpretedEntryType.TRANSACTION_EXTERNAL
 
     def __get_internal_ibans(self) -> List[str]:
         return [account.transaction_iban for account in self.__config.accounts]

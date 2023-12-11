@@ -63,7 +63,7 @@ class RawEntriesFromPdfTextExtractor:
                 amount = amount,
                 comment = "",
                 identification="",
-                type = StatementType.UNKNOW
+                type = RawEntryType.UNKNOW
             ))
 
     def __detect_if_amount_is_balance(self):
@@ -71,7 +71,7 @@ class RawEntriesFromPdfTextExtractor:
             balance_match = re.search(f"(alter Kontostand|neuer Kontostand|Übertrag auf|Übertrag von)", text_in_front_of_amount)
             if balance_match:
                 self.__entries[i].comment = balance_match.group(1)
-                self.__entries[i].type = StatementType.BALANCE
+                self.__entries[i].type = RawEntryType.BALANCE
 
     def __detect_if_amount_is_transaction_by_matching_with_dates(self):
         date_index = 0
@@ -79,7 +79,7 @@ class RawEntriesFromPdfTextExtractor:
             date_match = re.search(f"{re.escape(self.__dates[date_index])}", text_in_front_of_amount)
             if date_match:
                 self.__entries[i].date = self.__dates[date_index]
-                self.__entries[i].type = StatementType.TRANSACTION
+                self.__entries[i].type = RawEntryType.TRANSACTION
                 date_index += 1
             if date_index >= len(self.__dates):
                 break
@@ -87,10 +87,10 @@ class RawEntriesFromPdfTextExtractor:
     def __extract_comments(self):
         shrinking_statement = self.__statement_as_text
         for i, statement in enumerate(self.__entries):
-            if not RawEntriesFromPdfTextExtractor.__is_first_or_last_index(i, self.__entries) and statement.type is StatementType.TRANSACTION:
+            if not RawEntriesFromPdfTextExtractor.__is_first_or_last_index(i, self.__entries) and statement.type is RawEntryType.TRANSACTION:
                 start_phrase : str = statement.date
                 end_phrase : str = ""
-                if self.__entries[i+1].type is StatementType.TRANSACTION:
+                if self.__entries[i+1].type is RawEntryType.TRANSACTION:
                     end_phrase = self.__entries[i+1].date
                 else:
                     end_phrase = self.__entries[i+1].amount

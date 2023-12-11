@@ -54,13 +54,13 @@ class RawEntriesFromCsvExtractor:
                 amount = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__amount_indices),
                 comment = RawEntriesFromCsvExtractor.cleanup_whitespace(RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__comment_indices)),
                 identification = self.__identification,
-                type = StatementType.UNKNOW)
+                type = RawEntryType.UNKNOW)
             if raw_entry.amount == "":
                 continue
             if re.match("Tagessaldo", raw_entry.comment): # TODO Config
-                raw_entry.type = StatementType.BALANCE
+                raw_entry.type = RawEntryType.BALANCE
             else:
-                raw_entry.type = StatementType.TRANSACTION
+                raw_entry.type = RawEntryType.TRANSACTION
             self.__raw_entries.append(raw_entry)
 
         self.__raw_entries.reverse()

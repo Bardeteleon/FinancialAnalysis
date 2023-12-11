@@ -1,5 +1,5 @@
 
-from Types import InterpretedEntry, StatementType
+from Types import InterpretedEntry, RawEntryType
 from typing import *
 import math
 import logging
@@ -16,7 +16,7 @@ class EntryValidator:
         curr_end_balance_entry = None
         curr_sum = 0.0
         for entry in self.__interpreted_entries:
-            if entry.raw.type == StatementType.BALANCE:
+            if entry.raw.type == RawEntryType.BALANCE:
                 if curr_start_balance_entry == None:
                     curr_start_balance_entry = entry
                     curr_sum = curr_start_balance_entry.amount

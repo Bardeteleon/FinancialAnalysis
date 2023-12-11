@@ -4,12 +4,12 @@ from datetime import date
 from typing import List
 from Tags import Tag
 
-class StatementType(Enum):
+class RawEntryType(Enum):
     TRANSACTION = auto()
     BALANCE = auto() 
     UNKNOW = auto()
 
-class InterpretedType(Enum):
+class InterpretedEntryType(Enum):
     TRANSACTION_INTERNAL = auto()
     TRANSACTION_EXTERNAL = auto()
     BALANCE = auto()
@@ -25,7 +25,7 @@ class RawEntry:
     amount : str
     comment : str
     identification : str
-    type : StatementType
+    type : RawEntryType
 
 @dataclass
 class InterpretedEntry:
@@ -34,5 +34,5 @@ class InterpretedEntry:
     tags : List[Tag] = None
     card_type : CardType = None
     account_id : str = ""
-    type : InterpretedType = InterpretedType.UNKNOWN
+    type : InterpretedEntryType = InterpretedEntryType.UNKNOWN
     raw : RawEntry = None

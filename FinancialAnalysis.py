@@ -73,7 +73,7 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 #     interpreted_extractor.run()
 #     interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
 
-# validator = EntryValidator([entry for entry in interpreted_entries if entry.raw.type != StatementType.UNKNOW])
+# validator = EntryValidator([entry for entry in interpreted_entries if entry.raw.type != RawEntryType.UNKNOW])
 # validator.validate_amounts_with_balances()
 
 # EntryPrinter.date_amount_type_comment(EntrySorter.by_amount(EntryFilter.undefined_transactions(interpreted_entries)))
