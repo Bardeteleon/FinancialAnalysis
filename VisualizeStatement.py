@@ -7,6 +7,7 @@ import numpy
 import datetime
 import logging
 import tkinter
+import re
 from EntryFilter import EntryFilter
 
 matplotlib.use("TkAgg")
@@ -29,6 +30,9 @@ class VisualizeStatement:
     @staticmethod
     def draw_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, ax=None):
         balance_per_interval : Dict[str, float] = EntryFilter.balance_per_interval(interpreted_entries, interval_variant)
+        balance_per_interval = dict(sorted(balance_per_interval.items(), 
+                                           key=lambda x: int(re.sub("\D", "", x[0])), 
+                                           reverse=False))
         x = range(len(balance_per_interval))
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()

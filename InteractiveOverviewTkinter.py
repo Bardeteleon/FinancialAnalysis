@@ -4,6 +4,7 @@ import datetime
 import tkinter
 import tkinter.ttk
 import matplotlib
+import re
 from typing import List
 from EntryFilter import EntryFilter
 from enum import Enum, auto
@@ -115,7 +116,9 @@ class InteractiveOverviewTkinter():
         self.interval_variant_menu_cmd(None)
 
     def get_available_pie_intervals(self, variant : TimeIntervalVariants) -> List[str]:
-        return list(EntryFilter.balance_per_interval(self.interpreted_entries, variant).keys())
+        pie_intervals = list(EntryFilter.balance_per_interval(self.interpreted_entries, variant).keys())
+        pie_intervals = sorted(pie_intervals, key=lambda x: int(re.sub("\D", "", x)), reverse=False)
+        return pie_intervals
 
     def get_interval_variant(self) -> TimeIntervalVariants:
         return TimeIntervalVariants[self.interval_variant_var.get()]
