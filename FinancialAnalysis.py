@@ -80,9 +80,9 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 
 filtered_entries_csv = EntryFilter.external_transactions(interpreted_entries_csv)
 # filtered_entries_pdf = EntryFilter.external_transactions(interpreted_entries_pdf)
-InteractiveOverviewTkinter(filtered_entries_csv)
+# InteractiveOverviewTkinter(filtered_entries_csv)
 
-EntryWriter(filtered_entries_csv).write_to_csv("interpreted_entries_csv.csv")
+EntryWriter(interpreted_entries_csv).write_to_csv("interpreted_entries_csv.csv")
 # EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
 
 # EntryPrinter().raw_interpreted_comparison(filtered_entries_csv)

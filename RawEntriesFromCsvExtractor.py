@@ -96,11 +96,11 @@ class RawEntriesFromCsvExtractor:
     def __find_identification_by_name(self) -> str:
         for i, row in enumerate(self.__csv):
             row_as_string = " ".join(row)
-            for account in self.__config.accounts:
-                match_name = re.search(re.escape(account.input_file_ident), row_as_string)
+            for input_file_ident in [account.input_file_ident for account in self.__config.accounts if len(account.input_file_ident) > 0]:
+                match_name = re.search(re.escape(input_file_ident), row_as_string)
                 if match_name:
-                    logging.debug(f"Found identification name in row {i} '{account.input_file_ident}'")
-                    return account.input_file_ident
+                    logging.debug(f"Found identification name in row {i} '{input_file_ident}'")
+                    return input_file_ident
 
     def __get_concatenated_cell_content(self, rows : List[int], columns : List[int]) -> str:
         result : str = ""
