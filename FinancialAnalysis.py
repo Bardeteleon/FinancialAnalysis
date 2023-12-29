@@ -24,7 +24,7 @@ from InputArgumentInterpreter import InputArgumentInterpreter
 
 logging.basicConfig(
     format="%(levelname)s %(asctime)s - %(message)s",
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 parser = argparse.ArgumentParser(prog="FinancialAnalysis")
@@ -78,9 +78,7 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 
 # EntryPrinter.date_amount_type_comment(EntrySorter.by_amount(EntryFilter.undefined_transactions(interpreted_entries)))
 
-filtered_entries_csv = EntryFilter.external_transactions(interpreted_entries_csv)
-# filtered_entries_pdf = EntryFilter.external_transactions(interpreted_entries_pdf)
-# InteractiveOverviewTkinter(filtered_entries_csv)
+InteractiveOverviewTkinter(interpreted_entries_csv, config)
 
 EntryWriter(interpreted_entries_csv).write_to_csv("interpreted_entries_csv.csv")
 # EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")

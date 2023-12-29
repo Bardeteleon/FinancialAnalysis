@@ -3,6 +3,7 @@ from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 import datetime
 import logging
+import re
 
 class EntryFilter:
     
@@ -37,6 +38,13 @@ class EntryFilter:
     @staticmethod
     def tag(entries : List[InterpretedEntry], tag : Tag):
         return [entry for entry in entries if tag in entry.tags]
+
+    @staticmethod
+    def transactions(entries : List[InterpretedEntry], main_id : str, other_id : str):
+        return [entry for entry in entries if entry.raw and
+                                              entry.raw.type == RawEntryType.TRANSACTION and 
+                                              entry.account_id == main_id and 
+                                              re.search(other_id, entry.raw.comment)]
 
     @staticmethod
     def balance_per_interval(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants) -> Dict[str, float]:

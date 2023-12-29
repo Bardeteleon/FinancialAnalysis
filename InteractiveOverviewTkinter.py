@@ -5,7 +5,9 @@ import tkinter
 import tkinter.ttk
 import matplotlib
 import re
-from typing import List
+import logging
+from typing import Callable, Dict, List
+from Config import Config
 from EntryFilter import EntryFilter
 from enum import Enum, auto
 from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
@@ -18,7 +20,9 @@ class Direction(Enum):
 
 class InteractiveOverviewTkinter():
 
-    def __init__(self, interpreted_entries):
+    def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config):
+
+        self.__config : Config = config
 
         self.initial_interval_variant = TimeIntervalVariants.MONTH
 
@@ -37,9 +41,14 @@ class InteractiveOverviewTkinter():
 
         self.pie_intervals = self.get_available_pie_intervals(self.initial_interval_variant)
         self.interval_variants = [str(interval.name) for interval in TimeIntervalVariants]
-        self.tags = [str(tag.name) for tag in Tag]
-        self.overall_balance_type = "Overall Balance"
-        self.balance_types = [self.overall_balance_type] + self.tags
+        self.balance_type_to_data : Dict[str, Callable] = {"Internal -> External" : lambda: EntryFilter.external_transactions(self.interpreted_entries)}
+        self.main_id = config.accounts[0].transaction_iban
+        self.main_name = config.accounts[0].name
+        for account in config.accounts [1:]:
+            self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.interpreted_entries, self.main_id, other_id)
+        for tag in Tag:
+            self.balance_type_to_data[str(tag.name)] = lambda tag=tag: EntryFilter.tag(self.interpreted_entries, tag)
+        self.balance_types = list(self.balance_type_to_data.keys())
 
         self.pie_interval_var = tkinter.StringVar(self.master)
         self.pie_interval_var.set(self.pie_intervals[-1])
@@ -89,11 +98,9 @@ class InteractiveOverviewTkinter():
         self.fig_pies_canvas.draw_idle()
 
     def balance_type_cmd(self, choice):
-        filtered_entries = self.interpreted_entries
-        if self.balance_type_var.get() != self.overall_balance_type:
-            filtered_entries = EntryFilter.tag(self.interpreted_entries, Tag[self.balance_type_var.get()])
+        get_entries = self.balance_type_to_data[self.balance_type_var.get()]
         self.fig_balance.clear()
-        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(filtered_entries, self.get_interval_variant(), fig=self.fig_balance)
+        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(get_entries(), self.get_interval_variant(), fig=self.fig_balance)
         self.fig_balance_canvas.draw_idle()
 
     def interval_variant_menu_cmd(self, choice):
