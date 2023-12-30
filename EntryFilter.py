@@ -14,8 +14,7 @@ class EntryFilter:
     @staticmethod
     def external_transactions(entries : List[InterpretedEntry]):
         return [entry for entry in entries 
-                      if     entry.type == InterpretedEntryType.TRANSACTION_EXTERNAL 
-                         and Tag.ACCOUNT_SAVINGS not in entry.tags]
+                      if entry.type == InterpretedEntryType.TRANSACTION_EXTERNAL]
 
     @staticmethod
     def undefined_transactions(entries : List[InterpretedEntry]):

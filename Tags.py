@@ -7,9 +7,6 @@ from typing import List
 
 class Tag(Enum):
     UNDEFINED = auto()
-    ACCOUNT_EXPENSES = auto()
-    ACCOUNT_SAVINGS = auto()
-    ACCOUNT_RISK = auto()
     ACTIVITIES = auto()
     CAR = auto()
     CASH = auto()
@@ -26,12 +23,14 @@ class Tag(Enum):
     OTHER_INCOME = auto()
     PETROL = auto()
     PHARMACY = auto()
+    PUBLIC_TRANSPORT = auto()
     RENT = auto()
     RESTAURANT = auto()
     SALARY = auto()
     SAVINGS = auto()
     SUPERMARKET = auto()
     TRAVEL = auto()
+    BANK_FEES = auto()
 
 @dataclass
 class TagPattern:
