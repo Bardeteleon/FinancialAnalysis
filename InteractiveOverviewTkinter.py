@@ -13,6 +13,7 @@ from enum import Enum, auto
 from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
 from Types import InterpretedEntry, Tag
 from VisualizeStatement import VisualizeStatement
+from dateutil.relativedelta import relativedelta
 
 class Direction(Enum):
     UP = auto()
@@ -23,6 +24,7 @@ class InteractiveOverviewTkinter():
     def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config):
 
         self.__config : Config = config
+        self.__interpreted_entries : List[InterpretedEntry] = interpreted_entries
 
         self.initial_interval_variant = TimeIntervalVariants.MONTH
 
@@ -31,23 +33,23 @@ class InteractiveOverviewTkinter():
         self.master.option_add("*font", "20")
         self.master.title("Financial Analysis")
 
-        s = tkinter.ttk.Style()
-        s.configure('.', font=('Helvetica', 20))
+        self.ttk_style = tkinter.ttk.Style()
+        self.ttk_style.configure('.', font=('Helvetica', 20))
 
         VisualizeStatement.general_configuration()
 
-        self.interpreted_entries = interpreted_entries
-        self.add_zero_entry_each_month_with_all_tags()
+        self.__find_out_min_and_max_date()
+        self.__fill_zero_entries_for_data_range()
 
         self.pie_intervals = self.get_available_pie_intervals(self.initial_interval_variant)
         self.interval_variants = [str(interval.name) for interval in TimeIntervalVariants]
-        self.balance_type_to_data : Dict[str, Callable] = {"Internal -> External" : lambda: EntryFilter.external_transactions(self.interpreted_entries)}
-        self.main_id = config.accounts[0].transaction_iban
-        self.main_name = config.accounts[0].name
-        for account in config.accounts [1:]:
-            self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.interpreted_entries, self.main_id, other_id)
+        self.balance_type_to_data : Dict[str, Callable] = {"Internal -> External" : lambda: EntryFilter.external_transactions(self.__interpreted_entries)}
+        self.main_id = self.__config.accounts[0].transaction_iban
+        self.main_name = self.__config.accounts[0].name
+        for account in self.__config.accounts [1:]:
+            self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
         for tag in Tag:
-            self.balance_type_to_data[str(tag.name)] = lambda tag=tag: EntryFilter.tag(self.interpreted_entries, tag)
+            self.balance_type_to_data[str(tag.name)] = lambda tag=tag: EntryFilter.tag(self.__interpreted_entries, tag)
         self.balance_types = list(self.balance_type_to_data.keys())
 
         self.pie_interval_var = tkinter.StringVar(self.master)
@@ -74,11 +76,11 @@ class InteractiveOverviewTkinter():
         self.balance_type_menu.set_menu(self.balance_type_var.get(), *self.balance_types)
         self.balance_type_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
 
-        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(self.interpreted_entries, self.get_interval_variant())
+        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(self.__interpreted_entries, self.get_interval_variant())
         self.fig_balance_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.fig_balance, self.master)
         self.fig_balance_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
-        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(self.interpreted_entries, self.get_pie_interval())
+        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(self.__interpreted_entries, self.get_pie_interval())
         self.fig_pies_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.fig_pies, self.master)
         self.fig_pies_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
@@ -94,13 +96,16 @@ class InteractiveOverviewTkinter():
 
     def pie_interval_menu_cmd(self, choice):
         self.fig_pies.clear()
-        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(self.interpreted_entries, self.get_pie_interval(), fig=self.fig_pies)
+        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(self.__interpreted_entries, self.get_pie_interval(), fig=self.fig_pies)
         self.fig_pies_canvas.draw_idle()
 
     def balance_type_cmd(self, choice):
         get_entries = self.balance_type_to_data[self.balance_type_var.get()]
         self.fig_balance.clear()
-        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(get_entries(), self.get_interval_variant(), fig=self.fig_balance)
+        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(
+                                                get_entries() + self.__zero_entries, 
+                                                self.get_interval_variant(), 
+                                                fig=self.fig_balance)
         self.fig_balance_canvas.draw_idle()
 
     def interval_variant_menu_cmd(self, choice):
@@ -123,7 +128,7 @@ class InteractiveOverviewTkinter():
         self.interval_variant_menu_cmd(None)
 
     def get_available_pie_intervals(self, variant : TimeIntervalVariants) -> List[str]:
-        pie_intervals = list(EntryFilter.balance_per_interval(self.interpreted_entries, variant).keys())
+        pie_intervals = list(EntryFilter.balance_per_interval(self.__interpreted_entries, variant).keys())
         pie_intervals = sorted(pie_intervals, key=lambda x: int(re.sub("\D", "", x)), reverse=False)
         return pie_intervals
 
@@ -133,19 +138,6 @@ class InteractiveOverviewTkinter():
     def get_pie_interval(self) -> TimeInterval:
         return TimeInterval.create_from_string(self.get_interval_variant(), self.pie_interval_var.get())
 
-    def add_zero_entry_each_month_with_all_tags(self):
-        all_tags = [tag for tag in Tag]
-        added_zero_month = MonthInterval.from_string("0001-1")
-        extended_entries = []
-        for entry in self.interpreted_entries:
-            curr_month = MonthInterval(entry.date)
-            if curr_month != added_zero_month:
-                added_zero_month = curr_month
-                zero_entry = InterpretedEntry(date=entry.date, amount=0.0, tags=all_tags)
-                extended_entries.append(zero_entry)
-            extended_entries.append(entry)
-        self.interpreted_entries = extended_entries
-
     def shift_curr_selection_of_menu(self, direction : Direction, menu_data : List[str], menu_var : tkinter.StringVar):
         curr_index : int = menu_data.index(menu_var.get())
         if direction == Direction.UP:
@@ -154,3 +146,16 @@ class InteractiveOverviewTkinter():
             curr_index -=1
         if curr_index in range(len(menu_data)):
             menu_var.set(menu_data[curr_index])
+
+    def __find_out_min_and_max_date(self):
+        self.__entry_data_start_date = datetime.date(9999,1,1)
+        self.__entry_data_end_date = datetime.date(1,1,1)
+        for entry in self.__interpreted_entries:
+            self.__entry_data_end_date = entry.date if entry.date > self.__entry_data_end_date else self.__entry_data_end_date
+            self.__entry_data_start_date = entry.date if entry.date < self.__entry_data_start_date else self.__entry_data_start_date
+    
+    def __fill_zero_entries_for_data_range(self):
+        one_month = relativedelta(months=1)
+        self.__zero_entries : List[InterpretedEntry] = [InterpretedEntry(date=self.__entry_data_start_date, amount=0.0)]
+        while self.__zero_entries[-1].date < (self.__entry_data_end_date-one_month):
+            self.__zero_entries.append(InterpretedEntry(date=(self.__zero_entries[-1].date+one_month), amount=0.0))
