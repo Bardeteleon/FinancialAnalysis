@@ -76,13 +76,15 @@ class InteractiveOverviewTkinter():
         self.balance_type_menu.set_menu(self.balance_type_var.get(), *self.balance_types)
         self.balance_type_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
 
-        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(self.__interpreted_entries, self.get_interval_variant())
+        self.fig_balance = VisualizeStatement.creat_default_figure()
         self.fig_balance_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.fig_balance, self.master)
         self.fig_balance_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.balance_type_cmd(None)
 
-        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(self.__interpreted_entries, self.get_pie_interval())
+        self.fig_pies = VisualizeStatement.creat_default_figure()
         self.fig_pies_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.fig_pies, self.master)
         self.fig_pies_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.pie_interval_menu_cmd(None)
 
         self.master.bind('+', lambda event: self.interval_variant_menu_shift(Direction.UP))
         self.master.bind('-', lambda event: self.interval_variant_menu_shift(Direction.DOWN))
@@ -96,7 +98,10 @@ class InteractiveOverviewTkinter():
 
     def pie_interval_menu_cmd(self, choice):
         self.fig_pies.clear()
-        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(self.__interpreted_entries, self.get_pie_interval(), fig=self.fig_pies)
+        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(
+                                                EntryFilter.external_transactions(self.__interpreted_entries), 
+                                                self.get_pie_interval(), 
+                                                fig=self.fig_pies)
         self.fig_pies_canvas.draw_idle()
 
     def balance_type_cmd(self, choice):

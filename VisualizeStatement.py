@@ -17,6 +17,10 @@ class VisualizeStatement:
     @staticmethod
     def general_configuration():
         matplotlib.rc("font", size=12)
+    
+    @staticmethod
+    def creat_default_figure():
+        return matplotlib.pyplot.figure(layout="constrained")
 
     @staticmethod
     def draw_amounts(interpreted_entries : List[InterpretedEntry]):
@@ -59,7 +63,7 @@ class VisualizeStatement:
     @staticmethod
     def get_figure_positive_negative_tag_pies(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, fig=None):
         if not fig:
-            fig = matplotlib.pyplot.figure(layout="constrained")
+            fig = VisualizeStatement.creat_default_figure()
         spec = fig.add_gridspec(1,2)
         ax1 = fig.add_subplot(spec[0,0])
         ax2 = fig.add_subplot(spec[0,1])
@@ -72,7 +76,7 @@ class VisualizeStatement:
     @staticmethod
     def get_figure_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, fig=None):
         if not fig:
-            fig = matplotlib.pyplot.figure(layout="constrained")
+            fig = VisualizeStatement.creat_default_figure()
         spec = fig.add_gridspec(1,1)
         ax0 = fig.add_subplot(spec[0,0])
         VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, ax0)
