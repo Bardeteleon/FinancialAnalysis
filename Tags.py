@@ -1,9 +1,10 @@
 
 # from __future__ import annotations Does not work together with dataconf! ...
+import datetime
 import dataconf
 from enum import Enum, auto
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 class Tag(Enum):
     UNDEFINED = auto()
@@ -15,6 +16,7 @@ class Tag(Enum):
     DONATION = auto()
     HARDWARE_STORE = auto()
     HOLIDAY = auto()
+    HOLIDAY_MADEIRA = auto()
     INSURANCE = auto()
     INTERNET = auto()
     MEDIA = auto()
@@ -36,6 +38,8 @@ class Tag(Enum):
 class TagPattern:
     pattern : str
     tag : Tag
+    date_from : Optional[str]
+    date_to : Optional[str]
 
 @dataclass
 class Tags:

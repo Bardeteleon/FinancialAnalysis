@@ -87,6 +87,11 @@ class InterpretedStatementExtractor:
     def __extract_tags(self):
         for entry in self.__interpreted_entries:
             for tag_pattern in self.__tag_patterns:
+                if tag_pattern.date_from and tag_pattern.date_to:
+                    date_from = datetime.date.fromisoformat(tag_pattern.date_from)
+                    date_to = datetime.date.fromisoformat(tag_pattern.date_to)
+                    if entry.date < date_from or entry.date > date_to:
+                        continue
                 match = re.search(tag_pattern.pattern, entry.raw.comment)
                 if match:
                     entry.tags.append(tag_pattern.tag)
