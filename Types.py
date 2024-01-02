@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from datetime import date
 from typing import List
-from Tags import Tag
+from tagging.Tags import Tag
 
 class RawEntryType(Enum):
     TRANSACTION = auto()

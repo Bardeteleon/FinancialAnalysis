@@ -2,7 +2,7 @@ import re
 import datetime
 import logging
 from Config import Config
-from Tags import TagPattern, Tags
+from tagging.Tags import TagPattern, Tags
 from Types import *
 from typing import List
 

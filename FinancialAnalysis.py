@@ -17,7 +17,7 @@ from EntryWriter import EntryWriter
 from RawEntriesFromCsvExtractor import RawEntriesFromCsvExtractor
 from RawEntriesFromPdfTextExtractor import RawEntriesFromPdfTextExtractor
 from typing import List
-from Tags import Tags, load_tags
+from tagging.Tags import Tags, load_tags
 from Types import *
 from VisualizeStatement import VisualizeStatement
 from InputArgumentInterpreter import InputArgumentInterpreter
