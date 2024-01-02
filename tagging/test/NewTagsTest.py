@@ -1,30 +1,30 @@
 from typing import Dict
-from tagging.NewTag import NewTag
+from tagging.NewTag import Tag
 from tagging.TagGroup import TagGroup
 
 def test_new_tag_eq():
-    assert NewTag("TagName") == NewTag("TagName")
-    assert NewTag("TagName") != NewTag("TagNameName")
+    assert Tag("TagName") == Tag("TagName")
+    assert Tag("TagName") != Tag("TagNameName")
 
 def test_new_tag_contains():
-    assert NewTag("TagName-SubName").contains(NewTag("TagName"))
-    assert NewTag("TagName").contains(NewTag("TagName-SubName"))
-    assert NewTag("TagName").contains(NewTag("TagName-SubName-SubSubName"))
-    assert NewTag("TagName-SubName").contains(NewTag("TagName-SubName-SubSubName"))
+    assert Tag("TagName-SubName").contains(Tag("TagName"))
+    assert Tag("TagName").contains(Tag("TagName-SubName"))
+    assert Tag("TagName").contains(Tag("TagName-SubName-SubSubName"))
+    assert Tag("TagName-SubName").contains(Tag("TagName-SubName-SubSubName"))
 
 def test_new_tag_str():
-    assert str(NewTag("TagName")) == "TagName"
-    assert str(NewTag("TagName-SubName")) == "TagName-SubName"
-    assert str(NewTag("TagName-SubName-SubSubName")) == "TagName-SubName-SubSubName"
+    assert str(Tag("TagName")) == "TagName"
+    assert str(Tag("TagName-SubName")) == "TagName-SubName"
+    assert str(Tag("TagName-SubName-SubSubName")) == "TagName-SubName-SubSubName"
 
 def test_new_tag_as_dict_key():
-    my_dict : Dict[NewTag, str] = {NewTag("TagName") : "MyTag"}
-    assert my_dict[NewTag("TagName")] == "MyTag"
+    my_dict : Dict[Tag, str] = {Tag("TagName") : "MyTag"}
+    assert my_dict[Tag("TagName")] == "MyTag"
 
 def test_new_tag_get_contained_tags():
-    group = TagGroup().add(NewTag("TagName"))
-    assert NewTag("TagName").get_contained_tags() == group
-    group = TagGroup().add(NewTag("TagName-SubName")).add(NewTag("TagName"))
-    assert NewTag("TagName-SubName").get_contained_tags() == group
-    group = TagGroup().add(NewTag("TagName-SubName-SubSubName")).add(NewTag("TagName-SubName")).add(NewTag("TagName"))
-    assert NewTag("TagName-SubName-SubSubName").get_contained_tags() == group
+    group = TagGroup().add(Tag("TagName"))
+    assert Tag("TagName").get_contained_tags() == group
+    group = TagGroup().add(Tag("TagName-SubName")).add(Tag("TagName"))
+    assert Tag("TagName-SubName").get_contained_tags() == group
+    group = TagGroup().add(Tag("TagName-SubName-SubSubName")).add(Tag("TagName-SubName")).add(Tag("TagName"))
+    assert Tag("TagName-SubName-SubSubName").get_contained_tags() == group

@@ -5,8 +5,9 @@ import dataconf
 from enum import Enum, auto
 from dataclasses import dataclass
 from typing import List, Optional
+from tagging.NewTag import Tag
 
-class Tag(Enum):
+class OldTag(Enum):
     UNDEFINED = auto()
     ACTIVITIES = auto()
     CAR = auto()

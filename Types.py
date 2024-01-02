@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from datetime import date
 from typing import List
-from tagging.Tags import Tag
+from tagging.NewTag import Tag
 
 class RawEntryType(Enum):
     TRANSACTION = auto()
@@ -36,3 +36,6 @@ class InterpretedEntry:
     account_id : str = ""
     type : InterpretedEntryType = InterpretedEntryType.UNKNOWN
     raw : RawEntry = None
+
+    def is_untagged(self) -> bool:
+        return self.tags == None or len(self.tags) == 0

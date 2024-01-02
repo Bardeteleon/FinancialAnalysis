@@ -11,9 +11,11 @@ from Config import Config
 from EntryFilter import EntryFilter
 from enum import Enum, auto
 from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
-from Types import InterpretedEntry, Tag
+from Types import InterpretedEntry
 from VisualizeStatement import VisualizeStatement
 from dateutil.relativedelta import relativedelta
+from tagging.NewTag import Tag
+from tagging.Tags import Tags
 
 class Direction(Enum):
     UP = auto()
@@ -21,7 +23,7 @@ class Direction(Enum):
 
 class InteractiveOverviewTkinter():
 
-    def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config):
+    def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config, tags : Tags):
 
         self.__config : Config = config
         self.__interpreted_entries : List[InterpretedEntry] = interpreted_entries
@@ -48,8 +50,8 @@ class InteractiveOverviewTkinter():
         self.main_name = self.__config.accounts[0].name
         for account in self.__config.accounts [1:]:
             self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
-        for tag in Tag:
-            self.balance_type_to_data[str(tag.name)] = lambda tag=tag: EntryFilter.tag(self.__interpreted_entries, tag)
+        for tag in tags.tags:
+            self.balance_type_to_data[str(tag.tag)] = lambda tag=tag.tag: EntryFilter.tag(self.__interpreted_entries, tag)
         self.balance_types = list(self.balance_type_to_data.keys())
 
         self.pie_interval_var = tkinter.StringVar(self.master)

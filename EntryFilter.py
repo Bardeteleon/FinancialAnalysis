@@ -1,6 +1,7 @@
 from typing import List, Dict
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
+from tagging.NewTag import Tag, UndefinedTag
 import datetime
 import logging
 import re
@@ -20,7 +21,7 @@ class EntryFilter:
     def undefined_transactions(entries : List[InterpretedEntry]):
         return [entry for entry in entries 
                       if     entry.raw.type == RawEntryType.TRANSACTION 
-                         and Tag.UNDEFINED in entry.tags]
+                         and (entry.is_untagged() or UndefinedTag in entry.tags)]
     
     @staticmethod
     def positive_amount(entries : List[InterpretedEntry]):

@@ -83,7 +83,7 @@ EntryPrinter.date_amount_type_comment(
             interpreted_entries_csv
 ))))
 
-InteractiveOverviewTkinter(interpreted_entries_csv, config)
+InteractiveOverviewTkinter(interpreted_entries_csv, config, tags)
 
 EntryWriter(interpreted_entries_csv).write_to_csv("interpreted_entries_csv.csv")
 # EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")

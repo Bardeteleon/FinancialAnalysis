@@ -2,6 +2,7 @@ import re
 import datetime
 import logging
 from Config import Config
+from tagging.NewTag import UndefinedTag
 from tagging.Tags import TagPattern, Tags
 from Types import *
 from typing import List
@@ -115,4 +116,4 @@ class InterpretedStatementExtractor:
     def __add_undefined_tag_for_entries_without_tags(self):
         for entry in self.__interpreted_entries:
             if len(entry.tags) == 0:
-                entry.tags.append(Tag.UNDEFINED)
+                entry.tags.append(UndefinedTag)

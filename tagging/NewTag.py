@@ -1,35 +1,39 @@
-from __future__ import annotations
-from typing import List
+# from __future__ import annotations
+from typing import List, Optional
 from tagging.TagGroup import TagGroup
+from dataclasses import dataclass, field
 
-class NewTag:
-    def __init__(self, definition : str):
-        self.__seperator : str = "-"
-        self.__definition : List[str] = definition.split(self.__seperator)
+@dataclass
+class Tag:
+    definition : str
+    seperator : Optional[str] = field(init=True, repr=False, default="-")
+    splitted_definition : Optional[List[str]] = field(init=True, repr=False, default=None)
 
-    def __eq__(self, other: NewTag) -> bool:
-        if other.__definition == self.__definition:
-            return True
-    
+    def __post_init__(self):
+        self.splitted_definition = self.definition.split(self.seperator)
+
     def __str__(self) -> str:
-        return self.__seperator.join(self.__definition)
-    
+        return self.definition
+
     def __hash__(self) -> int:
         return hash(str(self))
 
-    def contains(self, other : NewTag) -> bool:
+    def contains(self, other : 'Tag') -> bool:
         if other == self:
             return True
-        min_len = min(len(other.__definition), len(self.__definition))
-        if other.__definition[:min_len] == self.__definition[:min_len]:
+        min_len = min(len(other.splitted_definition), len(self.splitted_definition))
+        if other.splitted_definition[:min_len] == self.splitted_definition[:min_len]:
             return True
         else:
             return False
     
-    def get_contained_tags(self) -> TagGroup:
+    def get_contained_tags(self) -> 'TagGroup':
         group = TagGroup()
-        i = len(self.__definition)
+        i = len(self.splitted_definition)
         while i > 0:
-            group.add(NewTag(self.__seperator.join(self.__definition[:i])))
+            group.add(Tag(self.seperator.join(self.splitted_definition[:i])))
             i -= 1
         return group
+
+
+UndefinedTag = Tag("Undefined")

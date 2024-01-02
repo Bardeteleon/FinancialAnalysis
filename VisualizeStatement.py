@@ -95,8 +95,8 @@ class VisualizeStatement:
 
     @staticmethod
     def get_colors_for_tags(tags : List[Tag]):
-        colors_for_all_tags = VisualizeStatement.generate_colors(len(Tag))
-        tag_to_color_map = dict(zip(list(Tag), colors_for_all_tags))
+        colors_for_all_tags = VisualizeStatement.generate_colors(len(tags)) # TODO Fix: same color for same tag
+        tag_to_color_map = dict(zip(tags, colors_for_all_tags)) # TODO Fix: same color for same tag
         resulting_colors = [tag_to_color_map[tag] for tag in tags]
         return resulting_colors
 
