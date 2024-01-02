@@ -7,10 +7,10 @@ def test_new_tag_eq():
     assert Tag("TagName") != Tag("TagNameName")
 
 def test_new_tag_contains():
-    assert Tag("TagName-SubName").contains(Tag("TagName"))
     assert Tag("TagName").contains(Tag("TagName-SubName"))
     assert Tag("TagName").contains(Tag("TagName-SubName-SubSubName"))
     assert Tag("TagName-SubName").contains(Tag("TagName-SubName-SubSubName"))
+    assert not Tag("TagName-SubName").contains(Tag("TagName"))
 
 def test_new_tag_str():
     assert str(Tag("TagName")) == "TagName"

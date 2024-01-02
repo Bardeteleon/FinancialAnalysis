@@ -1,6 +1,5 @@
 # from __future__ import annotations
 from typing import List, Optional
-from tagging.TagGroup import TagGroup
 from dataclasses import dataclass, field
 
 @dataclass
@@ -21,19 +20,20 @@ class Tag:
     def contains(self, other : 'Tag') -> bool:
         if other == self:
             return True
-        min_len = min(len(other.splitted_definition), len(self.splitted_definition))
-        if other.splitted_definition[:min_len] == self.splitted_definition[:min_len]:
+        if len(self.splitted_definition) > len(other.splitted_definition):
+            return False
+        if other.splitted_definition[:len(self.splitted_definition)] == self.splitted_definition:
             return True
         else:
             return False
     
-    def get_contained_tags(self) -> 'TagGroup':
-        group = TagGroup()
+    def get_contained_tags(self) -> 'List[Tag]':
+        tags : List[Tag] = []
         i = len(self.splitted_definition)
         while i > 0:
-            group.add(Tag(self.seperator.join(self.splitted_definition[:i])))
+            tags.append(Tag(self.seperator.join(self.splitted_definition[:i])))
             i -= 1
-        return group
+        return tags
 
 
 UndefinedTag = Tag("Undefined")

@@ -38,8 +38,8 @@ class EntryFilter:
         return [entry for entry in entries if entry.amount != 0.0]
 
     @staticmethod
-    def tag(entries : List[InterpretedEntry], tag : Tag):
-        return [entry for entry in entries if tag in entry.tags]
+    def tag(entries : List[InterpretedEntry], given_tag : Tag):
+        return [entry for entry in entries for tag in entry.tags if given_tag.contains(tag)]
 
     @staticmethod
     def transactions(entries : List[InterpretedEntry], main_id : str, other_id : str):
