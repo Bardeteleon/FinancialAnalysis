@@ -101,7 +101,7 @@ class InterpretedStatementExtractor:
         for entry in self.__interpreted_entries:
             if entry.raw.type == RawEntryType.BALANCE:
                 entry.type = InterpretedEntryType.BALANCE
-            if entry.raw.type == RawEntryType.UNKNOW:
+            elif entry.raw.type == RawEntryType.UNKNOW:
                 entry.type = InterpretedEntryType.UNKNOWN
             elif entry.card_type == CardType.CREDIT:
                 entry.type = InterpretedEntryType.TRANSACTION_INTERNAL if entry.amount > 0.0 else InterpretedEntryType.TRANSACTION_EXTERNAL
