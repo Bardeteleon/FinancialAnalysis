@@ -9,6 +9,7 @@ import logging
 import tkinter
 import re
 from EntryFilter import EntryFilter
+from tagging.TagGroup import TagGroup
 
 matplotlib.use("TkAgg")
 
@@ -47,7 +48,7 @@ class VisualizeStatement:
 
     @staticmethod
     def draw_tag_pie(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], axs=None):
-        balance_per_tag : Dict[Tag, float] = EntryFilter.balance_per_tag_of_interval(interpreted_entries, interval)
+        balance_per_tag : Dict[TagGroup, float] = EntryFilter.balance_per_tag_of_interval(interpreted_entries, interval)
         balance_sum = numpy.sum(list(balance_per_tag.values()))
         balance_per_tag_sorted = dict(sorted(balance_per_tag.items(), key=lambda x: abs(x[1]), reverse=False))
         if not axs:

@@ -1,10 +1,12 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 from tagging.NewTag import Tag, UndefinedTag
 import datetime
 import logging
 import re
+
+from tagging.TagGroup import TagGroup
 
 class EntryFilter:
     
@@ -58,19 +60,16 @@ class EntryFilter:
         return balance_per_time_interval
 
     @staticmethod
-    def balance_per_tag_of_interval(entries : List[InterpretedEntry], interval : TimeInterval) -> Dict[Tag, float]:
-        balance_per_tag : Dict[Tag, float] = {}
+    def balance_per_tag_of_interval(entries : List[InterpretedEntry], requested_interval : TimeInterval) -> Dict[TagGroup, float]:
+        balance_per_tag : Dict[TagGroup, float] = {}
         for entry in entries:
-            curr_interval = TimeInterval.create_from_date(interval.get_variant(), entry.date)
-            curr_tag = None
-            if interval == curr_interval:
-                if len(entry.tags) == 1:
-                    curr_tag = entry.tags[0]
-                elif entry.amount == 0.0:
+            if entry.amount == 0.0:
                     continue
-                elif len(entry.tags) > 1:
-                    logging.warning(f"Entry has more than one tag. Only using first one. {entry}")
-                    curr_tag = entry.tags[0]
+            curr_interval = TimeInterval.create_from_date(requested_interval.get_variant(), entry.date)
+            curr_tag = TagGroup()
+            if requested_interval == curr_interval:
+                for tag in entry.tags:
+                    curr_tag.add(tag)
                 if curr_tag in balance_per_tag:
                     balance_per_tag[curr_tag] += entry.amount
                 else:

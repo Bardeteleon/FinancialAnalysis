@@ -7,13 +7,18 @@ class TagGroup:
         self.__tags : 'List[Tag]' = []
 
     def __str__(self) -> str:
-        return " / ".join(self.__tags)
+        return " / ".join([str(tag) for tag in self.__tags])
 
     def __hash__(self) -> int:
-        return str(hash(self))
+        return hash(str(self))
 
-    def __eq__(self, group: 'TagGroup') -> bool:
-        return self.__tags == group.__tags
+    def __eq__(self, group: 'TagGroup | str') -> bool:
+        if isinstance(group, TagGroup):
+            return self.__tags == group.__tags
+        elif isinstance(group, str):
+            return str(self) == str(group)
+        else:
+            return False
 
     def add(self, tag : 'Tag') -> 'TagGroup':
         self.__tags.append(tag)
