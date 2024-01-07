@@ -76,12 +76,13 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 # validator = EntryValidator([entry for entry in interpreted_entries if entry.raw.type != RawEntryType.UNKNOW])
 # validator.validate_amounts_with_balances()
 
-EntryPrinter.date_amount_type_comment(
-    EntrySorter.by_date(
+EntryPrinter.date_id_amount_tags_comment(
+    EntrySorter.by_amount(
         EntryFilter.external_transactions(
         EntryFilter.undefined_transactions(
             interpreted_entries_csv
-))))
+)
+)))
 
 InteractiveOverviewTkinter(interpreted_entries_csv, config, tags)
 
