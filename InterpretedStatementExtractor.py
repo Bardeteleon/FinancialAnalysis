@@ -3,21 +3,21 @@ import datetime
 import logging
 from Config import Config
 from tagging.NewTag import UndefinedTag
-from tagging.Tags import TagPattern, Tags
+from tagging.TagConfig import TagDefinition, TagConfig
 from Types import *
 from typing import List
 
 
 class InterpretedStatementExtractor:
 
-    def __init__(self, raw_entries : List[RawEntry], config : Config, tags : Tags):
+    def __init__(self, raw_entries : List[RawEntry], config : Config, tags : TagConfig):
         self.__raw_entries : List[RawEntry] = raw_entries
         self.__config : Config = config
 
         self.__interpreted_entries : List[InterpretedEntry] = []
         self.__init_interpreted_entries()
 
-        self.__tag_patterns : List[TagPattern] = tags.tags
+        self.__tag_definitions : List[TagDefinition] = tags.tag_definitions
 
     def run(self):
         self.__extract_amount()
@@ -87,15 +87,15 @@ class InterpretedStatementExtractor:
 
     def __extract_tags(self):
         for entry in self.__interpreted_entries:
-            for tag_pattern in self.__tag_patterns:
-                if tag_pattern.date_from and tag_pattern.date_to:
-                    date_from = datetime.date.fromisoformat(tag_pattern.date_from)
-                    date_to = datetime.date.fromisoformat(tag_pattern.date_to)
+            for tag_definition in self.__tag_definitions:
+                if tag_definition.date_from and tag_definition.date_to:
+                    date_from = datetime.date.fromisoformat(tag_definition.date_from)
+                    date_to = datetime.date.fromisoformat(tag_definition.date_to)
                     if entry.date < date_from or entry.date > date_to:
                         continue
-                match = re.search(tag_pattern.pattern, entry.raw.comment)
+                match = re.search(tag_definition.comment_pattern, entry.raw.comment)
                 if match:
-                    entry.tags.append(tag_pattern.tag)
+                    entry.tags.append(tag_definition.tag)
 
     def __extract_type(self):
         for entry in self.__interpreted_entries:

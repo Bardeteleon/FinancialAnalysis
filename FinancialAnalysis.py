@@ -17,7 +17,7 @@ from EntryWriter import EntryWriter
 from RawEntriesFromCsvExtractor import RawEntriesFromCsvExtractor
 from RawEntriesFromPdfTextExtractor import RawEntriesFromPdfTextExtractor
 from typing import List
-from tagging.Tags import Tags, load_tags
+from tagging.TagConfig import TagConfig, load_tags
 from Types import *
 from VisualizeStatement import VisualizeStatement
 from InputArgumentInterpreter import InputArgumentInterpreter
@@ -37,7 +37,7 @@ args_interpreter = InputArgumentInterpreter(args.input_dir_path, args.tags_json_
 args_interpreter.run()
 
 config : Config = read_config(args.config_json_path)
-tags : Tags = load_tags(args_interpreter.get_tags_json_file())
+tags : TagConfig = load_tags(args_interpreter.get_tags_json_file())
 
 interpreted_entries_csv : List[InterpretedEntry] = []
 interpreted_entries_pdf : List[InterpretedEntry] = []

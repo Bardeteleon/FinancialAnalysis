@@ -15,7 +15,7 @@ from Types import InterpretedEntry
 from VisualizeStatement import VisualizeStatement
 from dateutil.relativedelta import relativedelta
 from tagging.NewTag import Tag
-from tagging.Tags import Tags
+from tagging.TagConfig import TagConfig
 
 class Direction(Enum):
     UP = auto()
@@ -23,7 +23,7 @@ class Direction(Enum):
 
 class InteractiveOverviewTkinter():
 
-    def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config, tags : Tags):
+    def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config, tags : TagConfig):
 
         self.__config : Config = config
         self.__interpreted_entries : List[InterpretedEntry] = interpreted_entries
@@ -50,7 +50,7 @@ class InteractiveOverviewTkinter():
         self.main_name = self.__config.accounts[0].name
         for account in self.__config.accounts [1:]:
             self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
-        for tag in tags.tags:
+        for tag in tags.tag_definitions:
             for contained_tag in tag.tag.get_contained_tags():
                 self.balance_type_to_data[str(contained_tag)] = lambda tag=contained_tag: EntryFilter.tag(self.__interpreted_entries, tag)
         self.balance_types = list(self.balance_type_to_data.keys())
