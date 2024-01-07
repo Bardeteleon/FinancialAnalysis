@@ -23,9 +23,10 @@ class Direction(Enum):
 
 class InteractiveOverviewTkinter():
 
-    def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config, tags : TagConfig):
+    def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config, tag_config : TagConfig):
 
         self.__config : Config = config
+        self.__tag_config : TagConfig = tag_config
         self.__interpreted_entries : List[InterpretedEntry] = interpreted_entries
 
         self.initial_interval_variant = TimeIntervalVariants.MONTH
@@ -50,7 +51,7 @@ class InteractiveOverviewTkinter():
         self.main_name = self.__config.accounts[0].name
         for account in self.__config.accounts [1:]:
             self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
-        for tag in tags.tag_definitions:
+        for tag in self.__tag_config.tag_definitions:
             for contained_tag in tag.tag.get_contained_tags():
                 self.balance_type_to_data[str(contained_tag)] = lambda tag=contained_tag: EntryFilter.tag(self.__interpreted_entries, tag)
         self.balance_types = list(self.balance_type_to_data.keys())
@@ -103,7 +104,8 @@ class InteractiveOverviewTkinter():
         self.fig_pies.clear()
         self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(
                                                 EntryFilter.external_transactions(self.__interpreted_entries), 
-                                                self.get_pie_interval(), 
+                                                self.get_pie_interval(),
+                                                self.__tag_config,
                                                 fig=self.fig_pies)
         self.fig_pies_canvas.draw_idle()
 
@@ -112,7 +114,8 @@ class InteractiveOverviewTkinter():
         self.fig_balance.clear()
         self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(
                                                 get_entries() + self.__zero_entries, 
-                                                self.get_interval_variant(), 
+                                                self.get_interval_variant(),
+                                                self.__tag_config,
                                                 fig=self.fig_balance)
         self.fig_balance_canvas.draw_idle()
 

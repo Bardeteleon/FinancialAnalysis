@@ -19,6 +19,12 @@ class TagGroup:
             return str(self) == str(group)
         else:
             return False
+    
+    def __iter__(self):
+        return iter(self.__tags)
+    
+    def __next__(self):
+        return next(self.__tags)
 
     def add(self, tag : 'Tag') -> 'TagGroup':
         self.__tags.append(tag)
