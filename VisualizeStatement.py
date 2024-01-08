@@ -11,7 +11,6 @@ import logging
 import tkinter
 import re
 from EntryFilter import EntryFilter
-from tagging.TagConfig import TagConfig
 from tagging.TagGroup import TagGroup
 
 matplotlib.use("TkAgg")
@@ -36,7 +35,7 @@ class VisualizeStatement:
         ax.plot(x, numpy.zeros(len(x)), color="r")
 
     @staticmethod
-    def draw_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, tag_config : TagConfig, ax=None):
+    def draw_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], ax=None):
         balance_per_interval : Dict[str, float] = EntryFilter.balance_per_interval(interpreted_entries, interval_variant)
         balance_per_interval = dict(sorted(balance_per_interval.items(), 
                                            key=lambda x: int(re.sub("\D", "", x[0])), 
@@ -46,7 +45,7 @@ class VisualizeStatement:
         x = range(len(balance_per_interval))
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()
-        ax.bar(x, balance_per_interval.values(), color=VisualizeStatement.get_common_color(interpreted_entries, tag_config))
+        ax.bar(x, balance_per_interval.values(), color=VisualizeStatement.get_common_color(interpreted_entries, all_tags))
         ax.plot(x, [mean_balance]*len(x), label=f"Mean: {mean_balance}", color="blue")
         ax.plot(x, [median_balance]*len(x), label=f"Median: {median_balance}", color="green")
         ax.grid(visible=True)
@@ -56,7 +55,7 @@ class VisualizeStatement:
         ax.legend(handles, labels, loc='upper right')
 
     @staticmethod
-    def draw_tag_pie(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], tags : TagConfig, axs=None):
+    def draw_tag_pie(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], all_tags : List[Tag], axs=None):
         balance_per_tag : Dict[TagGroup, float] = EntryFilter.balance_per_tag_of_interval(interpreted_entries, interval)
         balance_sum = numpy.sum(list(balance_per_tag.values()))
         balance_per_tag_sorted = dict(sorted(balance_per_tag.items(), key=lambda x: abs(x[1]), reverse=False))
@@ -65,13 +64,13 @@ class VisualizeStatement:
         axs.set_title(f"Sum: {balance_sum}")
         axs.pie(numpy.abs(list(balance_per_tag_sorted.values())), 
                 labels=balance_per_tag_sorted.keys(), 
-                colors=VisualizeStatement.get_colors_for_tags(list(balance_per_tag_sorted.keys()), tags),
+                colors=VisualizeStatement.get_colors_for_tags(list(balance_per_tag_sorted.keys()), all_tags),
                 startangle=90)
         handles, labels = axs.get_legend_handles_labels()
         axs.legend(handles[::-1], labels[::-1], loc='upper left')
 
     @staticmethod
-    def get_figure_positive_negative_tag_pies(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, tags : TagConfig, fig=None):
+    def get_figure_positive_negative_tag_pies(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, all_tags : List[Tag], fig=None):
         if not fig:
             fig = VisualizeStatement.creat_default_figure()
         spec = fig.add_gridspec(1,2)
@@ -79,17 +78,17 @@ class VisualizeStatement:
         ax2 = fig.add_subplot(spec[0,1])
         positive_entries = EntryFilter.positive_amount(interpreted_entries)
         negative_entries = EntryFilter.negative_amount(interpreted_entries)
-        VisualizeStatement.draw_tag_pie(interval, positive_entries, tags, ax1)
-        VisualizeStatement.draw_tag_pie(interval, negative_entries, tags, ax2)
+        VisualizeStatement.draw_tag_pie(interval, positive_entries, all_tags, ax1)
+        VisualizeStatement.draw_tag_pie(interval, negative_entries, all_tags, ax2)
         return fig
 
     @staticmethod
-    def get_figure_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, tag_config : TagConfig, fig=None):
+    def get_figure_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], fig=None):
         if not fig:
             fig = VisualizeStatement.creat_default_figure()
         spec = fig.add_gridspec(1,1)
         ax0 = fig.add_subplot(spec[0,0])
-        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, tag_config, ax0)
+        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, all_tags, ax0)
         return fig
     
     @staticmethod
@@ -104,19 +103,19 @@ class VisualizeStatement:
         return colors
 
     @staticmethod
-    def get_colors_for_tags(tag_groups : List[TagGroup], tag_config : TagConfig):
-        resulting_colors = [VisualizeStatement.get_tag_group_color(tag_group, VisualizeStatement.get_tag_to_color_map(tag_config)) for tag_group in tag_groups]
+    def get_colors_for_tags(tag_groups : List[TagGroup], all_tags : List[Tag]):
+        resulting_colors = [VisualizeStatement.get_tag_group_color(tag_group, VisualizeStatement.get_tag_to_color_map(all_tags)) for tag_group in tag_groups]
         return resulting_colors
 
     @staticmethod
-    def get_common_color(entries : List[InterpretedEntry], tag_config: TagConfig):
+    def get_common_color(entries : List[InterpretedEntry], all_tags : List[Tag]):
         filtered_entries = EntryFilter.no_zero_amount(entries)
         found_tags = [tag for entry in filtered_entries for tag in entry.tags]
         if len(found_tags) > 0:
             counter = Counter(found_tags)
             max_index = list(counter.values()).index(max(counter.values()))
             most_frequent_tag = list(counter.keys())[max_index]
-            return VisualizeStatement.get_tag_to_color_map(tag_config)[most_frequent_tag]
+            return VisualizeStatement.get_tag_to_color_map(all_tags)[most_frequent_tag]
         else:
             None
 
@@ -126,7 +125,7 @@ class VisualizeStatement:
         return sum(tag_group_colors) / len(tag_group_colors)
 
     @staticmethod 
-    def get_tag_to_color_map(tag_config: TagConfig):
-        colors_for_all_tags = VisualizeStatement.generate_colors(len(tag_config.tag_definitions))
-        tag_to_color_map = dict(zip([tag_definition.tag for tag_definition in tag_config.tag_definitions], colors_for_all_tags))
+    def get_tag_to_color_map(all_tags : List[Tag]):
+        colors_for_all_tags = VisualizeStatement.generate_colors(len(all_tags))
+        tag_to_color_map = dict(zip(all_tags, colors_for_all_tags))
         return tag_to_color_map

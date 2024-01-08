@@ -14,7 +14,7 @@ from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
 from Types import InterpretedEntry
 from VisualizeStatement import VisualizeStatement
 from dateutil.relativedelta import relativedelta
-from tagging.NewTag import Tag
+from tagging.NewTag import Tag, UndefinedTag
 from tagging.TagConfig import TagConfig
 
 class Direction(Enum):
@@ -31,6 +31,8 @@ class InteractiveOverviewTkinter():
 
         self.initial_interval_variant = TimeIntervalVariants.MONTH
 
+        self.__all_tags : List[Tag] = []
+
         self.master = tkinter.Tk()
         self.master.protocol("WM_DELETE_WINDOW", self.master.quit)
         self.master.option_add("*font", "20")
@@ -43,6 +45,7 @@ class InteractiveOverviewTkinter():
 
         self.__find_out_min_and_max_date()
         self.__fill_zero_entries_for_data_range()
+        self.__fill_all_tags()
 
         self.pie_intervals = self.get_available_pie_intervals(self.initial_interval_variant)
         self.interval_variants = [str(interval.name) for interval in TimeIntervalVariants]
@@ -51,9 +54,10 @@ class InteractiveOverviewTkinter():
         self.main_name = self.__config.accounts[0].name
         for account in self.__config.accounts [1:]:
             self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
-        for tag in self.__tag_config.tag_definitions:
-            for contained_tag in tag.tag.get_contained_tags():
-                self.balance_type_to_data[str(contained_tag)] = lambda tag=contained_tag: EntryFilter.tag(self.__interpreted_entries, tag)
+        for tag in self.__all_tags:
+            self.balance_type_to_data[str(tag)] = lambda tag=tag: EntryFilter.tag(self.__interpreted_entries, tag)
+        self.balance_type_to_data.pop(str(UndefinedTag))
+        self.balance_type_to_data["Undefined External"] = lambda: EntryFilter.external_transactions(EntryFilter.undefined_transactions(self.__interpreted_entries))
         self.balance_types = list(self.balance_type_to_data.keys())
 
         self.pie_interval_var = tkinter.StringVar(self.master)
@@ -105,7 +109,7 @@ class InteractiveOverviewTkinter():
         self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(
                                                 EntryFilter.external_transactions(self.__interpreted_entries), 
                                                 self.get_pie_interval(),
-                                                self.__tag_config,
+                                                self.__all_tags,
                                                 fig=self.fig_pies)
         self.fig_pies_canvas.draw_idle()
 
@@ -115,7 +119,7 @@ class InteractiveOverviewTkinter():
         self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(
                                                 get_entries() + self.__zero_entries, 
                                                 self.get_interval_variant(),
-                                                self.__tag_config,
+                                                self.__all_tags,
                                                 fig=self.fig_balance)
         self.fig_balance_canvas.draw_idle()
 
@@ -170,3 +174,9 @@ class InteractiveOverviewTkinter():
         self.__zero_entries : List[InterpretedEntry] = [InterpretedEntry(date=self.__entry_data_start_date, amount=0.0)]
         while self.__zero_entries[-1].date < (self.__entry_data_end_date-one_month):
             self.__zero_entries.append(InterpretedEntry(date=(self.__zero_entries[-1].date+one_month), amount=0.0))
+
+    def __fill_all_tags(self):
+        for tag in self.__tag_config.tag_definitions:
+            for contained_tag in tag.tag.get_contained_tags():
+                self.__all_tags.append(contained_tag)
+        self.__all_tags.append(UndefinedTag)
