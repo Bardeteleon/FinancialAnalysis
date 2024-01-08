@@ -1,4 +1,5 @@
 from collections import Counter
+from statistics import mean, median
 from typing import List, Dict
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
@@ -40,13 +41,19 @@ class VisualizeStatement:
         balance_per_interval = dict(sorted(balance_per_interval.items(), 
                                            key=lambda x: int(re.sub("\D", "", x[0])), 
                                            reverse=False))
+        mean_balance = round(mean(balance_per_interval.values()))
+        median_balance = round(median(balance_per_interval.values()))
         x = range(len(balance_per_interval))
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()
         ax.bar(x, balance_per_interval.values(), color=VisualizeStatement.get_common_color(interpreted_entries, tag_config))
+        ax.plot(x, [mean_balance]*len(x), label=f"Mean: {mean_balance}", color="blue")
+        ax.plot(x, [median_balance]*len(x), label=f"Median: {median_balance}", color="green")
         ax.grid(visible=True)
         ax.set_xticks(x)
         ax.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles, labels, loc='upper right')
 
     @staticmethod
     def draw_tag_pie(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], tags : TagConfig, axs=None):
