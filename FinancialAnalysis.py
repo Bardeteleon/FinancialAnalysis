@@ -2,6 +2,7 @@ import argparse
 import os
 import logging
 import datetime
+import sys
 import tkinter
 import csv
 from Config import Config, read_config
@@ -27,16 +28,18 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-parser = argparse.ArgumentParser(prog="FinancialAnalysis")
-parser.add_argument("input_dir_path", help="Path to input directory where statements are stored.")
-parser.add_argument("tags_json_path", help="Path to json file that defines patterns for tagging.")
-parser.add_argument("config_json_path", help="Path to json file that defines various configs.")
+parser = argparse.ArgumentParser(prog="FinancialAnalysis", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("--input_dir_path", help="Path to input directory where statements are stored.", default="input")
+parser.add_argument("--tags_json_path", help="Path to json file that defines patterns for tagging.", default="tags.json")
+parser.add_argument("--config_json_path", help="Path to json file that defines various configs.", default="config.json")
 args = parser.parse_args()
 
-args_interpreter = InputArgumentInterpreter(args.input_dir_path, args.tags_json_path)
+args_interpreter = InputArgumentInterpreter(args.input_dir_path, args.tags_json_path, args.config_json_path)
 args_interpreter.run()
+if args_interpreter.has_error():
+    sys.exit(1)
 
-config : Config = read_config(args.config_json_path)
+config : Config = read_config(args_interpreter.get_config_json_file())
 tags : TagConfig = load_tags(args_interpreter.get_tags_json_file())
 
 interpreted_entries_csv : List[InterpretedEntry] = []
