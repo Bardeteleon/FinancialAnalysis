@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set, Tuple
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 from tagging.NewTag import Tag, UndefinedTag
@@ -45,8 +45,12 @@ class EntryFilter:
     def transactions(entries : List[InterpretedEntry], main_id : str, other_id : str):
         return [entry for entry in entries if entry.raw and
                                               entry.raw.type == RawEntryType.TRANSACTION and 
-                                              entry.account_id == main_id and 
-                                              re.search(other_id, entry.raw.comment)]
+                                              (main_id == None or entry.account_id == main_id) and 
+                                              (other_id == None or re.search(other_id, entry.raw.comment))]
+
+    @staticmethod
+    def account_index_to_id(entries : List[InterpretedEntry]) -> Set[Dict[int, str]]:
+        return {entry.raw.account_idx : entry.account_id for entry in entries}
 
     @staticmethod
     def balance_per_interval(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants) -> Dict[str, float]:

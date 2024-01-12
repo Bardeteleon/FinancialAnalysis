@@ -49,15 +49,29 @@ class InteractiveOverviewTkinter():
 
         self.pie_intervals = self.get_available_pie_intervals(self.initial_interval_variant)
         self.interval_variants = [str(interval.name) for interval in TimeIntervalVariants]
-        self.balance_type_to_data : Dict[str, Callable] = {"Internal -> External" : lambda: EntryFilter.external_transactions(self.__interpreted_entries)}
+        self.balance_type_to_data : Dict[str, Callable] = \
+            {"Internal -> External" : lambda: EntryFilter.external_transactions(self.__interpreted_entries)}
+        account_index_to_id = EntryFilter.account_index_to_id(self.__interpreted_entries)
+        for account_idx, account in enumerate(self.__config.accounts):
+            if account_idx in account_index_to_id.keys():
+                self.balance_type_to_data[f"{account.name} (with input)"] = \
+                    lambda main_id=account_index_to_id[account_idx]: \
+                        EntryFilter.transactions(self.__interpreted_entries, main_id, None)
+            else:
+                self.balance_type_to_data[f"{account.name} (by transactions)"] = \
+                    lambda other_id=account.transaction_iban: \
+                        InteractiveOverviewTkinter.reverse_sign_of_amounts(
+                            EntryFilter.transactions(self.__interpreted_entries, None, other_id))
         self.main_id = self.__config.accounts[0].transaction_iban
         self.main_name = self.__config.accounts[0].name
-        for account in self.__config.accounts [1:]:
-            self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
+        for account in self.__config.accounts[1:]:
+            self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = \
+                lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
         for tag in self.__all_tags:
             self.balance_type_to_data[str(tag)] = lambda tag=tag: EntryFilter.tag(self.__interpreted_entries, tag)
         self.balance_type_to_data.pop(str(UndefinedTag))
-        self.balance_type_to_data["Undefined External"] = lambda: EntryFilter.external_transactions(EntryFilter.undefined_transactions(self.__interpreted_entries))
+        self.balance_type_to_data["Undefined External"] = \
+            lambda: EntryFilter.external_transactions(EntryFilter.undefined_transactions(self.__interpreted_entries))
         self.balance_types = list(self.balance_type_to_data.keys())
 
         self.pie_interval_var = tkinter.StringVar(self.master)
@@ -180,3 +194,10 @@ class InteractiveOverviewTkinter():
             for contained_tag in tag.tag.get_contained_tags():
                 self.__all_tags.append(contained_tag)
         self.__all_tags.append(UndefinedTag)
+
+    @staticmethod
+    def reverse_sign_of_amounts(entries : List[InterpretedEntry]) -> List[InterpretedEntry]:
+        result = list(entries)
+        for entry in result:
+            entry.amount = -1 * entry.amount
+        return result

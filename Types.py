@@ -24,7 +24,7 @@ class RawEntry:
     date : str
     amount : str
     comment : str
-    identification : str
+    account_idx : int
     type : RawEntryType
 
 @dataclass

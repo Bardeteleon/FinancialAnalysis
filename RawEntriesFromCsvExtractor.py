@@ -40,7 +40,7 @@ class RawEntriesFromCsvExtractor:
             logging.error("Unable to find all comment columns")
             return
 
-        self.__identification = self.__find_identification_by_name()
+        self.__account_idx = self.__find_account_idx()
 
         self.__extract_raw_entries()
 
@@ -53,7 +53,7 @@ class RawEntriesFromCsvExtractor:
                 date = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__date_indices),
                 amount = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__amount_indices),
                 comment = RawEntriesFromCsvExtractor.cleanup_whitespace(RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__comment_indices)),
-                identification = self.__identification,
+                account_idx = self.__account_idx,
                 type = RawEntryType.UNKNOW)
             if raw_entry.amount == "":
                 continue
@@ -93,14 +93,15 @@ class RawEntriesFromCsvExtractor:
         return None
 
     
-    def __find_identification_by_name(self) -> str:
+    def __find_account_idx(self) -> str:
         for i, row in enumerate(self.__csv):
             row_as_string = " ".join(row)
-            for input_file_ident in [account.input_file_ident for account in self.__config.accounts if len(account.input_file_ident) > 0]:
-                match_name = re.search(re.escape(input_file_ident), row_as_string)
-                if match_name:
-                    logging.debug(f"Found identification name in row {i} '{input_file_ident}'")
-                    return input_file_ident
+            for account_idx, account in enumerate(self.__config.accounts):
+                if len(account.input_file_ident) > 0:
+                    match_name = re.search(re.escape(account.input_file_ident), row_as_string)
+                    if match_name:
+                        logging.debug(f"Found identification name in row {i} '{account.input_file_ident}'")
+                        return account_idx
 
     def __get_concatenated_cell_content(self, rows : List[int], columns : List[int]) -> str:
         result : str = ""

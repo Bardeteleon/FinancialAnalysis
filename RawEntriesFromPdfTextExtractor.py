@@ -62,7 +62,7 @@ class RawEntriesFromPdfTextExtractor:
                 date = "",
                 amount = amount,
                 comment = "",
-                identification="",
+                account_idx=-1,
                 type = RawEntryType.UNKNOW
             ))
 
