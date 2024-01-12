@@ -49,6 +49,7 @@ class VisualizeStatement:
         ax.plot(x, [mean_balance]*len(x), label=f"Mean: {mean_balance}", color="blue")
         ax.plot(x, [median_balance]*len(x), label=f"Median: {median_balance}", color="green")
         ax.grid(visible=True)
+        ax.set_title(f"Sum: {round(sum(balance_per_interval.values()))}")
         ax.set_xticks(x)
         ax.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
         handles, labels = ax.get_legend_handles_labels()
