@@ -1,4 +1,6 @@
-from typing import List, Dict, Optional, Set, Tuple
+from copy import deepcopy
+from typing import Callable, List, Dict, Optional, Set, Tuple
+from Config import CustomBalance
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 from tagging.NewTag import Tag, UndefinedTag
@@ -47,6 +49,44 @@ class EntryFilter:
                                               entry.raw.type == RawEntryType.TRANSACTION and 
                                               (main_id == None or entry.account_id == main_id) and 
                                               (other_id == None or re.search(other_id, entry.raw.comment))]
+
+    @staticmethod
+    def custom_balance(balance_type_to_data : Dict[str, Callable], custom_balance : CustomBalance):
+
+        def get_matches_in_a_list(input, list) -> List[str]:
+            result = []
+            for item in list:
+                if re.search(re.escape(input), item):
+                    result.append(item)
+            return result
+
+        result = []
+
+        name_results = get_matches_in_a_list(custom_balance.name, custom_balance.plus + custom_balance.minus)
+        if len(name_results) > 0:
+            logging.error(f"Custom balance '{custom_balance.name}' contains itself in its definition (plus/minus).")
+            return result
+
+        for plus in custom_balance.plus:
+            plus_results = get_matches_in_a_list(plus, balance_type_to_data.keys())
+            if len(plus_results) == 0:
+                logging.info(f"No match for custom balance {custom_balance.name} with plus {plus}")
+            for plus_result in plus_results:
+                result = result + balance_type_to_data[plus_result]()
+        for minus in custom_balance.minus:
+            minus_results = get_matches_in_a_list(minus, balance_type_to_data.keys())
+            if len(minus_results) == 0:
+                logging.info(f"No match for custom balance {custom_balance.name} with minus {minus}")
+            for minus_result in minus_results:
+                result = result + EntryFilter.reverse_sign_of_amounts(balance_type_to_data[minus_result]())
+        return result
+
+    @staticmethod
+    def reverse_sign_of_amounts(entries : List[InterpretedEntry]) -> List[InterpretedEntry]:
+        result = deepcopy(entries)
+        for entry in result:
+            entry.amount = -1 * entry.amount
+        return result
 
     @staticmethod
     def account_index_to_id(entries : List[InterpretedEntry]) -> Set[Dict[int, str]]:

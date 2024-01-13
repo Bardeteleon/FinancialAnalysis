@@ -42,6 +42,10 @@ class RawEntriesFromCsvExtractor:
 
         self.__account_idx = self.__find_account_idx()
 
+        if self.__account_idx == None:
+            logging.info("No account found for input csv")
+            return
+
         self.__extract_raw_entries()
 
     def get_raw_entries(self) -> List[RawEntry]:
@@ -93,7 +97,7 @@ class RawEntriesFromCsvExtractor:
         return None
 
     
-    def __find_account_idx(self) -> str:
+    def __find_account_idx(self) -> Optional[int]:
         for i, row in enumerate(self.__csv):
             row_as_string = " ".join(row)
             for account_idx, account in enumerate(self.__config.accounts):
@@ -102,6 +106,7 @@ class RawEntriesFromCsvExtractor:
                     if match_name:
                         logging.debug(f"Found identification name in row {i} '{account.input_file_ident}'")
                         return account_idx
+        return None
 
     def __get_concatenated_cell_content(self, rows : List[int], columns : List[int]) -> str:
         result : str = ""
