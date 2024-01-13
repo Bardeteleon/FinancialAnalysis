@@ -1,5 +1,5 @@
 from typing import Dict
-from tagging.NewTag import Tag
+from tagging.Tag import Tag
 from tagging.TagGroup import TagGroup
 
 def test_new_tag_eq():

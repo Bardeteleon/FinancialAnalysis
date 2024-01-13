@@ -14,7 +14,7 @@ from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
 from Types import InterpretedEntry
 from VisualizeStatement import VisualizeStatement
 from dateutil.relativedelta import relativedelta
-from tagging.NewTag import Tag, UndefinedTag
+from tagging.Tag import Tag, UndefinedTag
 from tagging.TagConfig import TagConfig
 
 class Direction(Enum):

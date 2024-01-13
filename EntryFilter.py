@@ -3,7 +3,7 @@ from typing import Callable, List, Dict, Optional, Set, Tuple
 from Config import CustomBalance
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
-from tagging.NewTag import Tag, UndefinedTag
+from tagging.Tag import Tag, UndefinedTag
 import datetime
 import logging
 import re

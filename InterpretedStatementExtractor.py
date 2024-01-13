@@ -2,7 +2,7 @@ import re
 import datetime
 import logging
 from Config import Config
-from tagging.NewTag import UndefinedTag
+from tagging.Tag import UndefinedTag
 from tagging.TagConfig import TagDefinition, TagConfig
 from Types import *
 from typing import List
