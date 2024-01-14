@@ -29,17 +29,7 @@ class InteractiveOverviewTkinter():
         self.__tag_config : TagConfig = tag_config
         self.__interpreted_entries : List[InterpretedEntry] = interpreted_entries
 
-        self.initial_interval_variant = TimeIntervalVariants.MONTH
-
-        self.__all_tags : List[Tag] = []
-
-        self.master = tkinter.Tk()
-        self.master.protocol("WM_DELETE_WINDOW", self.master.quit)
-        self.master.option_add("*font", "20")
-        self.master.title("Financial Analysis")
-
-        self.ttk_style = tkinter.ttk.Style()
-        self.ttk_style.configure('.', font=('Helvetica', 20))
+        self.__initial_time_interval_variant = TimeIntervalVariants.MONTH
 
         VisualizeStatement.general_configuration()
 
@@ -47,134 +37,171 @@ class InteractiveOverviewTkinter():
         self.__fill_zero_entries_for_data_range()
         self.__fill_all_tags()
 
-        self.pie_intervals = self.get_available_pie_intervals(self.initial_interval_variant)
-        self.interval_variants = [str(interval.name) for interval in TimeIntervalVariants]
-        
-        self.balance_type_to_data : Dict[str, Callable] = {}
+        self.__init_tk_master()
+        self.__init_ttk_style()
+        self.__init_menu_items()
+        self.__init_tk_option_menus()
+        self.__init_tk_figure_canvas_for_matplotlib()
+        self.__init_keyboard_shortcuts()
+
+        self.__start_gui()
+
+    def __init_tk_master(self):
+        self.__master = tkinter.Tk()
+        self.__master.protocol("WM_DELETE_WINDOW", self.__master.quit)
+        self.__master.option_add("*font", "20")
+        self.__master.title("Financial Analysis")
+
+    def __init_ttk_style(self):
+        self.__ttk_style = tkinter.ttk.Style()
+        self.__ttk_style.configure('.', font=('Helvetica', 20))
+
+    def __init_menu_items(self):
+        self.__time_intervals = self.__get_available_time_intervals(self.__initial_time_interval_variant)
+        self.__time_interval_variants = [str(interval.name) for interval in TimeIntervalVariants]
+        self.__balance_type_to_data : Dict[str, Callable] = {}
+        self.__init_balance_menu_items_from_custom_balance_config()
+        self.__init_balance_menu_items_with_general_info()
+        self.__init_balance_menu_items_with_internal_accounts()
+        self.__init_balance_menu_items_with_internal_account_transactions()
+        self.__init_balance_menu_items_with_tags()
+        self.__balance_types = list(self.__balance_type_to_data.keys())
+
+    def __init_balance_menu_items_from_custom_balance_config(self):
         if self.__config.custom_balances:
             for custom_balance in self.__config.custom_balances:
-                self.balance_type_to_data[custom_balance.name] = \
-                    lambda custom_balance=custom_balance: EntryFilter.custom_balance(self.balance_type_to_data, custom_balance)
-        self.balance_type_to_data["Internal -> External"] = \
-            lambda: EntryFilter.external_transactions(self.__interpreted_entries)
+                self.__balance_type_to_data[custom_balance.name] = \
+                    lambda custom_balance=custom_balance: EntryFilter.custom_balance(self.__balance_type_to_data, custom_balance)
+
+    def __init_balance_menu_items_with_internal_accounts(self):
         account_index_to_id = EntryFilter.account_index_to_id(self.__interpreted_entries)
         for account_idx, account in enumerate(self.__config.accounts):
             if account_idx in account_index_to_id.keys():
-                self.balance_type_to_data[f"{account.name} (with input)"] = \
+                self.__balance_type_to_data[f"{account.name} (with input)"] = \
                     lambda main_id=account_index_to_id[account_idx]: \
                         EntryFilter.transactions(self.__interpreted_entries, main_id, None)
             else:
-                self.balance_type_to_data[f"{account.name} (by transactions)"] = \
+                self.__balance_type_to_data[f"{account.name} (by transactions)"] = \
                     lambda other_id=account.transaction_iban: \
                         EntryFilter.reverse_sign_of_amounts(
                             EntryFilter.transactions(self.__interpreted_entries, None, other_id))
-        self.main_id = self.__config.accounts[0].transaction_iban
-        self.main_name = self.__config.accounts[0].name
+                    
+    def __init_balance_menu_items_with_internal_account_transactions(self):
+        self.__main_id = self.__config.accounts[0].transaction_iban
+        self.__main_name = self.__config.accounts[0].name
         for account in self.__config.accounts[1:]:
-            self.balance_type_to_data[f"{self.main_name} -> {account.name}"] = \
-                lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.main_id, other_id)
+            self.__balance_type_to_data[f"{self.__main_name} -> {account.name}"] = \
+                lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.__main_id, other_id)
+
+    def __init_balance_menu_items_with_tags(self):
         for tag in self.__all_tags:
-            self.balance_type_to_data[str(tag)] = lambda tag=tag: EntryFilter.tag(self.__interpreted_entries, tag)
-        self.balance_type_to_data.pop(str(UndefinedTag))
-        self.balance_type_to_data["Undefined External"] = \
+            self.__balance_type_to_data[str(tag)] = lambda tag=tag: EntryFilter.tag(self.__interpreted_entries, tag)
+        self.__balance_type_to_data.pop(str(UndefinedTag))
+
+    def __init_balance_menu_items_with_general_info(self):
+        self.__balance_type_to_data["Internal -> External"] = \
+            lambda: EntryFilter.external_transactions(self.__interpreted_entries)
+        self.__balance_type_to_data["Undefined External"] = \
             lambda: EntryFilter.external_transactions(EntryFilter.undefined_transactions(self.__interpreted_entries))
-        
-        self.balance_types = list(self.balance_type_to_data.keys())
 
-        self.pie_interval_var = tkinter.StringVar(self.master)
-        self.pie_interval_var.set(self.pie_intervals[-1])
+    def __init_tk_option_menus(self):
+        self.__time_interval_var = tkinter.StringVar(self.__master)
+        self.__time_interval_var.set(self.__time_intervals[-1])
 
-        self.interval_variant_var = tkinter.StringVar(self.master)
-        self.interval_variant_var.set(str(self.initial_interval_variant.name))
+        self.__time_interval_variant_var = tkinter.StringVar(self.__master)
+        self.__time_interval_variant_var.set(str(self.__initial_time_interval_variant.name))
 
-        self.balance_type_var = tkinter.StringVar(self.master)
-        self.balance_type_var.set(self.balance_types[0])
+        self.__balance_type_var = tkinter.StringVar(self.__master)
+        self.__balance_type_var.set(self.__balance_types[0])
 
-        self.interaction_frame = tkinter.Frame(self.master)
-        self.interaction_frame.pack(side=tkinter.TOP, fill=tkinter.X)
+        self.__interaction_frame = tkinter.Frame(self.__master)
+        self.__interaction_frame.pack(side=tkinter.TOP, fill=tkinter.X)
 
-        self.pie_interval_menu = tkinter.ttk.OptionMenu(self.interaction_frame, self.pie_interval_var, command=self.pie_interval_menu_cmd)
-        self.pie_interval_menu.set_menu(self.pie_interval_var.get(), *self.pie_intervals)
-        self.pie_interval_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
+        self.__time_interval_menu = tkinter.ttk.OptionMenu(self.__interaction_frame, self.__time_interval_var, command=self.__time_interval_menu_cmd)
+        self.__time_interval_menu.set_menu(self.__time_interval_var.get(), *self.__time_intervals)
+        self.__time_interval_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
 
-        self.interval_variant_menu = tkinter.ttk.OptionMenu(self.interaction_frame, self.interval_variant_var, command=self.interval_variant_menu_cmd)
-        self.interval_variant_menu.set_menu(self.interval_variant_var.get(), *self.interval_variants)
-        self.interval_variant_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
+        self.__time_interval_variant_menu = tkinter.ttk.OptionMenu(self.__interaction_frame, self.__time_interval_variant_var, command=self.__time_interval_variant_menu_cmd)
+        self.__time_interval_variant_menu.set_menu(self.__time_interval_variant_var.get(), *self.__time_interval_variants)
+        self.__time_interval_variant_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
 
-        self.balance_type_menu = tkinter.ttk.OptionMenu(self.interaction_frame, self.balance_type_var, command=self.balance_type_cmd)
-        self.balance_type_menu.set_menu(self.balance_type_var.get(), *self.balance_types)
-        self.balance_type_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
+        self.__balance_type_menu = tkinter.ttk.OptionMenu(self.__interaction_frame, self.__balance_type_var, command=self.__balance_type_cmd)
+        self.__balance_type_menu.set_menu(self.__balance_type_var.get(), *self.__balance_types)
+        self.__balance_type_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
 
-        self.fig_balance = VisualizeStatement.creat_default_figure()
-        self.fig_balance_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.fig_balance, self.master)
-        self.fig_balance_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.balance_type_cmd(None)
+    def __init_tk_figure_canvas_for_matplotlib(self):
+        self.__fig_balance = VisualizeStatement.creat_default_figure()
+        self.__fig_balance_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.__fig_balance, self.__master)
+        self.__fig_balance_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.__balance_type_cmd(None)
 
-        self.fig_pies = VisualizeStatement.creat_default_figure()
-        self.fig_pies_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.fig_pies, self.master)
-        self.fig_pies_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.pie_interval_menu_cmd(None)
+        self.__fig_pies = VisualizeStatement.creat_default_figure()
+        self.__fig_pies_canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(self.__fig_pies, self.__master)
+        self.__fig_pies_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.__time_interval_menu_cmd(None)
 
-        self.master.bind('+', lambda event: self.interval_variant_menu_shift(Direction.UP))
-        self.master.bind('-', lambda event: self.interval_variant_menu_shift(Direction.DOWN))
-        self.master.bind('s', lambda event: self.balance_type_menu_shift(Direction.UP))
-        self.master.bind('w', lambda event: self.balance_type_menu_shift(Direction.DOWN))
-        self.master.bind('d', lambda event: self.pie_interval_menu_shift(Direction.UP))
-        self.master.bind('a', lambda event: self.pie_interval_menu_shift(Direction.DOWN))
+    def __init_keyboard_shortcuts(self):
+        self.__master.bind('+', lambda event: self.__time_interval_variant_menu_shift(Direction.UP))
+        self.__master.bind('-', lambda event: self.__time_interval_variant_menu_shift(Direction.DOWN))
+        self.__master.bind('s', lambda event: self.__balance_type_menu_shift(Direction.UP))
+        self.__master.bind('w', lambda event: self.__balance_type_menu_shift(Direction.DOWN))
+        self.__master.bind('d', lambda event: self.__time_interval_menu_shift(Direction.UP))
+        self.__master.bind('a', lambda event: self.__time_interval_menu_shift(Direction.DOWN))
+    
+    def __start_gui(self):
+        self.__master.state("zoomed")
+        self.__master.mainloop()
 
-        self.master.state("zoomed")
-        self.master.mainloop()
-
-    def pie_interval_menu_cmd(self, choice):
-        self.fig_pies.clear()
-        self.fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(
+    def __time_interval_menu_cmd(self, choice):
+        self.__fig_pies.clear()
+        self.__fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(
                                                 EntryFilter.external_transactions(self.__interpreted_entries), 
-                                                self.get_pie_interval(),
+                                                self.__get_time_interval(),
                                                 self.__all_tags,
-                                                fig=self.fig_pies)
-        self.fig_pies_canvas.draw_idle()
+                                                fig=self.__fig_pies)
+        self.__fig_pies_canvas.draw_idle()
 
-    def balance_type_cmd(self, choice):
-        get_entries = self.balance_type_to_data[self.balance_type_var.get()]
-        self.fig_balance.clear()
-        self.fig_balance = VisualizeStatement.get_figure_balance_per_interval(
+    def __balance_type_cmd(self, choice):
+        get_entries = self.__balance_type_to_data[self.__balance_type_var.get()]
+        self.__fig_balance.clear()
+        self.__fig_balance = VisualizeStatement.get_figure_balance_per_interval(
                                                 get_entries() + self.__zero_entries, 
-                                                self.get_interval_variant(),
+                                                self.__get_time_interval_variant(),
                                                 self.__all_tags,
-                                                fig=self.fig_balance)
-        self.fig_balance_canvas.draw_idle()
+                                                fig=self.__fig_balance)
+        self.__fig_balance_canvas.draw_idle()
 
-    def interval_variant_menu_cmd(self, choice):
-        self.pie_interval_var.set('')
-        self.pie_intervals = self.get_available_pie_intervals(self.get_interval_variant())
-        self.pie_interval_menu.set_menu(self.pie_intervals[-1], *self.pie_intervals)
-        self.balance_type_cmd(choice)
-        self.pie_interval_menu_cmd(choice)
+    def __time_interval_variant_menu_cmd(self, choice):
+        self.__time_interval_var.set('')
+        self.__time_intervals = self.__get_available_time_intervals(self.__get_time_interval_variant())
+        self.__time_interval_menu.set_menu(self.__time_intervals[-1], *self.__time_intervals)
+        self.__balance_type_cmd(choice)
+        self.__time_interval_menu_cmd(choice)
 
-    def pie_interval_menu_shift(self, direction : Direction):
-        self.shift_curr_selection_of_menu(direction, self.pie_intervals, self.pie_interval_var)
-        self.pie_interval_menu_cmd(None)
+    def __time_interval_menu_shift(self, direction : Direction):
+        self.__shift_curr_selection_of_menu(direction, self.__time_intervals, self.__time_interval_var)
+        self.__time_interval_menu_cmd(None)
     
-    def balance_type_menu_shift(self, direction : Direction):
-        self.shift_curr_selection_of_menu(direction, self.balance_types, self.balance_type_var)
-        self.balance_type_cmd(None)
+    def __balance_type_menu_shift(self, direction : Direction):
+        self.__shift_curr_selection_of_menu(direction, self.__balance_types, self.__balance_type_var)
+        self.__balance_type_cmd(None)
     
-    def interval_variant_menu_shift(self, direction : Direction):
-        self.shift_curr_selection_of_menu(direction, self.interval_variants, self.interval_variant_var)
-        self.interval_variant_menu_cmd(None)
+    def __time_interval_variant_menu_shift(self, direction : Direction):
+        self.__shift_curr_selection_of_menu(direction, self.__time_interval_variants, self.__time_interval_variant_var)
+        self.__time_interval_variant_menu_cmd(None)
 
-    def get_available_pie_intervals(self, variant : TimeIntervalVariants) -> List[str]:
-        pie_intervals = list(EntryFilter.balance_per_interval(self.__interpreted_entries, variant).keys())
-        pie_intervals = sorted(pie_intervals, key=lambda x: int(re.sub("\D", "", x)), reverse=False)
-        return pie_intervals
+    def __get_available_time_intervals(self, variant : TimeIntervalVariants) -> List[str]:
+        time_intervals = list(EntryFilter.balance_per_interval(self.__interpreted_entries, variant).keys())
+        time_intervals = sorted(time_intervals, key=lambda x: int(re.sub("\D", "", x)), reverse=False)
+        return time_intervals
 
-    def get_interval_variant(self) -> TimeIntervalVariants:
-        return TimeIntervalVariants[self.interval_variant_var.get()]
+    def __get_time_interval_variant(self) -> TimeIntervalVariants:
+        return TimeIntervalVariants[self.__time_interval_variant_var.get()]
 
-    def get_pie_interval(self) -> TimeInterval:
-        return TimeInterval.create_from_string(self.get_interval_variant(), self.pie_interval_var.get())
+    def __get_time_interval(self) -> TimeInterval:
+        return TimeInterval.create_from_string(self.__get_time_interval_variant(), self.__time_interval_var.get())
 
-    def shift_curr_selection_of_menu(self, direction : Direction, menu_data : List[str], menu_var : tkinter.StringVar):
+    def __shift_curr_selection_of_menu(self, direction : Direction, menu_data : List[str], menu_var : tkinter.StringVar):
         curr_index : int = menu_data.index(menu_var.get())
         if direction == Direction.UP:
             curr_index += 1
@@ -197,7 +224,8 @@ class InteractiveOverviewTkinter():
             self.__zero_entries.append(InterpretedEntry(date=(self.__zero_entries[-1].date+one_month), amount=0.0))
 
     def __fill_all_tags(self):
-        for tag in self.__tag_config.tag_definitions:
-            for contained_tag in tag.tag.get_contained_tags():
+        self.__all_tags : List[Tag] = []
+        for tag_definition in self.__tag_config.tag_definitions:
+            for contained_tag in tag_definition.tag.get_contained_tags():
                 self.__all_tags.append(contained_tag)
         self.__all_tags.append(UndefinedTag)
