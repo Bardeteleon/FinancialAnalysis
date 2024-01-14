@@ -26,20 +26,25 @@ class VisualizeStatement:
         return matplotlib.pyplot.figure(layout="constrained")
 
     @staticmethod
-    def draw_amounts(interpreted_entries : List[InterpretedEntry]):
-        fig, ax = matplotlib.pyplot.subplots()
-        x = range(len(interpreted_entries))
-        y = [entry.amount for entry in interpreted_entries]
-        y = numpy.cumsum(y)
-        ax.plot(x, y)
-        ax.plot(x, numpy.zeros(len(x)), color="r")
+    def draw_balance_summed(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], axes=None):
+        if not axes:
+            fig, axes = matplotlib.pyplot.subplots()
+        balance_per_interval : Dict[str, float] = EntryFilter.balance_per_interval(entries, interval_variant)
+        balance_per_interval = dict(sorted(balance_per_interval.items(), 
+                                                key=lambda x: int(re.sub("\D", "", x[0])), 
+                                                reverse=False))
+        axes.plot(range(len(balance_per_interval.keys())), numpy.cumsum(list(balance_per_interval.values())),
+                    color=VisualizeStatement.get_common_color(entries, all_tags))
+        axes.grid(visible=True)
+        axes.set_xticks(range(len(balance_per_interval.keys())))
+        axes.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
 
     @staticmethod
     def draw_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], ax=None):
         balance_per_interval : Dict[str, float] = EntryFilter.balance_per_interval(interpreted_entries, interval_variant)
         balance_per_interval = dict(sorted(balance_per_interval.items(), 
-                                           key=lambda x: int(re.sub("\D", "", x[0])), 
-                                           reverse=False))
+                                                key=lambda x: int(re.sub("\D", "", x[0])), 
+                                                reverse=False))
         mean_balance = round(mean(balance_per_interval.values()))
         median_balance = round(median(balance_per_interval.values()))
         x = range(len(balance_per_interval))
@@ -56,7 +61,25 @@ class VisualizeStatement:
         ax.legend(handles, labels, loc='upper right')
 
     @staticmethod
-    def draw_tag_pie(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], all_tags : List[Tag], axs=None):
+    def get_figure_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], fig=None):
+        if not fig:
+            fig = VisualizeStatement.creat_default_figure()
+        spec = fig.add_gridspec(1,1)
+        ax0 = fig.add_subplot(spec[0,0])
+        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, all_tags, ax0)
+        return fig
+
+    @staticmethod
+    def get_figure_balance_summed(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], fig=None):
+        if not fig:
+            fig = VisualizeStatement.creat_default_figure()
+        spec = fig.add_gridspec(1,1)
+        ax0 = fig.add_subplot(spec[0,0])
+        VisualizeStatement.draw_balance_summed(interpreted_entries, interval_variant, all_tags, ax0)
+        return fig
+
+    @staticmethod
+    def draw_tag_pie_per_interval(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], all_tags : List[Tag], axs=None):
         balance_per_tag : Dict[TagGroup, float] = EntryFilter.balance_per_tag_of_interval(interpreted_entries, interval)
         balance_sum = numpy.sum(list(balance_per_tag.values()))
         balance_per_tag_sorted = dict(sorted(balance_per_tag.items(), key=lambda x: abs(x[1]), reverse=False))
@@ -79,17 +102,8 @@ class VisualizeStatement:
         ax2 = fig.add_subplot(spec[0,1])
         positive_entries = EntryFilter.positive_amount(interpreted_entries)
         negative_entries = EntryFilter.negative_amount(interpreted_entries)
-        VisualizeStatement.draw_tag_pie(interval, positive_entries, all_tags, ax1)
-        VisualizeStatement.draw_tag_pie(interval, negative_entries, all_tags, ax2)
-        return fig
-
-    @staticmethod
-    def get_figure_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], fig=None):
-        if not fig:
-            fig = VisualizeStatement.creat_default_figure()
-        spec = fig.add_gridspec(1,1)
-        ax0 = fig.add_subplot(spec[0,0])
-        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, all_tags, ax0)
+        VisualizeStatement.draw_tag_pie_per_interval(interval, positive_entries, all_tags, ax1)
+        VisualizeStatement.draw_tag_pie_per_interval(interval, negative_entries, all_tags, ax2)
         return fig
     
     @staticmethod

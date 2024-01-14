@@ -21,6 +21,10 @@ class Direction(Enum):
     UP = auto()
     DOWN = auto()
 
+class BalanceVariant(Enum):
+    PER_INTERVAL = auto()
+    SUMMED = auto()
+
 class InteractiveOverviewTkinter():
 
     def __init__(self, interpreted_entries : List[InterpretedEntry], config : Config, tag_config : TagConfig):
@@ -66,6 +70,7 @@ class InteractiveOverviewTkinter():
         self.__init_balance_menu_items_with_internal_account_transactions()
         self.__init_balance_menu_items_with_tags()
         self.__balance_types = list(self.__balance_type_to_data.keys())
+        self.__balance_variants = [str(variant.name) for variant in BalanceVariant]
 
     def __init_balance_menu_items_from_custom_balance_config(self):
         if self.__config.custom_balances:
@@ -114,6 +119,9 @@ class InteractiveOverviewTkinter():
         self.__balance_type_var = tkinter.StringVar(self.__master)
         self.__balance_type_var.set(self.__balance_types[0])
 
+        self.__balance_variant_var = tkinter.StringVar(self.__master)
+        self.__balance_variant_var.set(self.__balance_variants[0])
+
         self.__interaction_frame = tkinter.Frame(self.__master)
         self.__interaction_frame.pack(side=tkinter.TOP, fill=tkinter.X)
 
@@ -128,6 +136,10 @@ class InteractiveOverviewTkinter():
         self.__balance_type_menu = tkinter.ttk.OptionMenu(self.__interaction_frame, self.__balance_type_var, command=self.__balance_type_cmd)
         self.__balance_type_menu.set_menu(self.__balance_type_var.get(), *self.__balance_types)
         self.__balance_type_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
+
+        self.__balance_variant_menu = tkinter.ttk.OptionMenu(self.__interaction_frame, self.__balance_variant_var, command=self.__balance_variant_cmd)
+        self.__balance_variant_menu.set_menu(self.__balance_variant_var.get(), *self.__balance_variants)
+        self.__balance_variant_menu.pack(side=tkinter.LEFT, fill=tkinter.X, expand=True)
 
     def __init_tk_figure_canvas_for_matplotlib(self):
         self.__fig_balance = VisualizeStatement.creat_default_figure()
@@ -147,6 +159,7 @@ class InteractiveOverviewTkinter():
         self.__master.bind('w', lambda event: self.__balance_type_menu_shift(Direction.DOWN))
         self.__master.bind('d', lambda event: self.__time_interval_menu_shift(Direction.UP))
         self.__master.bind('a', lambda event: self.__time_interval_menu_shift(Direction.DOWN))
+        self.__master.bind('q', lambda event: self.__balance_variant_menu_shift(Direction.UP))
     
     def __start_gui(self):
         self.__master.state("zoomed")
@@ -162,13 +175,16 @@ class InteractiveOverviewTkinter():
         self.__fig_pies_canvas.draw_idle()
 
     def __balance_type_cmd(self, choice):
+        if self.__balance_variant_var.get() == BalanceVariant.SUMMED.name:
+            selected_visualize_statement_function = VisualizeStatement.get_figure_balance_summed
+        else:
+            selected_visualize_statement_function = VisualizeStatement.get_figure_balance_per_interval
         get_entries = self.__balance_type_to_data[self.__balance_type_var.get()]
         self.__fig_balance.clear()
-        self.__fig_balance = VisualizeStatement.get_figure_balance_per_interval(
-                                                get_entries() + self.__zero_entries, 
-                                                self.__get_time_interval_variant(),
-                                                self.__all_tags,
-                                                fig=self.__fig_balance)
+        self.__fig_balance = selected_visualize_statement_function(get_entries() + self.__zero_entries, 
+                                                                    self.__get_time_interval_variant(),
+                                                                    self.__all_tags,
+                                                                    fig=self.__fig_balance) 
         self.__fig_balance_canvas.draw_idle()
 
     def __time_interval_variant_menu_cmd(self, choice):
@@ -177,18 +193,26 @@ class InteractiveOverviewTkinter():
         self.__time_interval_menu.set_menu(self.__time_intervals[-1], *self.__time_intervals)
         self.__balance_type_cmd(choice)
         self.__time_interval_menu_cmd(choice)
+    
+    def __balance_variant_cmd(self, choice):
+        self.__balance_type_cmd(choice)
+        self.__time_interval_menu_cmd(choice)
 
     def __time_interval_menu_shift(self, direction : Direction):
         self.__shift_curr_selection_of_menu(direction, self.__time_intervals, self.__time_interval_var)
         self.__time_interval_menu_cmd(None)
     
+    def __time_interval_variant_menu_shift(self, direction : Direction):
+        self.__shift_curr_selection_of_menu(direction, self.__time_interval_variants, self.__time_interval_variant_var)
+        self.__time_interval_variant_menu_cmd(None)
+    
     def __balance_type_menu_shift(self, direction : Direction):
         self.__shift_curr_selection_of_menu(direction, self.__balance_types, self.__balance_type_var)
         self.__balance_type_cmd(None)
     
-    def __time_interval_variant_menu_shift(self, direction : Direction):
-        self.__shift_curr_selection_of_menu(direction, self.__time_interval_variants, self.__time_interval_variant_var)
-        self.__time_interval_variant_menu_cmd(None)
+    def __balance_variant_menu_shift(self, direction : Direction):
+        self.__shift_curr_selection_of_menu(direction, self.__balance_variants, self.__balance_variant_var)
+        self.__balance_variant_cmd(None)
 
     def __get_available_time_intervals(self, variant : TimeIntervalVariants) -> List[str]:
         time_intervals = list(EntryFilter.balance_per_interval(self.__interpreted_entries, variant).keys())
@@ -207,8 +231,7 @@ class InteractiveOverviewTkinter():
             curr_index += 1
         elif direction == Direction.DOWN:
             curr_index -=1
-        if curr_index in range(len(menu_data)):
-            menu_var.set(menu_data[curr_index])
+        menu_var.set(menu_data[curr_index % len(menu_data)])
 
     def __find_out_min_and_max_date(self):
         self.__entry_data_start_date = datetime.date(9999,1,1)

@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing import Callable, List, Dict, Optional, Set, Tuple
-from Config import CustomBalance
+from Config import Account, CustomBalance
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 from tagging.Tag import Tag, UndefinedTag
