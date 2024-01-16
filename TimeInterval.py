@@ -15,6 +15,12 @@ class TimeInterval:
 
     def __eq__(self, interval : object) -> bool:
         return False
+    
+    def __lt__(self, interval : object) -> bool:
+        return False
+
+    def __le__(self, interval : object) -> bool:
+        return False
 
     def to_string(self) -> str:
         return ""
@@ -61,6 +67,18 @@ class MonthInterval(TimeInterval):
         else:
             return False
 
+    def __lt__(self, interval : object) -> bool:
+        if isinstance(interval, MonthInterval):
+            return self.__year < interval.__year or (self.__year == interval.__year and self.__month < interval.__month)
+        else:
+            return False
+
+    def __le__(self, interval : object) -> bool:
+        if isinstance(interval, MonthInterval):
+            return self == interval or self < interval
+        else:
+            return False
+
     def to_string(self) -> str:
         return f"{self.__year}-{self.__month}"
     
@@ -84,6 +102,18 @@ class QuarterInterval(TimeInterval):
     def __eq__(self, interval : object) -> bool:
         if isinstance(interval, QuarterInterval):
             return self.__year == interval.__year and self.__quarter == interval.__quarter
+        else:
+            return False
+
+    def __lt__(self, interval : object) -> bool:
+        if isinstance(interval, QuarterInterval):
+            return self.__year < interval.__year or (self.__year == interval.__year and self.__quarter < interval.__quarter)
+        else:
+            return False
+
+    def __le__(self, interval : object) -> bool:
+        if isinstance(interval, QuarterInterval):
+            return self == interval or self < interval
         else:
             return False
         
@@ -113,6 +143,18 @@ class HalfYearInterval(TimeInterval):
         else:
             return False
 
+    def __lt__(self, interval : object) -> bool:
+        if isinstance(interval, HalfYearInterval):
+            return self.__year < interval.__year or (self.__year == interval.__year and self.__half < interval.__half)
+        else:
+            return False
+
+    def __le__(self, interval : object) -> bool:
+        if isinstance(interval, HalfYearInterval):
+            return self == interval or self < interval
+        else:
+            return False
+
     def to_string(self) -> str:
         return f"{self.__year}-H{self.__half}"
 
@@ -135,6 +177,18 @@ class YearInterval(TimeInterval):
     def __eq__(self, interval : object) -> bool:
         if isinstance(interval, YearInterval):
             return self.__year == interval.__year
+        else:
+            return False
+
+    def __lt__(self, interval : object) -> bool:
+        if isinstance(interval, YearInterval):
+            return self.__year < interval.__year
+        else:
+            return False
+
+    def __le__(self, interval : object) -> bool:
+        if isinstance(interval, YearInterval):
+            return self == interval or self < interval
         else:
             return False
 

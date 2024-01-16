@@ -166,11 +166,16 @@ class InteractiveOverviewTkinter():
         self.__master.mainloop()
 
     def __time_interval_menu_cmd(self, choice):
+        if self.__balance_variant_var.get() == BalanceVariant.SUMMED.name:
+            selected_visualize_statement_function = VisualizeStatement.get_figure_summed_account_balance_pie
+        else:
+            selected_visualize_statement_function = VisualizeStatement.get_figure_positive_negative_tag_pies
         self.__fig_pies.clear()
-        self.__fig_pies = VisualizeStatement.get_figure_positive_negative_tag_pies(
-                                                EntryFilter.external_transactions(self.__interpreted_entries), 
+        self.__fig_pies = selected_visualize_statement_function(
+                                                self.__interpreted_entries, 
                                                 self.__get_time_interval(),
                                                 self.__all_tags,
+                                                self.__config.accounts,
                                                 fig=self.__fig_pies)
         self.__fig_pies_canvas.draw_idle()
 
@@ -181,10 +186,11 @@ class InteractiveOverviewTkinter():
             selected_visualize_statement_function = VisualizeStatement.get_figure_balance_per_interval
         get_entries = self.__balance_type_to_data[self.__balance_type_var.get()]
         self.__fig_balance.clear()
-        self.__fig_balance = selected_visualize_statement_function(get_entries() + self.__zero_entries, 
-                                                                    self.__get_time_interval_variant(),
-                                                                    self.__all_tags,
-                                                                    fig=self.__fig_balance) 
+        self.__fig_balance = selected_visualize_statement_function(
+                                                get_entries() + self.__zero_entries, 
+                                                self.__get_time_interval_variant(),
+                                                self.__all_tags,
+                                                fig=self.__fig_balance) 
         self.__fig_balance_canvas.draw_idle()
 
     def __time_interval_variant_menu_cmd(self, choice):

@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Callable, List, Dict, Optional, Set, Tuple
 from Config import Account, CustomBalance
-from TimeInterval import TimeInterval, TimeIntervalVariants
+from TimeInterval import TimeInterval, TimeIntervalVariants, YearInterval
 from Types import *
 from tagging.Tag import Tag, UndefinedTag
 import datetime
@@ -44,7 +44,7 @@ class EntryFilter:
         return [entry for entry in entries for tag in entry.tags if given_tag.contains(tag)]
 
     @staticmethod
-    def transactions(entries : List[InterpretedEntry], main_id : str, other_id : str):
+    def transactions(entries : List[InterpretedEntry], main_id : Optional[str] = None, other_id : Optional[str] = None):
         return [entry for entry in entries if entry.raw and
                                               entry.raw.type == RawEntryType.TRANSACTION and 
                                               (main_id == None or entry.account_id == main_id) and 
@@ -119,3 +119,29 @@ class EntryFilter:
                 else:
                     balance_per_tag[curr_tag] = entry.amount
         return balance_per_tag
+    
+    @staticmethod
+    def balance_per_account_until_interval(all_entries : List[InterpretedEntry], until_interval : TimeInterval, all_accounts : List[Account]) -> Dict[str, float]:
+        result : Dict[str, float] = {}
+        account_index_to_id = EntryFilter.account_index_to_id(all_entries)
+        for account_idx, account in enumerate(all_accounts):
+            if account_idx in account_index_to_id.keys():
+                result[account.name] = EntryFilter.__sum_amounts(
+                                            EntryFilter.transactions(all_entries, main_id=account_index_to_id[account_idx]),
+                                            until_interval)
+            else:
+                result[account.name] = EntryFilter.__sum_amounts(
+                                            EntryFilter.reverse_sign_of_amounts(
+                                            EntryFilter.transactions(all_entries, other_id=account.transaction_iban)),
+                                            until_interval)
+        return result
+    
+    @staticmethod
+    def __sum_amounts(entries : List[InterpretedEntry], until_interval : Optional[TimeInterval] = None) -> float:
+        result : float = 0.0
+        if until_interval is None:
+            until_interval = YearInterval(datetime.date(datetime.MAXYEAR, 1, 1))
+        for entry in entries:
+            if TimeInterval.create_from_date(until_interval.get_variant(), entry.date) <= until_interval:
+                result += entry.amount 
+        return result

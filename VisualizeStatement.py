@@ -1,6 +1,7 @@
 from collections import Counter
 from statistics import mean, median
 from typing import List, Dict
+from Config import Account
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
 import matplotlib
@@ -94,18 +95,45 @@ class VisualizeStatement:
         axs.legend(handles[::-1], labels[::-1], loc='upper left')
 
     @staticmethod
-    def get_figure_positive_negative_tag_pies(interpreted_entries : List[InterpretedEntry], interval : TimeInterval, all_tags : List[Tag], fig=None):
+    def get_figure_positive_negative_tag_pies(all_entries : List[InterpretedEntry], interval : TimeInterval, all_tags : List[Tag], all_accounts : List[Account], fig=None):
         if not fig:
             fig = VisualizeStatement.creat_default_figure()
         spec = fig.add_gridspec(1,2)
         ax1 = fig.add_subplot(spec[0,0])
         ax2 = fig.add_subplot(spec[0,1])
-        positive_entries = EntryFilter.positive_amount(interpreted_entries)
-        negative_entries = EntryFilter.negative_amount(interpreted_entries)
+        external_transactions = EntryFilter.external_transactions(all_entries)
+        positive_entries = EntryFilter.positive_amount(external_transactions)
+        negative_entries = EntryFilter.negative_amount(external_transactions)
         VisualizeStatement.draw_tag_pie_per_interval(interval, positive_entries, all_tags, ax1)
         VisualizeStatement.draw_tag_pie_per_interval(interval, negative_entries, all_tags, ax2)
         return fig
     
+    @staticmethod
+    def draw_summed_account_balance_pie_until_interval(all_entries: List[InterpretedEntry], until_interval : TimeInterval, all_accounts : List[Account], axes=None):
+        balance_per_account : Dict[str, float] = EntryFilter.balance_per_account_until_interval(all_entries, until_interval, all_accounts)
+        balance_per_account_sorted = dict(sorted(balance_per_account.items(), key=lambda x: x[1], reverse=False))
+        balance_sum = numpy.sum(list(balance_per_account_sorted.values()))
+        balance_sum_of_abs = numpy.sum(numpy.abs(list(balance_per_account_sorted.values())))
+        labels = [f"{key} ({round(value)} / {round(abs(value/balance_sum_of_abs*100))}%)" for (key, value) in balance_per_account_sorted.items()]
+        if not axes:
+            fig, axes = matplotlib.pyplot.subplots()
+        axes.set_title(f"Sum: {round(balance_sum)}")
+        axes.pie(numpy.abs(list(balance_per_account_sorted.values())), 
+                 labels=labels,
+                 colors=VisualizeStatement.get_colors_for_accounts(list(balance_per_account_sorted.keys()), all_accounts),
+                 startangle=90)
+        handles, labels = axes.get_legend_handles_labels()
+        axes.legend(handles[::-1], labels[::-1], loc='upper right')
+
+    @staticmethod
+    def get_figure_summed_account_balance_pie(all_entries: List[InterpretedEntry], until_interval : TimeInterval, all_tags : List[Tag], all_accounts : List[Account], fig=None):
+        if not fig:
+            fig = VisualizeStatement.creat_default_figure()
+        spec = fig.add_gridspec(1,2)
+        ax1 = fig.add_subplot(spec[0,0])
+        VisualizeStatement.draw_summed_account_balance_pie_until_interval(all_entries, until_interval, all_accounts, ax1)
+        return fig
+
     @staticmethod
     def show():
         matplotlib.pyplot.show()
@@ -144,3 +172,14 @@ class VisualizeStatement:
         colors_for_all_tags = VisualizeStatement.generate_colors(len(all_tags))
         tag_to_color_map = dict(zip(all_tags, colors_for_all_tags))
         return tag_to_color_map
+
+    @staticmethod
+    def get_account_name_to_color_map(all_accounts : List[Account]):
+        colors_for_all_accounts = VisualizeStatement.generate_colors(len(all_accounts))
+        account_names = [account.name for account in all_accounts]
+        account_names_to_color_map = dict(zip(account_names, colors_for_all_accounts))
+        return account_names_to_color_map
+
+    def get_colors_for_accounts(account_names : List[str], all_accounts : List[Account]):
+        color_map = VisualizeStatement.get_account_name_to_color_map(all_accounts)
+        return [color_map[name] for name in account_names]
