@@ -70,7 +70,8 @@ class InterpretedStatementExtractor:
     
     def __extract_card_type(self):
         for entry in self.__interpreted_entries:
-            match = re.search("(VISA|Kreditkarte|credit)", self.__config.accounts[entry.raw.account_idx].input_file_ident) # TODO Config
+            match = re.search("(VISA|Kreditkarte|credit)", 
+                              self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification()) # TODO Config
             if match:
                 entry.card_type = CardType.CREDIT
             else:
@@ -78,8 +79,11 @@ class InterpretedStatementExtractor:
 
     def __extract_account_id(self):
         for entry in self.__interpreted_entries:
-            match_iban = re.search("[A-Z]{2}\d{20}", self.__config.accounts[entry.raw.account_idx].input_file_ident)
-            match_half_encrypted_creditcard_number = re.search("\d{4}\*+\d{4}", self.__config.accounts[entry.raw.account_idx].input_file_ident)
+            match_iban = re.search("[A-Z]{2}\d{20}", 
+                                   self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification())
+            match_half_encrypted_creditcard_number = \
+                         re.search("\d{4}\*+\d{4}", 
+                         self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification())
             if match_iban:
                 entry.account_id = match_iban.group(0)
             elif match_half_encrypted_creditcard_number:
@@ -111,7 +115,7 @@ class InterpretedStatementExtractor:
                 entry.type = InterpretedEntryType.TRANSACTION_INTERNAL if match else InterpretedEntryType.TRANSACTION_EXTERNAL
 
     def __get_internal_ibans(self) -> List[str]:
-        return [account.transaction_iban for account in self.__config.accounts]
+        return [account.transaction_iban for account in self.__config.internal_accounts]
 
     def __add_undefined_tag_for_entries_without_tags(self):
         for entry in self.__interpreted_entries:

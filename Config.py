@@ -9,10 +9,19 @@ class HeadingConfig:
     comment : List[str]
 
 @dataclass
+class ManualBalance:
+    date : str
+    end_of_day_amount : float
+
+@dataclass
 class Account:
     name : str 
-    input_file_ident : str
     transaction_iban : str
+    input_file_identification : Optional[str]
+    balance_reference : Optional[ManualBalance]
+
+    def get_input_file_identification(self) -> str:
+        return self.input_file_identification if self.input_file_identification else ""
 
 @dataclass
 class CustomBalance:
@@ -22,7 +31,7 @@ class CustomBalance:
 
 @dataclass
 class Config:
-    accounts : List[Account]
+    internal_accounts : List[Account]
     headings : List[HeadingConfig]
     custom_balances : Optional[List[CustomBalance]]
 

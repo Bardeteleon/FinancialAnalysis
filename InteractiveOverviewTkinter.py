@@ -80,7 +80,7 @@ class InteractiveOverviewTkinter():
 
     def __init_balance_menu_items_with_internal_accounts(self):
         account_index_to_id = EntryFilter.account_index_to_id(self.__interpreted_entries)
-        for account_idx, account in enumerate(self.__config.accounts):
+        for account_idx, account in enumerate(self.__config.internal_accounts):
             if account_idx in account_index_to_id.keys():
                 self.__balance_type_to_data[f"{account.name} (with input)"] = \
                     lambda main_id=account_index_to_id[account_idx]: \
@@ -92,9 +92,9 @@ class InteractiveOverviewTkinter():
                             EntryFilter.transactions(self.__interpreted_entries, None, other_id))
                     
     def __init_balance_menu_items_with_internal_account_transactions(self):
-        self.__main_id = self.__config.accounts[0].transaction_iban
-        self.__main_name = self.__config.accounts[0].name
-        for account in self.__config.accounts[1:]:
+        self.__main_id = self.__config.internal_accounts[0].transaction_iban
+        self.__main_name = self.__config.internal_accounts[0].name
+        for account in self.__config.internal_accounts[1:]:
             self.__balance_type_to_data[f"{self.__main_name} -> {account.name}"] = \
                 lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.__main_id, other_id)
 
@@ -175,7 +175,7 @@ class InteractiveOverviewTkinter():
                                                 self.__interpreted_entries, 
                                                 self.__get_time_interval(),
                                                 self.__all_tags,
-                                                self.__config.accounts,
+                                                self.__config.internal_accounts,
                                                 fig=self.__fig_pies)
         self.__fig_pies_canvas.draw_idle()
 

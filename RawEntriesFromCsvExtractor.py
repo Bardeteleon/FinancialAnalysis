@@ -100,11 +100,11 @@ class RawEntriesFromCsvExtractor:
     def __find_account_idx(self) -> Optional[int]:
         for i, row in enumerate(self.__csv):
             row_as_string = " ".join(row)
-            for account_idx, account in enumerate(self.__config.accounts):
-                if len(account.input_file_ident) > 0:
-                    match_name = re.search(re.escape(account.input_file_ident), row_as_string)
+            for account_idx, account in enumerate(self.__config.internal_accounts):
+                if len(account.get_input_file_identification()) > 0:
+                    match_name = re.search(re.escape(account.get_input_file_identification()), row_as_string)
                     if match_name:
-                        logging.debug(f"Found identification name in row {i} '{account.input_file_ident}'")
+                        logging.debug(f"Found identification name in row {i} '{account.get_input_file_identification()}'")
                         return account_idx
         return None
 
