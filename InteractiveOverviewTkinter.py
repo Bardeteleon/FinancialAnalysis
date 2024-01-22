@@ -85,7 +85,7 @@ class InteractiveOverviewTkinter():
             if account_idx in account_index_to_id.keys():
                 self.__balance_type_to_data[f"{account.name} (with input)"] = \
                     lambda main_id=account_index_to_id[account_idx]: \
-                        EntryFilter.transactions(self.__interpreted_entries, main_id, None)
+                        EntryFilter.account(self.__interpreted_entries, main_id)
             else:
                 self.__balance_type_to_data[f"{account.name} (by transactions)"] = \
                     lambda other_id=account.transaction_iban: \

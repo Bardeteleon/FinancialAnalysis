@@ -39,3 +39,7 @@ class InterpretedEntry:
 
     def is_untagged(self) -> bool:
         return self.tags == None or len(self.tags) == 0
+
+    def is_transaction(self) -> bool:
+        return self.type == InterpretedEntryType.TRANSACTION_EXTERNAL or \
+               self.type == InterpretedEntryType.TRANSACTION_INTERNAL

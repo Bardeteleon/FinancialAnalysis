@@ -2,6 +2,7 @@ from collections import Counter
 from statistics import mean, median
 from typing import List, Dict
 from Config import Account
+from EntryInsights import EntryInsights
 from EntryMapping import EntryMapping
 from TimeInterval import TimeInterval, TimeIntervalVariants
 from Types import *
@@ -35,10 +36,14 @@ class VisualizeStatement:
         balance_per_interval = dict(sorted(balance_per_interval.items(), 
                                                 key=lambda x: int(re.sub("\D", "", x[0])), 
                                                 reverse=False))
-        axes.plot(range(len(balance_per_interval.keys())), numpy.cumsum(list(balance_per_interval.values())),
-                    color=VisualizeStatement.get_common_color(entries, all_tags))
+        x = range(len(balance_per_interval.keys()))
+        y = list(balance_per_interval.values())
+        if len(y) > 0:
+            y[0] += EntryInsights.initial_balance_if_entries_with_unique_account_unless_zero(entries)
+        y = numpy.cumsum(y)
+        axes.plot(x, y, color=VisualizeStatement.get_common_color(entries, all_tags))
         axes.grid(visible=True)
-        axes.set_xticks(range(len(balance_per_interval.keys())))
+        axes.set_xticks(x)
         axes.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
 
     @staticmethod
@@ -68,7 +73,8 @@ class VisualizeStatement:
             fig = VisualizeStatement.creat_default_figure()
         spec = fig.add_gridspec(1,1)
         ax0 = fig.add_subplot(spec[0,0])
-        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, all_tags, ax0)
+        filtered_entries = EntryFilter.transactions(interpreted_entries)
+        VisualizeStatement.draw_balance_per_interval(filtered_entries, interval_variant, all_tags, ax0)
         return fig
 
     @staticmethod

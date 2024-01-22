@@ -4,6 +4,7 @@ import datetime
 from typing import Dict, List, Optional
 from Config import Account
 from EntryFilter import EntryFilter
+from EntryInsights import EntryInsights
 from TimeInterval import TimeInterval, TimeIntervalVariants, YearInterval
 from Types import InterpretedEntry
 from tagging.TagGroup import TagGroup
@@ -13,7 +14,7 @@ class EntryMapping:
     
     @staticmethod
     def account_index_to_id(entries : List[InterpretedEntry]) -> Dict[int, str]:
-        return {entry.raw.account_idx : entry.account_id for entry in entries}
+        return {entry.raw.account_idx : entry.account_id for entry in entries if entry.raw is not None}
 
     @staticmethod
     def balance_per_interval(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants) -> Dict[str, float]:
@@ -52,6 +53,7 @@ class EntryMapping:
                 result[account.name] = EntryMapping.__sum_amounts(
                                             EntryFilter.transactions(all_entries, main_id=account_index_to_id[account_idx]),
                                             until_interval)
+                result[account.name] += EntryInsights.initial_balance(all_entries, account_index_to_id[account_idx])
             else:
                 result[account.name] = EntryMapping.__sum_amounts(
                                             EntryFilter.reverse_sign_of_amounts(

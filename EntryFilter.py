@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Callable, List, Dict, Optional
+from typing import Callable, List, Dict, Optional, Set
 from Config import CustomBalance
 from Types import InterpretedEntry, InterpretedEntryType, RawEntryType
 from tagging.Tag import Tag, UndefinedTag
@@ -86,3 +86,9 @@ class EntryFilter:
         for entry in result:
             entry.amount = -1 * entry.amount
         return result
+    
+    def account(entries : List[InterpretedEntry], account_id : str):
+        return [entry for entry in entries if entry.account_id == account_id]
+    
+    def unique_accounts(entries : List[InterpretedEntry]) -> Set[str]:
+        return {entry.account_id for entry in entries}
