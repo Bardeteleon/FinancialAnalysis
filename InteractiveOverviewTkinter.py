@@ -10,6 +10,7 @@ from typing import Callable, Dict, List
 from Config import Config
 from EntryFilter import EntryFilter
 from enum import Enum, auto
+from EntryMapping import EntryMapping
 from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
 from Types import InterpretedEntry
 from VisualizeStatement import VisualizeStatement
@@ -79,7 +80,7 @@ class InteractiveOverviewTkinter():
                     lambda custom_balance=custom_balance: EntryFilter.custom_balance(self.__balance_type_to_data, custom_balance)
 
     def __init_balance_menu_items_with_internal_accounts(self):
-        account_index_to_id = EntryFilter.account_index_to_id(self.__interpreted_entries)
+        account_index_to_id = EntryMapping.account_index_to_id(self.__interpreted_entries)
         for account_idx, account in enumerate(self.__config.internal_accounts):
             if account_idx in account_index_to_id.keys():
                 self.__balance_type_to_data[f"{account.name} (with input)"] = \
@@ -221,7 +222,7 @@ class InteractiveOverviewTkinter():
         self.__balance_variant_cmd(None)
 
     def __get_available_time_intervals(self, variant : TimeIntervalVariants) -> List[str]:
-        time_intervals = list(EntryFilter.balance_per_interval(self.__interpreted_entries, variant).keys())
+        time_intervals = list(EntryMapping.balance_per_interval(self.__interpreted_entries, variant).keys())
         time_intervals = sorted(time_intervals, key=lambda x: int(re.sub("\D", "", x)), reverse=False)
         return time_intervals
 
