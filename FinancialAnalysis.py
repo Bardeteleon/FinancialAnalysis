@@ -6,6 +6,7 @@ import sys
 import tkinter
 import csv
 from Config import Config, read_config
+from EntryAugmentation import EntryAugmentation
 from EntrySorter import EntrySorter
 from EntryValidator import EntryValidator
 from InteractiveOverviewTkinter import InteractiveOverviewTkinter
@@ -87,9 +88,11 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 # )
 # )))
 
-InteractiveOverviewTkinter(interpreted_entries_csv, config, tags)
+entries = EntryAugmentation.add_manual_balances(interpreted_entries_csv, config.internal_accounts)
 
-# EntryWriter(interpreted_entries_csv).write_to_csv("interpreted_entries_csv.csv")
+EntryWriter(entries).write_to_csv("interpreted_entries_csv.csv")
 # EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
 
 # EntryPrinter().raw_interpreted_comparison(filtered_entries_csv)
+
+InteractiveOverviewTkinter(entries, config, tags)

@@ -12,7 +12,7 @@ from EntryFilter import EntryFilter
 from enum import Enum, auto
 from EntryMapping import EntryMapping
 from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
-from Types import InterpretedEntry
+from Types import InterpretedEntry, InterpretedEntryType
 from VisualizeStatement import VisualizeStatement
 from dateutil.relativedelta import relativedelta
 from tagging.Tag import Tag, UndefinedTag
@@ -249,9 +249,9 @@ class InteractiveOverviewTkinter():
     
     def __fill_zero_entries_for_data_range(self):
         one_month = relativedelta(months=1)
-        self.__zero_entries : List[InterpretedEntry] = [InterpretedEntry(date=self.__entry_data_start_date, amount=0.0)]
+        self.__zero_entries : List[InterpretedEntry] = [InterpretedEntry(date=self.__entry_data_start_date, amount=0.0, type=InterpretedEntryType.TRANSACTION_INTERNAL)]
         while self.__zero_entries[-1].date < (self.__entry_data_end_date-one_month):
-            self.__zero_entries.append(InterpretedEntry(date=(self.__zero_entries[-1].date+one_month), amount=0.0))
+            self.__zero_entries.append(InterpretedEntry(date=(self.__zero_entries[-1].date+one_month), amount=0.0, type=InterpretedEntryType.TRANSACTION_INTERNAL))
 
     def __fill_all_tags(self):
         self.__all_tags : List[Tag] = []

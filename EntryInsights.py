@@ -24,9 +24,9 @@ class EntryInsights:
     @staticmethod
     def initial_balance_if_entries_with_unique_account_unless_zero(entries : List[InterpretedEntry]) -> float:
         result : float = 0.0
-        accounts = EntryFilter.unique_accounts(entries)
+        accounts = list(EntryFilter.unique_accounts(entries))
         if len(accounts) == 1: 
             account_id = accounts[0]
-            initial_balance = EntryInsights.initial_balance(entries, account_id)
-            logging.debug(f"Found only entries of account {account_id} with initial balance {initial_balance}")
+            result = EntryInsights.initial_balance(entries, account_id)
+            logging.debug(f"Found only entries of account {account_id} with initial balance {result}")
         return result

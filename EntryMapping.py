@@ -1,6 +1,7 @@
 
 
 import datetime
+import logging
 from typing import Dict, List, Optional
 from Config import Account
 from EntryFilter import EntryFilter
@@ -53,7 +54,9 @@ class EntryMapping:
                 result[account.name] = EntryMapping.__sum_amounts(
                                             EntryFilter.transactions(all_entries, main_id=account_index_to_id[account_idx]),
                                             until_interval)
-                result[account.name] += EntryInsights.initial_balance(all_entries, account_index_to_id[account_idx])
+                initial_balance = EntryInsights.initial_balance(all_entries, account_index_to_id[account_idx])
+                logging.debug(f"Account {account.name} has initial balance {initial_balance} and transaction sum {result[account.name]}")
+                result[account.name] += initial_balance
             else:
                 result[account.name] = EntryMapping.__sum_amounts(
                                             EntryFilter.reverse_sign_of_amounts(

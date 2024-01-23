@@ -23,7 +23,8 @@ class EntryFilter:
     @staticmethod
     def undefined_transactions(entries : List[InterpretedEntry]):
         return [entry for entry in entries 
-                      if     entry.raw.type == RawEntryType.TRANSACTION 
+                      if     entry.raw is not None
+                         and entry.raw.type == RawEntryType.TRANSACTION 
                          and (entry.is_untagged() or UndefinedTag in entry.tags)]
     
     @staticmethod
@@ -44,10 +45,9 @@ class EntryFilter:
 
     @staticmethod
     def transactions(entries : List[InterpretedEntry], main_id : Optional[str] = None, other_id : Optional[str] = None):
-        return [entry for entry in entries if entry.raw and
-                                              entry.raw.type == RawEntryType.TRANSACTION and 
-                                              (main_id == None or entry.account_id == main_id) and 
-                                              (other_id == None or re.search(other_id, entry.raw.comment))]
+        return [entry for entry in entries if entry.is_transaction() and 
+                                              (main_id is None or entry.account_id == main_id) and 
+                                              (other_id is None or (entry.raw and re.search(other_id, entry.raw.comment)))]
 
     @staticmethod
     def custom_balance(balance_type_to_data : Dict[str, Callable], custom_balance : CustomBalance) -> List[InterpretedEntry]:
@@ -91,4 +91,4 @@ class EntryFilter:
         return [entry for entry in entries if entry.account_id == account_id]
     
     def unique_accounts(entries : List[InterpretedEntry]) -> Set[str]:
-        return {entry.account_id for entry in entries}
+        return {entry.account_id for entry in entries if len(entry.account_id) > 0}

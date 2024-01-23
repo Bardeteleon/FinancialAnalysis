@@ -32,7 +32,8 @@ class VisualizeStatement:
     def draw_balance_summed(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], axes=None):
         if not axes:
             fig, axes = matplotlib.pyplot.subplots()
-        balance_per_interval : Dict[str, float] = EntryMapping.balance_per_interval(entries, interval_variant)
+        transactions : List[InterpretedEntry] = EntryFilter.transactions(entries)
+        balance_per_interval : Dict[str, float] = EntryMapping.balance_per_interval(transactions, interval_variant)
         balance_per_interval = dict(sorted(balance_per_interval.items(), 
                                                 key=lambda x: int(re.sub("\D", "", x[0])), 
                                                 reverse=False))
@@ -43,12 +44,14 @@ class VisualizeStatement:
         y = numpy.cumsum(y)
         axes.plot(x, y, color=VisualizeStatement.get_common_color(entries, all_tags))
         axes.grid(visible=True)
+        axes.set_title(f"Start: {round(y[0])} -> End: {round(y[-1])}")
         axes.set_xticks(x)
         axes.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
 
     @staticmethod
     def draw_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], ax=None):
-        balance_per_interval : Dict[str, float] = EntryMapping.balance_per_interval(interpreted_entries, interval_variant)
+        filtered_entries = EntryFilter.transactions(interpreted_entries)
+        balance_per_interval : Dict[str, float] = EntryMapping.balance_per_interval(filtered_entries, interval_variant)
         balance_per_interval = dict(sorted(balance_per_interval.items(), 
                                                 key=lambda x: int(re.sub("\D", "", x[0])), 
                                                 reverse=False))
@@ -57,7 +60,7 @@ class VisualizeStatement:
         x = range(len(balance_per_interval))
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()
-        ax.bar(x, balance_per_interval.values(), color=VisualizeStatement.get_common_color(interpreted_entries, all_tags))
+        ax.bar(x, balance_per_interval.values(), color=VisualizeStatement.get_common_color(filtered_entries, all_tags))
         ax.plot(x, [mean_balance]*len(x), label=f"Mean: {mean_balance}", color="blue")
         ax.plot(x, [median_balance]*len(x), label=f"Median: {median_balance}", color="green")
         ax.grid(visible=True)
@@ -73,8 +76,7 @@ class VisualizeStatement:
             fig = VisualizeStatement.creat_default_figure()
         spec = fig.add_gridspec(1,1)
         ax0 = fig.add_subplot(spec[0,0])
-        filtered_entries = EntryFilter.transactions(interpreted_entries)
-        VisualizeStatement.draw_balance_per_interval(filtered_entries, interval_variant, all_tags, ax0)
+        VisualizeStatement.draw_balance_per_interval(interpreted_entries, interval_variant, all_tags, ax0)
         return fig
 
     @staticmethod

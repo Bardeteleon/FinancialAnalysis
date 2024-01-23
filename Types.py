@@ -43,3 +43,6 @@ class InterpretedEntry:
     def is_transaction(self) -> bool:
         return self.type == InterpretedEntryType.TRANSACTION_EXTERNAL or \
                self.type == InterpretedEntryType.TRANSACTION_INTERNAL
+
+    def is_virtual(self) -> bool:
+        return self.raw is None
