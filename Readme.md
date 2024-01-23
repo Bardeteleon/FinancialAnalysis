@@ -7,3 +7,6 @@ pyinstaller --onefile FinancialAnalysis.py
 # Implicits
 * List[InterpretedEntries] have the order as they were read. Used by
     * EntryAugmentation
+# ToDo
+* Rectify account_id. Either from input_file_identification or its transaction_iban.
+* Fix balance sorting in figure with multiple years

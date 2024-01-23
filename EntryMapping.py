@@ -50,18 +50,13 @@ class EntryMapping:
         result : Dict[str, float] = {}
         account_index_to_id = EntryMapping.account_index_to_id(all_entries)
         for account_idx, account in enumerate(all_accounts):
-            if account_idx in account_index_to_id.keys():
-                result[account.name] = EntryMapping.__sum_amounts(
-                                            EntryFilter.transactions(all_entries, main_id=account_index_to_id[account_idx]),
-                                            until_interval)
-                initial_balance = EntryInsights.initial_balance(all_entries, account_index_to_id[account_idx])
-                logging.debug(f"Account {account.name} has initial balance {initial_balance} and transaction sum {result[account.name]}")
-                result[account.name] += initial_balance
-            else:
-                result[account.name] = EntryMapping.__sum_amounts(
-                                            EntryFilter.reverse_sign_of_amounts(
-                                            EntryFilter.transactions(all_entries, other_id=account.transaction_iban)),
-                                            until_interval)
+            account_id = account.transaction_iban if account.is_virtual() else account_index_to_id[account_idx]
+            result[account.name] = EntryMapping.__sum_amounts(
+                                        EntryFilter.transactions(all_entries, main_id=account_id),
+                                        until_interval)
+            initial_balance = EntryInsights.initial_balance(all_entries, account_id)
+            logging.debug(f"Account {account.name} has initial balance {initial_balance} and transaction sum {result[account.name]}")
+            result[account.name] += initial_balance
         return result
     
     @staticmethod

@@ -87,8 +87,14 @@ class EntryFilter:
             entry.amount = -1 * entry.amount
         return result
     
+    @staticmethod
     def account(entries : List[InterpretedEntry], account_id : str):
         return [entry for entry in entries if entry.account_id == account_id]
     
+    @staticmethod
     def unique_accounts(entries : List[InterpretedEntry]) -> Set[str]:
         return {entry.account_id for entry in entries if len(entry.account_id) > 0}
+
+    @staticmethod
+    def non_virtual(entries : List[InterpretedEntry]) -> List[InterpretedEntry]:
+        return [entry for entry in entries if not entry.is_virtual()]

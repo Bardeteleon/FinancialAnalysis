@@ -23,6 +23,9 @@ class Account:
     def get_input_file_identification(self) -> str:
         return self.input_file_identification if self.input_file_identification else ""
 
+    def is_virtual(self) -> bool:
+        return self.input_file_identification is None
+
 @dataclass
 class CustomBalance:
     name : str

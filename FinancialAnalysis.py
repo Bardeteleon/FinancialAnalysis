@@ -88,7 +88,8 @@ for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
 # )
 # )))
 
-entries = EntryAugmentation.add_manual_balances(interpreted_entries_csv, config.internal_accounts)
+entries = EntryAugmentation.add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(interpreted_entries_csv, config.internal_accounts)
+entries = EntryAugmentation.add_manual_balances(entries, config.internal_accounts)
 
 EntryWriter(entries).write_to_csv("interpreted_entries_csv.csv")
 # EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
