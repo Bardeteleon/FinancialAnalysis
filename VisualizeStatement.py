@@ -33,11 +33,9 @@ class VisualizeStatement:
         if not axes:
             fig, axes = matplotlib.pyplot.subplots()
         transactions : List[InterpretedEntry] = EntryFilter.transactions(entries)
-        balance_per_interval : Dict[str, float] = EntryMapping.balance_per_interval(transactions, interval_variant)
-        balance_per_interval = dict(sorted(balance_per_interval.items(), 
-                                                key=lambda x: int(re.sub("\D", "", x[0])), 
-                                                reverse=False))
+        balance_per_interval : Dict[TimeInterval, float] = EntryMapping.balance_per_interval(transactions, interval_variant)
         x = range(len(balance_per_interval.keys()))
+        x_labels = [interval.to_string() for interval in balance_per_interval.keys()]
         y = list(balance_per_interval.values())
         if len(y) > 0:
             y[0] += EntryInsights.initial_balance_if_entries_with_unique_account_unless_zero(entries)
@@ -46,18 +44,16 @@ class VisualizeStatement:
         axes.grid(visible=True)
         axes.set_title(f"Start: {round(y[0])} -> End: {round(y[-1])}")
         axes.set_xticks(x)
-        axes.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
+        axes.set_xticklabels(x_labels, rotation=90)
 
     @staticmethod
     def draw_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], ax=None):
         filtered_entries = EntryFilter.transactions(interpreted_entries)
-        balance_per_interval : Dict[str, float] = EntryMapping.balance_per_interval(filtered_entries, interval_variant)
-        balance_per_interval = dict(sorted(balance_per_interval.items(), 
-                                                key=lambda x: int(re.sub("\D", "", x[0])), 
-                                                reverse=False))
+        balance_per_interval : Dict[TimeInterval, float] = EntryMapping.balance_per_interval(filtered_entries, interval_variant)
         mean_balance = round(mean(balance_per_interval.values()))
         median_balance = round(median(balance_per_interval.values()))
         x = range(len(balance_per_interval))
+        x_labels = [interval.to_string() for interval in balance_per_interval.keys()]
         if not ax:
             fig, ax = matplotlib.pyplot.subplots()
         ax.bar(x, balance_per_interval.values(), color=VisualizeStatement.get_common_color(filtered_entries, all_tags))
@@ -66,7 +62,7 @@ class VisualizeStatement:
         ax.grid(visible=True)
         ax.set_title(f"Sum: {round(sum(balance_per_interval.values()))}")
         ax.set_xticks(x)
-        ax.set_xticklabels(list(balance_per_interval.keys()), rotation=90)
+        ax.set_xticklabels(x_labels, rotation=90)
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles, labels, loc='upper right')
 

@@ -24,6 +24,12 @@ class TimeInterval:
 
     def to_string(self) -> str:
         return ""
+        
+    def __str__(self) -> str:
+        return self.to_string()
+
+    def __hash__(self) -> int:
+        return hash(str(self))
 
     @staticmethod
     def create_from_string(interval_variant : TimeIntervalVariants, string : str) -> 'Optional[TimeInterval]':
@@ -82,6 +88,12 @@ class MonthInterval(TimeInterval):
     def to_string(self) -> str:
         return f"{self.__year}-{self.__month}"
     
+    def __str__(self) -> str:
+        return self.to_string()
+
+    def __hash__(self) -> int:
+        return hash(str(self))
+
     @staticmethod
     def from_string(string : str) -> 'Optional[MonthInterval]':
         match = re.search("^(\d{4})-(\d{1,2})$", string)
@@ -119,6 +131,12 @@ class QuarterInterval(TimeInterval):
         
     def to_string(self) -> str:
         return f"{self.__year}-Q{self.__quarter}"
+
+    def __str__(self) -> str:
+        return self.to_string()
+
+    def __hash__(self) -> int:
+        return hash(str(self))
     
     @staticmethod
     def from_string(string : str) -> 'Optional[QuarterInterval]':
@@ -158,6 +176,12 @@ class HalfYearInterval(TimeInterval):
     def to_string(self) -> str:
         return f"{self.__year}-H{self.__half}"
 
+    def __str__(self) -> str:
+        return self.to_string()
+
+    def __hash__(self) -> int:
+        return hash(str(self))
+
     @staticmethod
     def from_string(string : str) -> 'Optional[HalfYearInterval]':
         match = re.search("^(\d{4})-H(\d{1})$", string)
@@ -194,6 +218,12 @@ class YearInterval(TimeInterval):
 
     def to_string(self) -> str:
         return f"{self.__year}"
+        
+    def __str__(self) -> str:
+        return self.to_string()
+
+    def __hash__(self) -> int:
+        return hash(str(self))
     
     @staticmethod
     def from_string(string : str) -> 'Optional[YearInterval]':

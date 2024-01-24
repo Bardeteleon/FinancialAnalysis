@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import re
 from typing import Dict, List, Optional
 from Config import Account
 from EntryFilter import EntryFilter
@@ -18,14 +19,17 @@ class EntryMapping:
         return {entry.raw.account_idx : entry.account_id for entry in entries if entry.raw is not None}
 
     @staticmethod
-    def balance_per_interval(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants) -> Dict[str, float]:
-        balance_per_time_interval : Dict[str, float] = {}
+    def balance_per_interval(entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants) -> Dict[TimeInterval, float]:
+        balance_per_time_interval : Dict[TimeInterval, float] = {}
         for entry in entries:
-            interval_str : str = TimeInterval.create_from_date(interval_variant, entry.date).to_string()
-            if interval_str in balance_per_time_interval:
-                balance_per_time_interval[interval_str] += entry.amount
+            interval : TimeInterval = TimeInterval.create_from_date(interval_variant, entry.date)
+            if interval in balance_per_time_interval:
+                balance_per_time_interval[interval] += entry.amount
             else:
-                balance_per_time_interval[interval_str] = entry.amount
+                balance_per_time_interval[interval] = entry.amount
+        balance_per_time_interval = dict(sorted(balance_per_time_interval.items(), 
+                                                key=lambda x: x[0], 
+                                                reverse=False))
         return balance_per_time_interval
 
     @staticmethod

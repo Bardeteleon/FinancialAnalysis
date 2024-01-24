@@ -217,8 +217,8 @@ class InteractiveOverviewTkinter():
         self.__balance_variant_cmd(None)
 
     def __get_available_time_intervals(self, variant : TimeIntervalVariants) -> List[str]:
-        time_intervals = list(EntryMapping.balance_per_interval(self.__interpreted_entries, variant).keys())
-        time_intervals = sorted(time_intervals, key=lambda x: int(re.sub("\D", "", x)), reverse=False)
+        time_intervals = EntryMapping.balance_per_interval(self.__interpreted_entries, variant).keys()
+        time_intervals = [interval.to_string() for interval in time_intervals]
         return time_intervals
 
     def __get_time_interval_variant(self) -> TimeIntervalVariants:
