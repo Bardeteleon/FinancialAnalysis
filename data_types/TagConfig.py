@@ -5,7 +5,7 @@ import dataconf
 from enum import Enum, auto
 from dataclasses import dataclass
 from typing import List, Optional
-from tagging.Tag import Tag
+from data_types.Tag import Tag
 
 @dataclass
 class TagDefinition:

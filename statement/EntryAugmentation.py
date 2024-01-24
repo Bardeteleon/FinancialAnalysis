@@ -3,10 +3,10 @@ from datetime import date
 from re import A
 from sqlite3 import InternalError
 from typing import List
-from EntryFilter import EntryFilter
-from EntryMapping import EntryMapping
-from Types import CardType, InterpretedEntry, InterpretedEntryType
-from Config import Account
+from statement.EntryFilter import EntryFilter
+from statement.EntryMapping import EntryMapping
+from data_types.Types import CardType, InterpretedEntry, InterpretedEntryType
+from data_types.Config import Account
 
 
 class EntryAugmentation:

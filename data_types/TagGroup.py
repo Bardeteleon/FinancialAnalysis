@@ -1,6 +1,6 @@
 # from __future__ import annotations
 # from typing import List
-# from tagging.NewTag import Tag
+# from data_types.NewTag import Tag
 
 class TagGroup:
     def __init__(self):

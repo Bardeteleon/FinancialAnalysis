@@ -1,6 +1,6 @@
 from typing import Dict
-from tagging.Tag import Tag
-from tagging.TagGroup import TagGroup
+from data_types.Tag import Tag
+from data_types.TagGroup import TagGroup
 
 def test_new_tag_eq():
     assert Tag("TagName") == Tag("TagName")

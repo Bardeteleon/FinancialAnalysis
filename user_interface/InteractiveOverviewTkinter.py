@@ -7,16 +7,16 @@ import matplotlib
 import re
 import logging
 from typing import Callable, Dict, List
-from Config import Config
-from EntryFilter import EntryFilter
+from data_types.Config import Config
+from statement.EntryFilter import EntryFilter
 from enum import Enum, auto
-from EntryMapping import EntryMapping
-from TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
-from Types import InterpretedEntry, InterpretedEntryType
-from VisualizeStatement import VisualizeStatement
+from statement.EntryMapping import EntryMapping
+from data_types.TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
+from data_types.Types import InterpretedEntry, InterpretedEntryType
+from user_interface.VisualizeStatement import VisualizeStatement
 from dateutil.relativedelta import relativedelta
-from tagging.Tag import Tag, UndefinedTag
-from tagging.TagConfig import TagConfig
+from data_types.Tag import Tag, UndefinedTag
+from data_types.TagConfig import TagConfig
 
 class Direction(Enum):
     UP = auto()

@@ -1,7 +1,7 @@
 import re
 
 from matplotlib.pyplot import text
-from Types import *
+from data_types.Types import *
 from typing import List
 
 

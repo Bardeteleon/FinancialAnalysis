@@ -1,5 +1,5 @@
 
-from Types import InterpretedEntry, RawEntryType
+from data_types.Types import InterpretedEntry, RawEntryType
 from typing import *
 import math
 import logging

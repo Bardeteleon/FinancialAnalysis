@@ -1,8 +1,8 @@
 
 import logging
 from typing import List, Optional
-from EntryFilter import EntryFilter
-from Types import InterpretedEntry, InterpretedEntryType
+from statement.EntryFilter import EntryFilter
+from data_types.Types import InterpretedEntry, InterpretedEntryType
 
 class EntryInsights:
 

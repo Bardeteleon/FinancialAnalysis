@@ -1,7 +1,7 @@
 
 from typing import List
-from EntryInsights import EntryInsights
-from Types import InterpretedEntry, InterpretedEntryType
+from statement.EntryInsights import EntryInsights
+from data_types.Types import InterpretedEntry, InterpretedEntryType
 
 
 def test_balance_within_entries():

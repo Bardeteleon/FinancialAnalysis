@@ -1,10 +1,10 @@
 import re
 import datetime
 import logging
-from Config import Config
-from tagging.Tag import UndefinedTag
-from tagging.TagConfig import TagDefinition, TagConfig
-from Types import *
+from data_types.Config import Config
+from data_types.Tag import UndefinedTag
+from data_types.TagConfig import TagDefinition, TagConfig
+from data_types.Types import *
 from typing import List
 
 

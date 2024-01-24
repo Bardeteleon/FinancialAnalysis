@@ -5,24 +5,24 @@ import datetime
 import sys
 import tkinter
 import csv
-from Config import Config, read_config
-from EntryAugmentation import EntryAugmentation
-from EntrySorter import EntrySorter
-from EntryValidator import EntryValidator
-from InteractiveOverviewTkinter import InteractiveOverviewTkinter
-from InterpretedStatementExtractor import InterpretedStatementExtractor
-from CsvReader import CsvReader
-from PdfReader import PdfReader
-from EntryPrinter import EntryPrinter
-from EntryFilter import EntryFilter
-from EntryWriter import EntryWriter
-from RawEntriesFromCsvExtractor import RawEntriesFromCsvExtractor
-from RawEntriesFromPdfTextExtractor import RawEntriesFromPdfTextExtractor
+from data_types.Config import Config, read_config
+from statement.EntryAugmentation import EntryAugmentation
+from statement.EntrySorter import EntrySorter
+from statement.EntryValidator import EntryValidator
+from user_interface.InteractiveOverviewTkinter import InteractiveOverviewTkinter
+from statement.extractor.InterpretedStatementExtractor import InterpretedStatementExtractor
+from file_reader.CsvReader import CsvReader
+from file_reader.PdfReader import PdfReader
+from statement.EntryPrinter import EntryPrinter
+from statement.EntryFilter import EntryFilter
+from statement.EntryWriter import EntryWriter
+from statement.extractor.RawEntriesFromCsvExtractor import RawEntriesFromCsvExtractor
+from statement.extractor.RawEntriesFromPdfTextExtractor import RawEntriesFromPdfTextExtractor
 from typing import List
-from tagging.TagConfig import TagConfig, load_tags
-from Types import *
-from VisualizeStatement import VisualizeStatement
-from InputArgumentInterpreter import InputArgumentInterpreter
+from data_types.TagConfig import TagConfig, load_tags
+from data_types.Types import *
+from user_interface.VisualizeStatement import VisualizeStatement
+from user_interface.InputArgumentInterpreter import InputArgumentInterpreter
 
 logging.basicConfig(
     format="%(levelname)s %(asctime)s - %(message)s",

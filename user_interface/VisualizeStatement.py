@@ -1,11 +1,11 @@
 from collections import Counter
 from statistics import mean, median
 from typing import List, Dict
-from Config import Account
-from EntryInsights import EntryInsights
-from EntryMapping import EntryMapping
-from TimeInterval import TimeInterval, TimeIntervalVariants
-from Types import *
+from data_types.Config import Account
+from statement.EntryInsights import EntryInsights
+from statement.EntryMapping import EntryMapping
+from data_types.TimeInterval import TimeInterval, TimeIntervalVariants
+from data_types.Types import *
 import matplotlib
 import matplotlib.pyplot
 import numpy
@@ -13,8 +13,8 @@ import datetime
 import logging
 import tkinter
 import re
-from EntryFilter import EntryFilter
-from tagging.TagGroup import TagGroup
+from statement.EntryFilter import EntryFilter
+from data_types.TagGroup import TagGroup
 
 matplotlib.use("TkAgg")
 

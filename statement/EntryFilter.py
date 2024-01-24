@@ -1,13 +1,13 @@
 from copy import deepcopy
 from typing import Callable, List, Dict, Optional, Set
-from Config import CustomBalance
-from Types import InterpretedEntry, InterpretedEntryType, RawEntryType
-from tagging.Tag import Tag, UndefinedTag
+from data_types.Config import CustomBalance
+from data_types.Types import InterpretedEntry, InterpretedEntryType, RawEntryType
+from data_types.Tag import Tag, UndefinedTag
 import datetime
 import logging
 import re
 
-from tagging.TagGroup import TagGroup
+from data_types.TagGroup import TagGroup
 
 class EntryFilter:
     

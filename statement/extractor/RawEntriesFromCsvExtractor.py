@@ -1,7 +1,7 @@
 from sre_parse import State
-from Types import *
+from data_types.Types import *
 from typing import *
-from Config import Config
+from data_types.Config import Config
 import logging
 import re
 

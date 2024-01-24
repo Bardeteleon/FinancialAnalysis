@@ -1,5 +1,5 @@
 from typing import List
-from Types import InterpretedEntry
+from data_types.Types import InterpretedEntry
 
 class EntryPrinter:
 
