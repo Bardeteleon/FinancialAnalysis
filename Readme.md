@@ -9,4 +9,3 @@ pyinstaller --onefile FinancialAnalysis.py
     * EntryAugmentation
 # ToDo
 * Rectify account_id. Either from input_file_identification or its transaction_iban.
-* Fix balance sorting in figure with multiple years

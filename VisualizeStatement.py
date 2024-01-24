@@ -89,15 +89,17 @@ class VisualizeStatement:
         balance_per_tag : Dict[TagGroup, float] = EntryMapping.balance_per_tag_of_interval(interpreted_entries, interval)
         balance_sum = numpy.sum(list(balance_per_tag.values()))
         balance_per_tag_sorted = dict(sorted(balance_per_tag.items(), key=lambda x: abs(x[1]), reverse=False))
+        balance_sum_of_abs = numpy.sum(numpy.abs(list(balance_per_tag_sorted.values())))
+        labels = [f"{key} ({round(value)} / {round(abs(value/balance_sum_of_abs*100))}%)" for (key, value) in balance_per_tag_sorted.items()]
         if not axs:
             fig, axs = matplotlib.pyplot.subplots()
         axs.set_title(f"Sum: {balance_sum}")
         axs.pie(numpy.abs(list(balance_per_tag_sorted.values())), 
-                labels=balance_per_tag_sorted.keys(), 
+                labels=labels, 
                 colors=VisualizeStatement.get_colors_for_tags(list(balance_per_tag_sorted.keys()), all_tags),
                 startangle=90)
         handles, labels = axs.get_legend_handles_labels()
-        axs.legend(handles[::-1], labels[::-1], loc='upper left')
+        axs.legend(handles[::-1], labels[::-1], loc='upper right')
 
     @staticmethod
     def get_figure_positive_negative_tag_pies(all_entries : List[InterpretedEntry], interval : TimeInterval, all_tags : List[Tag], all_accounts : List[Account], fig=None):
