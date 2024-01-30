@@ -1,10 +1,6 @@
-import argparse
-import os
 import logging
-import datetime
-import sys
-import tkinter
-import csv
+import re
+from FinancialAnalysisInput import FinancialAnalysisInput
 from data_types.Config import Config, read_config
 from statement.EntryAugmentation import EntryAugmentation
 from statement.EntrySorter import EntrySorter
@@ -21,79 +17,84 @@ from statement.extractor.RawEntriesFromPdfTextExtractor import RawEntriesFromPdf
 from typing import List
 from data_types.TagConfig import TagConfig, load_tags
 from data_types.Types import *
-from user_interface.VisualizeStatement import VisualizeStatement
-from user_interface.InputArgumentInterpreter import InputArgumentInterpreter
 
-logging.basicConfig(
-    format="%(levelname)s %(asctime)s - %(message)s",
-    level=logging.INFO
-)
+class FinancialAnalysis:
 
-parser = argparse.ArgumentParser(prog="FinancialAnalysis", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--input_dir_path", help="Path to input directory where statements are stored.", default="input")
-parser.add_argument("--tags_json_path", help="Path to json file that defines patterns for tagging.", default="tags.json")
-parser.add_argument("--config_json_path", help="Path to json file that defines various configs.", default="config.json")
-args = parser.parse_args()
+    def __init__(self, input : FinancialAnalysisInput):
+        self.__input : FinancialAnalysisInput = input
 
-args_interpreter = InputArgumentInterpreter(args.input_dir_path, args.tags_json_path, args.config_json_path)
-args_interpreter.run()
-if args_interpreter.has_error():
-    sys.exit(1)
+        logging.debug(f"Found {len(input.input_files)} input file")
 
-config : Config = read_config(args_interpreter.get_config_json_file())
-tags : TagConfig = load_tags(args_interpreter.get_tags_json_file())
+        self.read_configs()
 
-interpreted_entries_csv : List[InterpretedEntry] = []
-interpreted_entries_pdf : List[InterpretedEntry] = []
-logging.debug(f"Found {len(args_interpreter.get_input_files())} input file")
-input_file_count = 1
-for input_file in args_interpreter.get_filtered_input_files("\.csv$"):
+        self.__interpreted_entries_csv : List[InterpretedEntry] = []
+        self.__interpreted_entries_pdf : List[InterpretedEntry] = []
+        self.__augmented_entries_csv : List[InterpretedEntry] = []
+    
+    def read_configs(self):
+        self.__config : Config = read_config(self.__input.config_json_file)
+        self.__tags : TagConfig = load_tags(self.__input.tags_json_file)
 
-    logging.debug(f"{input_file_count}. {input_file}")
-    input_file_count += 1
+    def interpret_csv_input(self):
+        input_file_count = 1
+        for input_file in self.__get_filtered_input_files("\.csv$"):
 
-    csv_reader = CsvReader(input_file)
-    csv_reader.run()
+            logging.debug(f"{input_file_count}. {input_file}")
+            input_file_count += 1
 
-    raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), config)
-    raw_extractor.run()
+            csv_reader = CsvReader(input_file)
+            csv_reader.run()
 
-    interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), config, tags)
-    interpreted_extractor.run()
-    interpreted_entries_csv += interpreted_extractor.get_interpreted_entries()
+            raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), self.__config)
+            raw_extractor.run()
 
-# for input_file in args_interpreter.get_filtered_input_files("\.pdf$"):
+            interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), self.__config, self.__tags)
+            interpreted_extractor.run()
+            self.__interpreted_entries_csv += interpreted_extractor.get_interpreted_entries()
 
-#     logging.debug(f"{input_file_count}. {input_file}")
-#     input_file_count += 1
+    def interpret_pdf_input(self):
+        input_file_count = 1
+        for input_file in self.__get_filtered_input_files("\.pdf$"):
 
-#     pdf_reader = PdfReader(str(input_file))
-#     pdf_reader.run()
+            logging.debug(f"{input_file_count}. {input_file}")
+            input_file_count += 1
 
-#     raw_extractor = RawEntriesFromPdfTextExtractor(pdf_reader.get_text())
-#     raw_extractor.run()
+            pdf_reader = PdfReader(str(input_file))
+            pdf_reader.run()
 
-#     interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), config, tags)
-#     interpreted_extractor.run()
-#     interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
+            raw_extractor = RawEntriesFromPdfTextExtractor(pdf_reader.get_text())
+            raw_extractor.run()
 
-# validator = EntryValidator([entry for entry in interpreted_entries if entry.raw.type != RawEntryType.UNKNOW])
-# validator.validate_amounts_with_balances()
+            interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), self.__config, self.__tags)
+            interpreted_extractor.run()
+            self.__interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
 
-# EntryPrinter.date_id_amount_tags_comment(
-#     EntrySorter.by_amount(
-#         EntryFilter.external_transactions(
-#         EntryFilter.undefined_transactions(
-#             interpreted_entries_csv
-# )
-# )))
+    def validate_interpreted_input(self):
+        logging.info("csv input validation")
+        validator = EntryValidator([entry for entry in self.__interpreted_entries_csv if entry.raw.type != RawEntryType.UNKNOW])
+        validator.validate_amounts_with_balances()
+        logging.info("pdf input validation")
+        validator = EntryValidator([entry for entry in self.__interpreted_entries_pdf if entry.raw.type != RawEntryType.UNKNOW])
+        validator.validate_amounts_with_balances()
 
-entries = EntryAugmentation.add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(interpreted_entries_csv, config.internal_accounts)
-entries = EntryAugmentation.add_manual_balances(entries, config.internal_accounts)
+    def print_undefined_external_transaction_csv_entries(self):
+        EntryPrinter.date_id_amount_tags_comment(
+            EntrySorter.by_amount(
+                EntryFilter.external_transactions(
+                EntryFilter.undefined_transactions(
+                    self.__interpreted_entries_csv
+        ))))
 
-EntryWriter(entries).write_to_csv("interpreted_entries_csv.csv")
-# EntryWriter(filtered_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
+    def augment_csv_entries(self):
+        self.__augmented_entries_csv = EntryAugmentation.add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(self.__interpreted_entries_csv, self.__config.internal_accounts)
+        self.__augmented_entries_csv = EntryAugmentation.add_manual_balances(self.__augmented_entries_csv, self.__config.internal_accounts)
 
-# EntryPrinter().raw_interpreted_comparison(filtered_entries_csv)
+    def write_entries_to_csv(self):
+        EntryWriter(self.__augmented_entries_csv).write_to_csv("interpreted_entries_csv.csv")
+        EntryWriter(self.__interpreted_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
 
-InteractiveOverviewTkinter(entries, config, tags)
+    def launce_interactive_overview(self):
+        InteractiveOverviewTkinter(self.__augmented_entries_csv, self.__config, self.__tags)
+
+    def __get_filtered_input_files(self, filter : str):
+        return [file for file in self.__input.input_files if re.search(filter, file)]

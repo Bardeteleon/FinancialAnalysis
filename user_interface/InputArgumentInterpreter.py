@@ -2,6 +2,7 @@ import os
 import logging
 import re
 from typing import List, Optional
+from FinancialAnalysisInput import FinancialAnalysisInput
 
 class InputArgumentInterpreter:
 
@@ -16,11 +17,11 @@ class InputArgumentInterpreter:
         self.__config_json_file : os.PathLike = None
         self.__error : bool = False
 
+    def get_financial_analysis_input(self) -> Optional[FinancialAnalysisInput]:
+        return FinancialAnalysisInput(self.__input_files, self.__tags_json_file, self.__config_json_file) if not self.has_error() else None
+
     def get_input_files(self) -> List[os.PathLike]:
         return self.__input_files
-
-    def get_filtered_input_files(self, filter : str):
-        return [file for file in self.__input_files if re.search(filter, file)]
     
     def get_tags_json_file(self) -> Optional[os.PathLike]:
         return self.__tags_json_file
