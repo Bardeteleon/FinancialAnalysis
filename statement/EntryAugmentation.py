@@ -1,11 +1,12 @@
 
 from datetime import date
 from re import A
+import re
 from sqlite3 import InternalError
 from typing import List
 from statement.EntryFilter import EntryFilter
 from statement.EntryMapping import EntryMapping
-from data_types.Types import CardType, InterpretedEntry, InterpretedEntryType
+from data_types.Types import CardType, InterpretedEntry, InterpretedEntryType, RawEntry
 from data_types.Config import Account
 
 
@@ -51,4 +52,12 @@ class EntryAugmentation:
                         raw=None
                     ))
         all_entries += new_entries
+        return all_entries
+
+    @staticmethod
+    def replace_alternative_transaction_iban_with_original(all_entries : List[RawEntry], all_accounts : List[Account]) -> List[RawEntry]:
+        for account in all_accounts:
+            if account.transaction_iban_alternative is not None:
+                for entry in all_entries:
+                    entry.comment = re.sub(account.transaction_iban_alternative, account.transaction_iban, entry.comment)
         return all_entries

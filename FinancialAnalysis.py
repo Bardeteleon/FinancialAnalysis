@@ -48,7 +48,9 @@ class FinancialAnalysis:
             raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), self.__config)
             raw_extractor.run()
 
-            interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), self.__config, self.__tags)
+            augmented_raw_entries = EntryAugmentation.replace_alternative_transaction_iban_with_original(raw_extractor.get_raw_entries(), self.__config.internal_accounts) 
+
+            interpreted_extractor = InterpretedStatementExtractor(augmented_raw_entries, self.__config, self.__tags)
             interpreted_extractor.run()
             self.__interpreted_entries_csv += interpreted_extractor.get_interpreted_entries()
 
@@ -86,14 +88,15 @@ class FinancialAnalysis:
         ))))
 
     def augment_csv_entries(self):
-        self.__augmented_entries_csv = EntryAugmentation.add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(self.__interpreted_entries_csv, self.__config.internal_accounts)
+        self.__augmented_entries_csv = self.__interpreted_entries_csv
+        self.__augmented_entries_csv = EntryAugmentation.add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(self.__augmented_entries_csv, self.__config.internal_accounts)
         self.__augmented_entries_csv = EntryAugmentation.add_manual_balances(self.__augmented_entries_csv, self.__config.internal_accounts)
 
     def write_entries_to_csv(self):
         EntryWriter(self.__augmented_entries_csv).write_to_csv("interpreted_entries_csv.csv")
         EntryWriter(self.__interpreted_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
 
-    def launce_interactive_overview(self):
+    def launch_interactive_overview(self):
         InteractiveOverviewTkinter(self.__augmented_entries_csv, self.__config, self.__tags)
 
     def __get_filtered_input_files(self, filter : str):

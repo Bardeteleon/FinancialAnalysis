@@ -17,6 +17,7 @@ class ManualBalance:
 class Account:
     name : str 
     transaction_iban : str
+    transaction_iban_alternative : Optional[str]
     input_file_identification : Optional[str]
     balance_reference : Optional[ManualBalance]
 
