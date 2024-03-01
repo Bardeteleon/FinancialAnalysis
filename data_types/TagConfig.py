@@ -13,6 +13,7 @@ class TagDefinition:
     comment_pattern : str
     date_from : Optional[str]
     date_to : Optional[str]
+    account_id : Optional[str]
 
 @dataclass
 class TagConfig:

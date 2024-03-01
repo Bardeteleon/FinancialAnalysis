@@ -1,3 +1,4 @@
+import datetime
 import logging
 import re
 from FinancialAnalysisInput import FinancialAnalysisInput
@@ -81,11 +82,15 @@ class FinancialAnalysis:
 
     def print_undefined_external_transaction_csv_entries(self):
         EntryPrinter.date_id_amount_tags_comment(
-            EntrySorter.by_amount(
+            # EntrySorter.by_date(
+              EntrySorter.by_amount(
                 EntryFilter.external_transactions(
                 EntryFilter.undefined_transactions(
+                    # EntryFilter.from_to_date(
                     self.__interpreted_entries_csv
-        ))))
+                    # , datetime.date.fromisoformat("2023-06-01"), datetime.date.fromisoformat("2023-06-30"))
+        ))
+        ))
 
     def augment_csv_entries(self):
         self.__augmented_entries_csv = self.__interpreted_entries_csv

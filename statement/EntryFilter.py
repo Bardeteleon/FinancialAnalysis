@@ -50,6 +50,10 @@ class EntryFilter:
                                               (other_id is None or (entry.raw and re.search(other_id, entry.raw.comment)))]
 
     @staticmethod
+    def from_to_date(entries : List[InterpretedEntry], from_date : datetime.date, to_date : datetime.date):
+        return [entry for entry in entries if entry.date >= from_date and entry.date <= to_date]
+
+    @staticmethod
     def custom_balance(balance_type_to_data : Dict[str, Callable], custom_balance : CustomBalance) -> List[InterpretedEntry]:
 
         def get_matches_in_a_list(input, list) -> List[str]:

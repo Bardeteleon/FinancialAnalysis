@@ -10,7 +10,8 @@ class EntryPrinter:
     @staticmethod
     def date_id_amount_tags_comment(entries : List[InterpretedEntry]):        
         for entry in entries:
-            print(f"{entry.date} | {entry.account_id} | {entry.amount} |\t{entry.tags} | {entry.raw.comment}")
+            comment = entry.raw.comment if entry.raw else ""
+            print(f"{entry.date} | {entry.account_id} | {entry.amount} |\t{entry.tags} | {comment}")
         EntryPrinter.count(entries)
 
     @staticmethod

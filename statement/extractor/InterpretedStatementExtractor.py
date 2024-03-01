@@ -97,9 +97,12 @@ class InterpretedStatementExtractor:
                     date_to = datetime.date.fromisoformat(tag_definition.date_to)
                     if entry.date < date_from or entry.date > date_to:
                         continue
-                match = re.search(tag_definition.comment_pattern, entry.raw.comment)
-                if match:
-                    entry.tags.append(tag_definition.tag)
+                if tag_definition.account_id:
+                    if entry.account_id != tag_definition.account_id:
+                        continue
+                if not re.search(tag_definition.comment_pattern, entry.raw.comment):
+                    continue
+                entry.tags.append(tag_definition.tag)
 
     def __extract_type(self):
         for entry in self.__interpreted_entries:
