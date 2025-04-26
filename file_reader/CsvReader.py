@@ -11,7 +11,7 @@ class CsvReader:
         self.__content : List[List[str]] = []
 
     def run(self):    
-        with open(self.__input_file, "r") as file:
+        with open(self.__input_file, "r", encoding="ISO-8859-1") as file:
             csv_reader = csv.reader(file, delimiter=self.__delimiter)
             for row in csv_reader:
                 self.__content.append(row)

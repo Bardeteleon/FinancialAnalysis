@@ -158,7 +158,7 @@ class InteractiveOverviewTkinter():
         self.__master.bind('q', lambda event: self.__balance_variant_menu_shift(Direction.UP))
     
     def __start_gui(self):
-        self.__master.state("zoomed")
+        # self.__master.state("zoomed")
         self.__master.mainloop()
 
     def __time_interval_menu_cmd(self, choice):
