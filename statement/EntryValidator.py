@@ -2,7 +2,7 @@
 from data_types.Types import InterpretedEntry, RawEntryType
 from typing import *
 import math
-import logging
+from user_interface.logger import logger
 
 class EntryValidator:
 
@@ -25,20 +25,20 @@ class EntryValidator:
             elif curr_start_balance_entry != None:
                 curr_sum += entry.amount
             else:
-                logging.debug(f"validate_amounts_with_balance: No validation for {entry}")
+                logger.debug(f"validate_amounts_with_balance: No validation for {entry}")
                 validation_successfull = False
 
             if curr_start_balance_entry != None and curr_end_balance_entry != None:
                 if math.isclose(curr_sum, curr_end_balance_entry.amount):
-                    logging.debug(f"validate_amounts_with_balance: Fine between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
+                    logger.debug(f"validate_amounts_with_balance: Fine between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
                 else:
-                    logging.debug(f"validate_amounts_with_balance: Something is not ok between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
+                    logger.debug(f"validate_amounts_with_balance: Something is not ok between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
                     validation_successfull = False
                 curr_start_balance_entry = None
                 curr_end_balance_entry = None
                 curr_sum = 0.0
         if validation_successfull:
-            logging.info("Validation OK!")
+            logger.info("Validation OK!")
         else:
-            logging.warning("Validation failed!")
+            logger.warning("Validation failed!")
         return validation_successfull

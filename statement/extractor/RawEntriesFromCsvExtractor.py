@@ -2,7 +2,7 @@ from sre_parse import State
 from data_types.Types import *
 from typing import *
 from data_types.Config import Config
-import logging
+from user_interface.logger import logger
 import re
 
 @dataclass
@@ -23,7 +23,7 @@ class RawEntriesFromCsvExtractor:
 
         self.__heading_index : Optional[HeadingIndex] = self.__find_heading_index() 
         if self.__heading_index is None:
-            logging.error("No heading index found. Abort!")
+            logger.error("No heading index found. Abort!")
             return
 
         self.__date_indices : List[Optional[int]] = [self.__find_column_index(column) for column in self.__config.headings[self.__heading_index.in_config].date]
@@ -31,19 +31,19 @@ class RawEntriesFromCsvExtractor:
         self.__comment_indices : List[Optional[int]] = [self.__find_column_index(column) for column in self.__config.headings[self.__heading_index.in_config].comment]
 
         if None in self.__date_indices:
-            logging.error("Unable to find all date columns")
+            logger.error("Unable to find all date columns")
             return
         if None in self.__amount_indices:
-            logging.error("Unable to find all amount columns")
+            logger.error("Unable to find all amount columns")
             return
         if None in self.__comment_indices:
-            logging.error("Unable to find all comment columns")
+            logger.error("Unable to find all comment columns")
             return
 
         self.__account_idx = self.__find_account_idx()
 
         if self.__account_idx == None:
-            logging.info("No account found for input csv")
+            logger.info("No account found for input csv")
             return
 
         self.__extract_raw_entries()
@@ -75,7 +75,7 @@ class RawEntriesFromCsvExtractor:
         try:
             index = self.__csv[self.__heading_index.in_csv].index(column_heading)
         except ValueError:
-            logging.error(f"No {column_heading} index found in {self.__csv[self.__heading_index.in_csv]}")
+            logger.error(f"No {column_heading} index found in {self.__csv[self.__heading_index.in_csv]}")
         return index
 
     def __find_heading_index(self) -> Optional[HeadingIndex]:
@@ -90,7 +90,7 @@ class RawEntriesFromCsvExtractor:
                 row_as_string = " ".join(row)
                 match = re.findall(all_column_headings_regex, row_as_string)
                 if len(match) == len(all_column_headings):
-                    logging.debug(f"Found heading config with index {heading_index_in_config} in row {heading_index_in_csv}")
+                    logger.debug(f"Found heading config with index {heading_index_in_config} in row {heading_index_in_csv}")
                     return HeadingIndex(heading_index_in_csv,heading_index_in_config)
                 if heading_index_in_csv > 10:
                     break
@@ -104,7 +104,7 @@ class RawEntriesFromCsvExtractor:
                 if len(account.get_input_file_identification()) > 0:
                     match_name = re.search(re.escape(account.get_input_file_identification()), row_as_string)
                     if match_name:
-                        logging.debug(f"Found identification name in row {i} '{account.get_input_file_identification()}'")
+                        logger.debug(f"Found identification name in row {i} '{account.get_input_file_identification()}'")
                         return account_idx
         return None
 

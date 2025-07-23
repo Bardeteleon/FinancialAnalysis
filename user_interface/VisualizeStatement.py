@@ -10,7 +10,7 @@ import matplotlib
 import matplotlib.pyplot
 import numpy
 import datetime
-import logging
+from user_interface.logger import logger
 import tkinter
 import re
 from statement.EntryFilter import EntryFilter

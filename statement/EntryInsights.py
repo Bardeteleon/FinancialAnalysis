@@ -1,5 +1,5 @@
 
-import logging
+from user_interface.logger import logger
 from typing import List, Optional
 from statement.EntryFilter import EntryFilter
 from data_types.Types import InterpretedEntry, InterpretedEntryType
@@ -18,7 +18,7 @@ class EntryInsights:
             result = sum([ -1.0*entry.amount for entry in account_entries[:first_index_with_balance] if entry.is_transaction()])
             result += account_entries[first_index_with_balance].amount
         else:
-            logging.debug(f"No entry with type balance found for accound id {account_id}")
+            logger.debug(f"No entry with type balance found for accound id {account_id}")
         return result
     
     @staticmethod
@@ -28,5 +28,5 @@ class EntryInsights:
         if len(accounts) == 1: 
             account_id = accounts[0]
             result = EntryInsights.initial_balance(entries, account_id)
-            logging.debug(f"Found only entries of account {account_id} with initial balance {result}")
+            logger.debug(f"Found only entries of account {account_id} with initial balance {result}")
         return result

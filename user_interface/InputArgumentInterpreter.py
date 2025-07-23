@@ -1,5 +1,5 @@
 import os
-import logging
+from user_interface.logger import logger
 import re
 from typing import List, Optional
 from FinancialAnalysisInput import FinancialAnalysisInput
@@ -31,7 +31,7 @@ class InputArgumentInterpreter:
 
     def run(self):
         self.__interpret_input_dir_path()
-        logging.info(self.__base_path)
+        logger.info(self.__base_path)
         self.__interpret_tags_json_path()
         self.__interpret_config_json_path()
     
@@ -57,7 +57,7 @@ class InputArgumentInterpreter:
             self.__base_path = os.getcwd()
         else:
             self.__error = True
-            logging.error(f"Unable to interpret input_dir_path: {self.__input_dir_path}. It can be an absolute or relative to cwd file or directory with files.")
+            logger.error(f"Unable to interpret input_dir_path: {self.__input_dir_path}. It can be an absolute or relative to cwd file or directory with files.")
 
     def __find_files_in_directory_recursively(self, directory : os.PathLike) -> List[os.PathLike]:
         result = []
@@ -85,7 +85,7 @@ class InputArgumentInterpreter:
             self.__tags_json_file = base_path_joined_tags_json_path
         else:
             self.__error = True
-            logging.error(f"Unable to interpret tags_json_path: {self.__tags_json_path}. It can be an absolute or relative to cwd file path.")
+            logger.error(f"Unable to interpret tags_json_path: {self.__tags_json_path}. It can be an absolute or relative to cwd file path.")
 
     def __interpret_config_json_path(self):
         if self.has_error():
@@ -101,4 +101,4 @@ class InputArgumentInterpreter:
             self.__config_json_file = base_path_joined_config_json_path
         else:
             self.__error = True
-            logging.error(f"Unable to interpret config_json_path: {self.__config_json_path}. It can be an absolute or relative to cwd file path.")
+            logger.error(f"Unable to interpret config_json_path: {self.__config_json_path}. It can be an absolute or relative to cwd file path.")

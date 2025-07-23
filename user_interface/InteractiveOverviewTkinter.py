@@ -5,7 +5,7 @@ import tkinter
 import tkinter.ttk
 import matplotlib
 import re
-import logging
+from user_interface.logger import logger
 from typing import Callable, Dict, List
 from data_types.Config import Config
 from statement.EntryFilter import EntryFilter

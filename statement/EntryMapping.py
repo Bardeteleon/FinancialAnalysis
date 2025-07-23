@@ -1,7 +1,7 @@
 
 
 import datetime
-import logging
+from user_interface.logger import logger
 import re
 from typing import Dict, List, Optional
 from data_types.Config import Account
@@ -59,7 +59,7 @@ class EntryMapping:
                                         EntryFilter.transactions(all_entries, main_id=account_id),
                                         until_interval)
             initial_balance = EntryInsights.initial_balance(all_entries, account_id)
-            logging.debug(f"Account {account.name} has initial balance {initial_balance} and transaction sum {result[account.name]}")
+            logger.debug(f"Account {account.name} has initial balance {initial_balance} and transaction sum {result[account.name]}")
             result[account.name] += initial_balance
         return result
     

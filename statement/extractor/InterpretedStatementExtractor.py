@@ -1,6 +1,6 @@
 import re
 import datetime
-import logging
+from user_interface.logger import logger
 from data_types.Config import Config
 from data_types.Tag import UndefinedTag
 from data_types.TagConfig import TagDefinition, TagConfig

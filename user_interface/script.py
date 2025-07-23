@@ -1,16 +1,10 @@
-import os
-import sys
 import logging
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from user_interface.logger import ConfigureLogger
 from user_interface.InputArgumentInterpreter import InputArgumentInterpreter
 from user_interface.InputArgumentParser import InputArgumentParser
 from FinancialAnalysis import FinancialAnalysis
 
-logging.basicConfig(
-    format="%(levelname)s %(asctime)s - %(message)s",
-    level=logging.INFO
-)
+ConfigureLogger(logging.DEBUG)
 
 args_parser = InputArgumentParser().get_args()
 

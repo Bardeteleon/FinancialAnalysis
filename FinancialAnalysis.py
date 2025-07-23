@@ -1,5 +1,5 @@
 import datetime
-import logging
+from user_interface.logger import logger
 import re
 from FinancialAnalysisInput import FinancialAnalysisInput
 from data_types.Config import Config, read_config
@@ -24,7 +24,7 @@ class FinancialAnalysis:
     def __init__(self, input : FinancialAnalysisInput):
         self.__input : FinancialAnalysisInput = input
 
-        logging.debug(f"Found {len(input.input_files)} input file")
+        logger.debug(f"Found {len(input.input_files)} input file")
 
         self.read_configs()
 
@@ -40,7 +40,7 @@ class FinancialAnalysis:
         input_file_count = 1
         for input_file in self.__get_filtered_input_files("\.csv$"):
 
-            logging.debug(f"{input_file_count}. {input_file}")
+            logger.debug(f"{input_file_count}. {input_file}")
             input_file_count += 1
 
             csv_reader = CsvReader(input_file)
@@ -59,7 +59,7 @@ class FinancialAnalysis:
         input_file_count = 1
         for input_file in self.__get_filtered_input_files("\.pdf$"):
 
-            logging.debug(f"{input_file_count}. {input_file}")
+            logger.debug(f"{input_file_count}. {input_file}")
             input_file_count += 1
 
             pdf_reader = PdfReader(str(input_file))
@@ -73,10 +73,10 @@ class FinancialAnalysis:
             self.__interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
 
     def validate_interpreted_input(self):
-        logging.info("csv input validation")
+        logger.info("csv input validation")
         validator = EntryValidator([entry for entry in self.__interpreted_entries_csv if entry.raw.type != RawEntryType.UNKNOW])
         validator.validate_amounts_with_balances()
-        logging.info("pdf input validation")
+        logger.info("pdf input validation")
         validator = EntryValidator([entry for entry in self.__interpreted_entries_pdf if entry.raw.type != RawEntryType.UNKNOW])
         validator.validate_amounts_with_balances()
 

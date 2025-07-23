@@ -4,7 +4,7 @@ from data_types.Config import CustomBalance
 from data_types.Types import InterpretedEntry, InterpretedEntryType, RawEntryType
 from data_types.Tag import Tag, UndefinedTag
 import datetime
-import logging
+from user_interface.logger import logger
 import re
 
 from data_types.TagGroup import TagGroup
@@ -67,19 +67,19 @@ class EntryFilter:
 
         name_results = get_matches_in_a_list(custom_balance.name, custom_balance.plus + custom_balance.minus)
         if len(name_results) > 0:
-            logging.error(f"Custom balance '{custom_balance.name}' contains itself in its definition (plus/minus).")
+            logger.error(f"Custom balance '{custom_balance.name}' contains itself in its definition (plus/minus).")
             return result
 
         for plus in custom_balance.plus:
             plus_results = get_matches_in_a_list(plus, balance_type_to_data.keys())
             if len(plus_results) == 0:
-                logging.info(f"No match for custom balance {custom_balance.name} with plus {plus}")
+                logger.info(f"No match for custom balance {custom_balance.name} with plus {plus}")
             for plus_result in plus_results:
                 result = result + balance_type_to_data[plus_result]()
         for minus in custom_balance.minus:
             minus_results = get_matches_in_a_list(minus, balance_type_to_data.keys())
             if len(minus_results) == 0:
-                logging.info(f"No match for custom balance {custom_balance.name} with minus {minus}")
+                logger.info(f"No match for custom balance {custom_balance.name} with minus {minus}")
             for minus_result in minus_results:
                 result = result + EntryFilter.reverse_sign_of_amounts(balance_type_to_data[minus_result]())
         return result

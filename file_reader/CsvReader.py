@@ -1,5 +1,5 @@
 import csv
-import logging
+from user_interface.logger import logger
 from typing import List
 
 class CsvReader:
@@ -15,7 +15,7 @@ class CsvReader:
             csv_reader = csv.reader(file, delimiter=self.__delimiter)
             for row in csv_reader:
                 self.__content.append(row)
-            logging.debug(f"Read {len(self.__content)} lines from csv")
+            logger.debug(f"Read {len(self.__content)} lines from csv")
 
     def get_content(self) -> List[List[str]]:
         return self.__content
