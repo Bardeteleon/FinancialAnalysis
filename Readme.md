@@ -26,4 +26,5 @@ pyinstaller --onefile FinancialAnalysis.py
     * EntryAugmentation
 
 ## ToDo
+* Define input to accounts by directory rather than input_file_identification
 * Rectify account_id. Either from input_file_identification or its transaction_iban.
