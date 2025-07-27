@@ -6,6 +6,7 @@ A tool to analyse and visualise bank statements.
 * install git and clone repository
 * install Python 3 and pipenv
 * install python3-tk
+* install libmagic1
 * mkdir .venv
 * pipenv install
 
@@ -26,5 +27,6 @@ pyinstaller --onefile FinancialAnalysis.py
     * EntryAugmentation
 
 ## ToDo
+* Warn if some heading config was not found or used
 * Define input to accounts by directory rather than input_file_identification
 * Rectify account_id. Either from input_file_identification or its transaction_iban.

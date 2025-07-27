@@ -1,4 +1,5 @@
 import csv
+import magic
 from user_interface.logger import logger
 from typing import List
 
@@ -10,8 +11,11 @@ class CsvReader:
 
         self.__content : List[List[str]] = []
 
-    def run(self):    
-        with open(self.__input_file, "r", encoding="ISO-8859-1") as file:
+    def run(self):
+        with open(self.__input_file, "rb") as file:
+            classification = magic.detect_from_content(file.read())
+            logger.debug(f"Detected encoding: {classification.encoding}")
+        with open(self.__input_file, "r", encoding=classification.encoding) as file:
             csv_reader = csv.reader(file, delimiter=self.__delimiter)
             for row in csv_reader:
                 self.__content.append(row)

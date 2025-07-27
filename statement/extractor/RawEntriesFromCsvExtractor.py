@@ -71,12 +71,11 @@ class RawEntriesFromCsvExtractor:
 
 
     def __find_column_index(self, column_heading : str) -> Optional[int]:
-        index : Optional[int] = None
-        try:
-            index = self.__csv[self.__heading_index.in_csv].index(column_heading)
-        except ValueError:
-            logger.error(f"No {column_heading} index found in {self.__csv[self.__heading_index.in_csv]}")
-        return index
+        for index, col in enumerate(self.__csv[self.__heading_index.in_csv]):
+            if re.search(re.escape(column_heading), col):
+                return index
+        logger.error(f"No {column_heading} index found in {self.__csv[self.__heading_index.in_csv]}")
+        return None
 
     def __find_heading_index(self) -> Optional[HeadingIndex]:
         for heading_index_in_config, heading_config in enumerate(self.__config.headings):

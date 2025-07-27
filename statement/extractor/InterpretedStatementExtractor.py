@@ -61,12 +61,22 @@ class InterpretedStatementExtractor:
                 month = int(match.group(2))
                 year = int(match.group(3))
                 self.__interpreted_entries[i].date = datetime.date(year, month, day)
+                continue
             match = re.fullmatch("(\d{2})\.(\d{2})\.(\d{4})", raw_entry.date)
             if match:
                 day = int(match.group(1))
                 month = int(match.group(2))
                 year = int(match.group(3))
                 self.__interpreted_entries[i].date = datetime.date(year, month, day)
+                continue
+            match = re.fullmatch("(\d{2})\.(\d{2})\.(\d{2})", raw_entry.date)
+            if match:
+                day = int(match.group(1))
+                month = int(match.group(2))
+                year = int(match.group(3)) + 2000
+                self.__interpreted_entries[i].date = datetime.date(year, month, day)
+                continue
+            logger.warning("Could not extract date: " + raw_entry.date)
     
     def __extract_card_type(self):
         for entry in self.__interpreted_entries:
