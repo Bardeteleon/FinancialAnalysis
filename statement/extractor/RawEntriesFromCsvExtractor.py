@@ -19,6 +19,7 @@ class RawEntriesFromCsvExtractor:
 
     def run(self):
         if len(self.__csv) < 2:
+            logger.error("Csv not considered since too short")
             return
 
         self.__heading_index : Optional[HeadingIndex] = self.__find_heading_index() 
@@ -43,7 +44,7 @@ class RawEntriesFromCsvExtractor:
         self.__account_idx = self.__find_account_idx()
 
         if self.__account_idx == None:
-            logger.info("No account found for input csv")
+            logger.error("No account found for input csv")
             return
 
         self.__extract_raw_entries()
@@ -52,7 +53,7 @@ class RawEntriesFromCsvExtractor:
         return self.__raw_entries
 
     def __extract_raw_entries(self):
-        for row in self.__csv[self.__heading_index.in_csv+1:]:
+        for row in self.__csv[self.__heading_index.in_csv + 1:]:
             raw_entry = RawEntry(
                 date = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__date_indices),
                 amount = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__amount_indices),
@@ -74,7 +75,7 @@ class RawEntriesFromCsvExtractor:
         for index, col in enumerate(self.__csv[self.__heading_index.in_csv]):
             if re.search(re.escape(column_heading), col):
                 return index
-        logger.error(f"No {column_heading} index found in {self.__csv[self.__heading_index.in_csv]}")
+        logger.error(f"No column index found for '{column_heading}' in {self.__csv[self.__heading_index.in_csv]}")
         return None
 
     def __find_heading_index(self) -> Optional[HeadingIndex]:
@@ -90,8 +91,8 @@ class RawEntriesFromCsvExtractor:
                 match = re.findall(all_column_headings_regex, row_as_string)
                 if len(match) == len(all_column_headings):
                     logger.debug(f"Found heading config with index {heading_index_in_config} in row {heading_index_in_csv}")
-                    return HeadingIndex(heading_index_in_csv,heading_index_in_config)
-                if heading_index_in_csv > 10:
+                    return HeadingIndex(heading_index_in_csv, heading_index_in_config)
+                if heading_index_in_csv > 10: # TODO Arbitrary break
                     break
         return None
 

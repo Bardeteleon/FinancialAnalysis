@@ -51,8 +51,14 @@ class InterpretedStatementExtractor:
                 dotted_amount = re.sub(",", ".", raw_entry.amount)
                 self.__interpreted_entries[i].amount = float(dotted_amount)
                 continue
-            
-    
+            match = re.fullmatch("(-)?(\d{1,3}\.)*(\d{1,3})(,\d{1,2})?", raw_entry.amount)
+            if match:
+                without_thousands_dots = re.sub("\.", "", raw_entry.amount)
+                dotted_amount = re.sub(",", ".", without_thousands_dots)
+                self.__interpreted_entries[i].amount = float(dotted_amount)
+                continue
+            logger.warning(f"Could not extract amount from: {raw_entry.amount}")
+
     def __extract_date(self):
         for i, raw_entry in enumerate(self.__raw_entries):
             match = re.fullmatch("(\d{2})\.(\d{2})\. \d{2}\.\d{2}\.(\d{4})", raw_entry.date)
@@ -76,7 +82,7 @@ class InterpretedStatementExtractor:
                 year = int(match.group(3)) + 2000
                 self.__interpreted_entries[i].date = datetime.date(year, month, day)
                 continue
-            logger.warning("Could not extract date: " + raw_entry.date)
+            logger.warning("Could not extract date from: " + raw_entry.date)
     
     def __extract_card_type(self):
         for entry in self.__interpreted_entries:
@@ -98,6 +104,8 @@ class InterpretedStatementExtractor:
                 entry.account_id = match_iban.group(0)
             elif match_half_encrypted_creditcard_number:
                 entry.account_id = match_half_encrypted_creditcard_number.group(0)
+            else:
+                logger.warning(f"Could not extract account id from: {self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification()}")
 
     def __extract_tags(self):
         for entry in self.__interpreted_entries:
