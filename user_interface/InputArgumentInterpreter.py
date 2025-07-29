@@ -58,6 +58,7 @@ class InputArgumentInterpreter:
         else:
             self.__error = True
             logger.error(f"Unable to interpret input_dir_path: {self.__input_dir_path}. It can be an absolute or relative to cwd file or directory with files.")
+        self.__input_files.sort()
 
     def __find_files_in_directory_recursively(self, directory : os.PathLike) -> List[os.PathLike]:
         result = []

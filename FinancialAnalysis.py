@@ -24,8 +24,9 @@ class FinancialAnalysis:
     def __init__(self, input : FinancialAnalysisInput):
         self.__input : FinancialAnalysisInput = input
 
-        logger.debug(f"Found {len(input.input_files)} input file")
-
+        logger.debug(f"Found {len(input.input_files)} input files:")
+        logger.debug(">>>\n" + "\n".join(input.input_files))
+        
         self.read_configs()
 
         self.__interpreted_entries_csv : List[InterpretedEntry] = []
@@ -98,8 +99,10 @@ class FinancialAnalysis:
         self.__augmented_entries_csv = EntryAugmentation.add_manual_balances(self.__augmented_entries_csv, self.__config.internal_accounts)
 
     def write_entries_to_csv(self):
-        EntryWriter(self.__augmented_entries_csv).write_to_csv("interpreted_entries_csv.csv")
-        EntryWriter(self.__interpreted_entries_pdf).write_to_csv("interpreted_entries_pdf.csv")
+        if len(self.__augmented_entries_csv) > 0:
+            EntryWriter(self.__augmented_entries_csv).write_to_csv("interpreted_entries_from_csv.csv")
+        if len(self.__interpreted_entries_pdf) > 0:
+            EntryWriter(self.__interpreted_entries_pdf).write_to_csv("interpreted_entries_from_pdf.csv")
 
     def launch_interactive_overview(self):
         InteractiveOverviewTkinter(self.__augmented_entries_csv, self.__config, self.__tags)
