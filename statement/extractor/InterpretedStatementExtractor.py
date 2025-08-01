@@ -87,7 +87,7 @@ class InterpretedStatementExtractor:
     def __extract_card_type(self):
         for entry in self.__interpreted_entries:
             match = re.search("(VISA|Kreditkarte|credit)", 
-                              self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification()) # TODO Config
+                              self.__config.internal_accounts[entry.raw.account_idx].get_input_directory()) # TODO Config
             if match:
                 entry.card_type = CardType.CREDIT
             else:
@@ -95,17 +95,7 @@ class InterpretedStatementExtractor:
 
     def __extract_account_id(self):
         for entry in self.__interpreted_entries:
-            match_iban = re.search("[A-Z]{2}\d{20}", 
-                                   self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification())
-            match_half_encrypted_creditcard_number = \
-                         re.search("\d{4}\*+\d{4}", 
-                         self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification())
-            if match_iban:
-                entry.account_id = match_iban.group(0)
-            elif match_half_encrypted_creditcard_number:
-                entry.account_id = match_half_encrypted_creditcard_number.group(0)
-            else:
-                logger.warning(f"Could not extract account id from: {self.__config.internal_accounts[entry.raw.account_idx].get_input_file_identification()}")
+            entry.account_id = self.__config.internal_accounts[entry.raw.account_idx].transaction_iban
 
     def __extract_tags(self):
         for entry in self.__interpreted_entries:

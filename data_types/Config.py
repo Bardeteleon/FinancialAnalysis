@@ -18,14 +18,17 @@ class Account:
     name : str 
     transaction_iban : str
     transaction_iban_alternative : Optional[str]
-    input_file_identification : Optional[str]
+    input_directory : Optional[str]
     balance_reference : Optional[ManualBalance]
 
-    def get_input_file_identification(self) -> str:
-        return self.input_file_identification if self.input_file_identification else ""
+    def get_input_directory(self) -> str:
+        return self.input_directory if self.input_directory else ""
 
     def is_virtual(self) -> bool:
-        return self.input_file_identification is None
+        return self.input_directory is None
+    
+    def get_name(self) -> str:
+        return self.name
 
 @dataclass
 class CustomBalance:

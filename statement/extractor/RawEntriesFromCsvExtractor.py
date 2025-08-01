@@ -1,7 +1,8 @@
-from sre_parse import State
+import os
 from data_types.Types import *
 from typing import *
 from data_types.Config import Config
+from file_reader.CsvReader import CsvReader
 from user_interface.logger import logger
 import re
 
@@ -12,13 +13,15 @@ class HeadingIndex:
 
 class RawEntriesFromCsvExtractor:
 
-    def __init__(self, csv : List[List[str]], config : Config):
-        self.__csv = csv
+    def __init__(self, csv : CsvReader, config : Config, input_base_path : os.PathLike):
+        self.__csv : CsvReader = csv
         self.__config : Config = config
+        self.__input_base_path : os.PathLike = input_base_path
+
         self.__raw_entries : List[RawEntry] = []
 
     def run(self):
-        if len(self.__csv) < 2:
+        if len(self.__csv.get_content()) < 2:
             logger.error("Csv not considered since too short")
             return
 
@@ -53,7 +56,7 @@ class RawEntriesFromCsvExtractor:
         return self.__raw_entries
 
     def __extract_raw_entries(self):
-        for row in self.__csv[self.__heading_index.in_csv + 1:]:
+        for row in self.__csv.get_content()[self.__heading_index.in_csv + 1:]:
             raw_entry = RawEntry(
                 date = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__date_indices),
                 amount = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__amount_indices),
@@ -72,10 +75,10 @@ class RawEntriesFromCsvExtractor:
 
 
     def __find_column_index(self, column_heading : str) -> Optional[int]:
-        for index, col in enumerate(self.__csv[self.__heading_index.in_csv]):
+        for index, col in enumerate(self.__csv.get_content()[self.__heading_index.in_csv]):
             if re.search(re.escape(column_heading), col):
                 return index
-        logger.error(f"No column index found for '{column_heading}' in {self.__csv[self.__heading_index.in_csv]}")
+        logger.error(f"No column index found for '{column_heading}' in {self.__csv.get_content()[self.__heading_index.in_csv]}")
         return None
 
     def __find_heading_index(self) -> Optional[HeadingIndex]:
@@ -86,7 +89,7 @@ class RawEntriesFromCsvExtractor:
             all_column_headings += heading_config.comment
             all_column_headings = [re.escape(heading) for heading in all_column_headings]
             all_column_headings_regex = "(" + "|".join(all_column_headings) + ")"
-            for heading_index_in_csv, row in enumerate(self.__csv):
+            for heading_index_in_csv, row in enumerate(self.__csv.get_content()):
                 row_as_string = " ".join(row)
                 match = re.findall(all_column_headings_regex, row_as_string)
                 if len(match) == len(all_column_headings):
@@ -98,21 +101,19 @@ class RawEntriesFromCsvExtractor:
 
     
     def __find_account_idx(self) -> Optional[int]:
-        for i, row in enumerate(self.__csv):
-            row_as_string = " ".join(row)
-            for account_idx, account in enumerate(self.__config.internal_accounts):
-                if len(account.get_input_file_identification()) > 0:
-                    match_name = re.search(re.escape(account.get_input_file_identification()), row_as_string)
-                    if match_name:
-                        logger.debug(f"Found identification name in row {i} '{account.get_input_file_identification()}'")
-                        return account_idx
+        for account_idx, account in enumerate(self.__config.internal_accounts):
+            if len(account.get_input_directory()) > 0:
+                match_directory = re.search(re.escape(os.path.join(self.__input_base_path, account.get_input_directory())), self.__csv.get_input_file())
+                if match_directory:
+                    logger.debug(f"Matched csv file with account {account.get_name()}")
+                    return account_idx
         return None
 
     def __get_concatenated_cell_content(self, rows : List[int], columns : List[int]) -> str:
         result : str = ""
         for row in rows:
-            if row < len(self.__csv):
-                result += RawEntriesFromCsvExtractor.__get_concatenated_column_content(self.__csv[row], columns)
+            if row < len(self.__csv.get_content()):
+                result += RawEntriesFromCsvExtractor.__get_concatenated_column_content(self.__csv.get_content()[row], columns)
         return result
 
     def __get_concatenated_column_content(column_data : List[str], column_indices : List[int]) -> str:

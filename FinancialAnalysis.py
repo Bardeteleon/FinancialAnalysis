@@ -45,7 +45,7 @@ class FinancialAnalysis:
             csv_reader = CsvReader(input_file)
             csv_reader.run()
 
-            raw_extractor = RawEntriesFromCsvExtractor(csv_reader.get_content(), self.__config)
+            raw_extractor = RawEntriesFromCsvExtractor(csv_reader, self.__config, self.__input.input_base_path)
             raw_extractor.run()
 
             augmented_raw_entries = EntryAugmentation.replace_alternative_transaction_iban_with_original(raw_extractor.get_raw_entries(), self.__config.internal_accounts) 

@@ -39,7 +39,7 @@ class EntryAugmentation:
     def add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(all_entries : List[InterpretedEntry], all_accounts : List[Account]) -> List[InterpretedEntry]:
         new_entries = []
         for account in all_accounts:
-            if account.input_file_identification is None:
+            if account.is_virtual():
                 all_relevant_transactions = EntryFilter.transactions(all_entries, other_id=account.transaction_iban)
                 for relevant_transaction in all_relevant_transactions:
                     new_entries.append(InterpretedEntry(

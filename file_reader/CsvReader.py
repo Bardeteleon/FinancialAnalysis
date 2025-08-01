@@ -23,3 +23,6 @@ class CsvReader:
 
     def get_content(self) -> List[List[str]]:
         return self.__content
+    
+    def get_input_file(self) -> str:
+        return self.__input_file
