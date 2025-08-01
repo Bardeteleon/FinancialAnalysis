@@ -95,7 +95,7 @@ class InterpretedStatementExtractor:
 
     def __extract_account_id(self):
         for entry in self.__interpreted_entries:
-            entry.account_id = self.__config.internal_accounts[entry.raw.account_idx].transaction_iban
+            entry.account_id = self.__config.internal_accounts[entry.raw.account_idx].get_id()
 
     def __extract_tags(self):
         for entry in self.__interpreted_entries:

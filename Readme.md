@@ -27,5 +27,4 @@ pyinstaller --onefile FinancialAnalysis.py
     * EntryAugmentation
 
 ## ToDo
-* Rectify account_id. Either from input_file_identification or its transaction_iban.
 * Tagging of internal transactions. Positive or negative amount. Consider current is_virtual, non_virtual filters for this usecase.

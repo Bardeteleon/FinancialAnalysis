@@ -52,9 +52,8 @@ class EntryMapping:
     @staticmethod
     def balance_per_account_until_interval(all_entries : List[InterpretedEntry], until_interval : TimeInterval, all_accounts : List[Account]) -> Dict[str, float]:
         result : Dict[str, float] = {}
-        account_index_to_id = EntryMapping.account_index_to_id(all_entries)
-        for account_idx, account in enumerate(all_accounts):
-            account_id = account.transaction_iban if account.is_virtual() else account_index_to_id[account_idx]
+        for account in all_accounts:
+            account_id = account.get_id()
             result[account.name] = EntryMapping.__sum_amounts(
                                         EntryFilter.transactions(all_entries, main_id=account_id),
                                         until_interval)

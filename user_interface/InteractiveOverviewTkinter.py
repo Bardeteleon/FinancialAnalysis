@@ -80,19 +80,18 @@ class InteractiveOverviewTkinter():
                     lambda custom_balance=custom_balance: EntryFilter.custom_balance(self.__balance_type_to_data, custom_balance)
 
     def __init_balance_menu_items_with_internal_accounts(self):
-        account_index_to_id = EntryMapping.account_index_to_id(self.__interpreted_entries)
-        for account_idx, account in enumerate(self.__config.internal_accounts):
+        for account in self.__config.internal_accounts:
             virtual_account_hint = " (virtual)" if account.is_virtual() else ""
-            account_id = account.transaction_iban if account.is_virtual() else account_index_to_id[account_idx]
+            account_id = account.get_id()
             self.__balance_type_to_data[f"{account.name}{virtual_account_hint}"] = \
                 lambda account_id=account_id: EntryFilter.account(self.__interpreted_entries, account_id)
                     
     def __init_balance_menu_items_with_internal_account_transactions(self):
-        self.__main_id = self.__config.internal_accounts[0].transaction_iban
+        self.__main_id = self.__config.internal_accounts[0].get_id()
         self.__main_name = self.__config.internal_accounts[0].name
         for account in self.__config.internal_accounts[1:]:
             self.__balance_type_to_data[f"{self.__main_name} -> {account.name}"] = \
-                lambda other_id=account.transaction_iban: EntryFilter.transactions(self.__interpreted_entries, self.__main_id, other_id)
+                lambda other_id=account.get_id(): EntryFilter.transactions(self.__interpreted_entries, self.__main_id, other_id)
 
     def __init_balance_menu_items_with_tags(self):
         for tag in self.__all_tags:
