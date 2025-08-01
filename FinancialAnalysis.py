@@ -1,4 +1,5 @@
 import datetime
+import os
 from user_interface.logger import logger
 import re
 from FinancialAnalysisInput import FinancialAnalysisInput
@@ -23,9 +24,6 @@ class FinancialAnalysis:
 
     def __init__(self, input : FinancialAnalysisInput):
         self.__input : FinancialAnalysisInput = input
-
-        logger.debug(f"Found {len(input.input_files)} input files:")
-        logger.debug(">>>\n" + "\n".join(input.input_files))
         
         self.read_configs()
 
@@ -99,13 +97,18 @@ class FinancialAnalysis:
         self.__augmented_entries_csv = EntryAugmentation.add_manual_balances(self.__augmented_entries_csv, self.__config.internal_accounts)
 
     def write_entries_to_csv(self):
+        if not os.path.isdir(self.__get_export_file_path()):
+            os.mkdir(self.__get_export_file_path())
         if len(self.__augmented_entries_csv) > 0:
-            EntryWriter(self.__augmented_entries_csv).write_to_csv("interpreted_entries_from_csv.csv")
+            EntryWriter(self.__augmented_entries_csv).write_to_csv(self.__get_export_file_path("interpreted_entries_from_csv.csv"))
         if len(self.__interpreted_entries_pdf) > 0:
-            EntryWriter(self.__interpreted_entries_pdf).write_to_csv("interpreted_entries_from_pdf.csv")
+            EntryWriter(self.__interpreted_entries_pdf).write_to_csv(self.__get_export_file_path("interpreted_entries_from_pdf.csv"))
 
     def launch_interactive_overview(self):
         InteractiveOverviewTkinter(self.__augmented_entries_csv, self.__config, self.__tags)
 
     def __get_filtered_input_files(self, filter : str):
         return [file for file in self.__input.input_files if re.search(filter, file)]
+    
+    def __get_export_file_path(self, file_name : str = ""):
+        return os.path.join(self.__input.base_path, "export", file_name)

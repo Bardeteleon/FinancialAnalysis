@@ -18,7 +18,7 @@ class InputArgumentInterpreter:
         self.__error : bool = False
 
     def get_financial_analysis_input(self) -> Optional[FinancialAnalysisInput]:
-        return FinancialAnalysisInput(self.__input_files, self.__tags_json_file, self.__config_json_file) if not self.has_error() else None
+        return FinancialAnalysisInput(self.__base_path, self.__input_files, self.__tags_json_file, self.__config_json_file) if not self.has_error() else None
 
     def get_input_files(self) -> List[os.PathLike]:
         return self.__input_files
@@ -31,7 +31,7 @@ class InputArgumentInterpreter:
 
     def run(self):
         self.__interpret_input_dir_path()
-        logger.info(self.__base_path)
+        logger.debug(f"Base path: {self.__base_path}")
         self.__interpret_tags_json_path()
         self.__interpret_config_json_path()
     
@@ -41,17 +41,17 @@ class InputArgumentInterpreter:
     def __interpret_input_dir_path(self):
         if self.has_error():
             return
-        cwd_joined_input_dir_path = os.path.join(os.getcwd(), self.__input_dir_path)
         input_dir_path = os.path.normpath(self.__input_dir_path)
+        cwd_joined_input_dir_path = os.path.join(os.getcwd(), input_dir_path)
         if os.path.isdir(input_dir_path) and os.path.isabs(input_dir_path):
             self.__input_files = self.__find_files_in_directory_recursively(input_dir_path)
-            self.__base_path = os.path.join(input_dir_path, os.pardir)
+            self.__base_path = os.path.dirname(input_dir_path)
         elif os.path.isdir(cwd_joined_input_dir_path):
             self.__input_files = self.__find_files_in_directory_recursively(cwd_joined_input_dir_path)
-            self.__base_path = os.path.join(cwd_joined_input_dir_path, os.pardir)
+            self.__base_path = os.path.dirname(cwd_joined_input_dir_path)
         elif os.path.isfile(input_dir_path) and os.path.isabs(input_dir_path):
             self.__input_files = [input_dir_path]
-            self.__base_path = os.path.join(input_dir_path, os.pardir)
+            self.__base_path = os.path.dirname(input_dir_path)
         elif os.path.isfile(cwd_joined_input_dir_path):
             self.__input_files = [cwd_joined_input_dir_path]
             self.__base_path = os.getcwd()
@@ -59,6 +59,8 @@ class InputArgumentInterpreter:
             self.__error = True
             logger.error(f"Unable to interpret input_dir_path: {self.__input_dir_path}. It can be an absolute or relative to cwd file or directory with files.")
         self.__input_files.sort()
+        self.__base_path = os.path.normpath(self.__base_path)
+        self.__input_files = [os.path.normpath(file) for file in self.__input_files]
 
     def __find_files_in_directory_recursively(self, directory : os.PathLike) -> List[os.PathLike]:
         result = []
