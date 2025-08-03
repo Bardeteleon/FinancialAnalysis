@@ -14,6 +14,7 @@ class EntryInsights:
         for i, entry in enumerate(account_entries):
             if entry.type == InterpretedEntryType.BALANCE:
                 first_index_with_balance = i
+                break
         if first_index_with_balance is not None:
             result = sum([ -1.0*entry.amount for entry in account_entries[:first_index_with_balance] if entry.is_transaction()])
             result += account_entries[first_index_with_balance].amount
