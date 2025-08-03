@@ -71,7 +71,7 @@ class RawEntriesFromCsvExtractor:
                 raw_entry.type = RawEntryType.TRANSACTION
             self.__raw_entries.append(raw_entry)
 
-        self.__raw_entries.reverse()
+        self.__raw_entries.reverse() # TODO Check if reverse is necessary by looking at dates
 
 
     def __find_column_index(self, column_heading : str) -> Optional[int]:

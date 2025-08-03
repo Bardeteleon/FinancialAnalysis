@@ -85,7 +85,7 @@ class VisualizeStatement:
         return fig
 
     @staticmethod
-    def draw_tag_pie_per_interval(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], all_tags : List[Tag], axs=None):
+    def draw_tag_pie_per_interval(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], all_tags : List[Tag], axs=None, title_prefix="Sum"):
         balance_per_tag : Dict[TagGroup, float] = EntryMapping.balance_per_tag_of_interval(interpreted_entries, interval)
         balance_sum = numpy.sum(list(balance_per_tag.values()))
         balance_per_tag_sorted = dict(sorted(balance_per_tag.items(), key=lambda x: abs(x[1]), reverse=False))
@@ -93,7 +93,7 @@ class VisualizeStatement:
         labels = [f"{key} ({round(value)} / {round(abs(value/balance_sum_of_abs*100))}%)" for (key, value) in balance_per_tag_sorted.items()]
         if not axs:
             fig, axs = matplotlib.pyplot.subplots()
-        axs.set_title(f"Sum: {balance_sum}")
+        axs.set_title(f"{title_prefix}: {balance_sum}")
         axs.pie(numpy.abs(list(balance_per_tag_sorted.values())), 
                 labels=labels, 
                 colors=VisualizeStatement.get_colors_for_tags(list(balance_per_tag_sorted.keys()), all_tags),
@@ -111,8 +111,8 @@ class VisualizeStatement:
         external_transactions = EntryFilter.external_transactions(all_entries)
         positive_entries = EntryFilter.positive_amount(external_transactions)
         negative_entries = EntryFilter.negative_amount(external_transactions)
-        VisualizeStatement.draw_tag_pie_per_interval(interval, positive_entries, all_tags, ax1)
-        VisualizeStatement.draw_tag_pie_per_interval(interval, negative_entries, all_tags, ax2)
+        VisualizeStatement.draw_tag_pie_per_interval(interval, positive_entries, all_tags, ax1, "Income (external)")
+        VisualizeStatement.draw_tag_pie_per_interval(interval, negative_entries, all_tags, ax2, "Expenses (external)")
         return fig
     
     @staticmethod

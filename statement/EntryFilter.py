@@ -71,15 +71,15 @@ class EntryFilter:
             return result
 
         for plus in custom_balance.plus:
-            plus_results = get_matches_in_a_list(plus, balance_type_to_data.keys())
+            plus_results = get_matches_in_a_list(plus, balance_type_to_data.keys()) # TODO Allow multiple matches? Transactions can be duplicate in multiple balance types
             if len(plus_results) == 0:
-                logger.info(f"No match for custom balance {custom_balance.name} with plus {plus}")
+                logger.warning(f"No match for custom balance '{custom_balance.name}' with plus '{plus}'")
             for plus_result in plus_results:
                 result = result + balance_type_to_data[plus_result]()
         for minus in custom_balance.minus:
-            minus_results = get_matches_in_a_list(minus, balance_type_to_data.keys())
+            minus_results = get_matches_in_a_list(minus, balance_type_to_data.keys()) # TODO Allow multiple matches? Transactions can be duplicate in multiple balance types
             if len(minus_results) == 0:
-                logger.info(f"No match for custom balance {custom_balance.name} with minus {minus}")
+                logger.warning(f"No match for custom balance '{custom_balance.name}' with minus '{minus}'")
             for minus_result in minus_results:
                 result = result + EntryFilter.reverse_sign_of_amounts(balance_type_to_data[minus_result]())
         return result

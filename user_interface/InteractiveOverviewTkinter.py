@@ -90,7 +90,7 @@ class InteractiveOverviewTkinter():
         self.__main_id = self.__config.internal_accounts[0].get_id()
         self.__main_name = self.__config.internal_accounts[0].name
         for account in self.__config.internal_accounts[1:]:
-            self.__balance_type_to_data[f"{self.__main_name} -> {account.name}"] = \
+            self.__balance_type_to_data[f"{self.__main_name} <- {account.name}"] = \
                 lambda other_id=account.get_id(): EntryFilter.transactions(self.__interpreted_entries, self.__main_id, other_id)
 
     def __init_balance_menu_items_with_tags(self):
@@ -99,9 +99,13 @@ class InteractiveOverviewTkinter():
         self.__balance_type_to_data.pop(str(UndefinedTag))
 
     def __init_balance_menu_items_with_general_info(self):
-        self.__balance_type_to_data["Internal -> External"] = \
+        self.__balance_type_to_data["Internal <- External"] = \
             lambda: EntryFilter.external_transactions(self.__interpreted_entries)
-        self.__balance_type_to_data["Undefined External"] = \
+        self.__balance_type_to_data["Income (external)"] = \
+            lambda: EntryFilter.external_transactions(EntryFilter.positive_amount(self.__interpreted_entries))
+        self.__balance_type_to_data["Expenses (external)"] = \
+            lambda: EntryFilter.external_transactions(EntryFilter.negative_amount(self.__interpreted_entries))
+        self.__balance_type_to_data["Undefined (external)"] = \
             lambda: EntryFilter.external_transactions(EntryFilter.undefined_transactions(self.__interpreted_entries))
 
     def __init_tk_option_menus(self):

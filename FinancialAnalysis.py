@@ -73,10 +73,10 @@ class FinancialAnalysis:
 
     def validate_interpreted_input(self):
         logger.info("csv input validation")
-        validator = EntryValidator([entry for entry in self.__interpreted_entries_csv if entry.raw.type != RawEntryType.UNKNOW])
+        validator = EntryValidator([entry for entry in self.__interpreted_entries_csv if entry.raw and entry.raw.type != RawEntryType.UNKNOW])
         validator.validate_amounts_with_balances()
         logger.info("pdf input validation")
-        validator = EntryValidator([entry for entry in self.__interpreted_entries_pdf if entry.raw.type != RawEntryType.UNKNOW])
+        validator = EntryValidator([entry for entry in self.__interpreted_entries_pdf if entry.raw and entry.raw.type != RawEntryType.UNKNOW])
         validator.validate_amounts_with_balances()
 
     def print_undefined_external_transaction_csv_entries(self):
