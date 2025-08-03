@@ -38,7 +38,10 @@ class InterpretedEntry:
     raw : RawEntry = None
 
     def is_untagged(self) -> bool:
-        return self.tags == None or len(self.tags) == 0
+        return self.tags is None or len(self.tags) == 0
+
+    def is_tagged(self) -> bool:
+        return not self.is_untagged()
 
     def is_transaction(self) -> bool:
         return self.type == InterpretedEntryType.TRANSACTION_EXTERNAL or \

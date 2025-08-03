@@ -91,6 +91,17 @@ class FinancialAnalysis:
         ))
         ))
 
+    def print_undefined_internal_transaction_csv_entries(self):
+        EntryPrinter.date_id_amount_tags_comment(
+            EntrySorter.by_amount(
+                EntryFilter.internal_transactions(
+                EntryFilter.undefined_transactions(
+                    self.__interpreted_entries_csv
+                )
+                )
+            )
+        )
+
     def augment_csv_entries(self):
         self.__augmented_entries_csv = self.__interpreted_entries_csv
         self.__augmented_entries_csv = EntryAugmentation.add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(self.__augmented_entries_csv, self.__config.internal_accounts)

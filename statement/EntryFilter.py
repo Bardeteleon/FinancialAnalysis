@@ -19,12 +19,20 @@ class EntryFilter:
     def external_transactions(entries : List[InterpretedEntry]):
         return [entry for entry in entries 
                       if entry.type == InterpretedEntryType.TRANSACTION_EXTERNAL]
+    @staticmethod
+    def internal_transactions(entries : List[InterpretedEntry]):
+        return [entry for entry in entries 
+                      if entry.type == InterpretedEntryType.TRANSACTION_INTERNAL]
+
+    @staticmethod
+    def defined_transactions(entries : List[InterpretedEntry]):
+        return [entry for entry in entries 
+                      if entry.is_transaction() and entry.is_tagged() and (UndefinedTag not in entry.tags)]
 
     @staticmethod
     def undefined_transactions(entries : List[InterpretedEntry]):
         return [entry for entry in entries 
-                      if     entry.raw is not None
-                         and entry.raw.type == RawEntryType.TRANSACTION 
+                      if     (entry.is_transaction())
                          and (entry.is_untagged() or UndefinedTag in entry.tags)]
     
     @staticmethod
