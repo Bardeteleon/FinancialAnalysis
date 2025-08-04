@@ -1,5 +1,8 @@
 from typing import List
 from data_types.Types import InterpretedEntry
+from data_types.Tag import UndefinedTag
+from user_interface.logger import logger
+from data_types.Types import InterpretedEntryType
 
 class EntryPrinter:
 
@@ -31,3 +34,28 @@ class EntryPrinter:
         for entry in entries:
             print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.identification} -> {entry.card_type} & {entry.account_id}")
         EntryPrinter.count(entries)
+
+    @staticmethod
+    def statistics(entries : List[InterpretedEntry]):
+        total = len(entries)
+        if total == 0:
+            logger.info("No entries available to compute statistics.")
+            return
+
+        external = len([e for e in entries if e.type == InterpretedEntryType.TRANSACTION_EXTERNAL])
+        internal = len([e for e in entries if e.type == InterpretedEntryType.TRANSACTION_INTERNAL])
+        balances = len([e for e in entries if e.type == InterpretedEntryType.BALANCE])
+
+        tagged = len([
+            e for e in entries
+            if e.is_tagged() and any(tag != UndefinedTag for tag in (e.tags or []))
+        ])
+
+        def percentage(value: int) -> float:
+            return (value / total) * 100 if total else 0.0
+
+        logger.info(f"Total entries: {total}")
+        logger.info(f"  External transactions: {external} ({percentage(external):.1f}%)")
+        logger.info(f"  Internal transactions: {internal} ({percentage(internal):.1f}%)")
+        logger.info(f"  Balances: {balances} ({percentage(balances):.1f}%)")
+        logger.info(f"Tagged entries: {tagged} ({percentage(tagged):.1f}%)")

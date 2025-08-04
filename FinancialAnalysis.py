@@ -118,6 +118,9 @@ class FinancialAnalysis:
     def launch_interactive_overview(self):
         InteractiveOverviewTkinter(self.__augmented_entries_csv, self.__config, self.__tags)
 
+    def print_entries_statistics(self):
+        EntryPrinter.statistics(self.__augmented_entries_csv)
+
     def __get_filtered_input_files(self, filter : str):
         return [file for file in self.__input.input_files if re.search(filter, file)]
     
