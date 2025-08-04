@@ -3,6 +3,9 @@ from user_interface.logger import logger
 from typing import List, Optional
 from statement.EntryFilter import EntryFilter
 from data_types.Types import InterpretedEntry, InterpretedEntryType
+from data_types.Tag import UndefinedTag
+from collections import Counter
+from dataclasses import dataclass
 
 class EntryInsights:
 
@@ -31,3 +34,25 @@ class EntryInsights:
             result = EntryInsights.initial_balance(entries, account_id)
             logger.debug(f"Found only entries of account {account_id} with initial balance {result}")
         return result
+
+    @dataclass
+    class Statistics:
+        total : int
+        external : int
+        internal : int
+        balances : int
+        tagged : int
+
+    @staticmethod
+    def statistics(entries : List[InterpretedEntry]) -> Statistics:
+        counts = Counter()
+        for entry in entries:
+            counts[entry.type] += 1
+            counts["tagged"] += 1 if entry.is_tagged() and UndefinedTag not in entry.tags else 0
+
+        return EntryInsights.Statistics(total=len(entries), 
+                                        external=counts[InterpretedEntryType.TRANSACTION_EXTERNAL], 
+                                        internal=counts[InterpretedEntryType.TRANSACTION_INTERNAL], 
+                                        balances=counts[InterpretedEntryType.BALANCE], 
+                                        tagged=counts["tagged"])
+        

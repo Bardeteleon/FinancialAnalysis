@@ -2,7 +2,7 @@ from typing import List
 from data_types.Types import InterpretedEntry
 from data_types.Tag import UndefinedTag
 from user_interface.logger import logger
-from data_types.Types import InterpretedEntryType
+from statement.EntryInsights import EntryInsights
 
 class EntryPrinter:
 
@@ -37,25 +37,13 @@ class EntryPrinter:
 
     @staticmethod
     def statistics(entries : List[InterpretedEntry]):
-        total = len(entries)
-        if total == 0:
-            logger.info("No entries available to compute statistics.")
-            return
-
-        external = len([e for e in entries if e.type == InterpretedEntryType.TRANSACTION_EXTERNAL])
-        internal = len([e for e in entries if e.type == InterpretedEntryType.TRANSACTION_INTERNAL])
-        balances = len([e for e in entries if e.type == InterpretedEntryType.BALANCE])
-
-        tagged = len([
-            e for e in entries
-            if e.is_tagged() and any(tag != UndefinedTag for tag in (e.tags or []))
-        ])
+        stats = EntryInsights.statistics(entries)
 
         def percentage(value: int) -> float:
-            return (value / total) * 100 if total else 0.0
+            return (value / stats.total) * 100 if stats.total else 0.0
 
-        logger.info(f"Total entries: {total}")
-        logger.info(f"  External transactions: {external} ({percentage(external):.1f}%)")
-        logger.info(f"  Internal transactions: {internal} ({percentage(internal):.1f}%)")
-        logger.info(f"  Balances: {balances} ({percentage(balances):.1f}%)")
-        logger.info(f"Tagged entries: {tagged} ({percentage(tagged):.1f}%)")
+        logger.info(f"Total entries: {stats.total}")
+        logger.info(f"  External transactions: {stats.external} ({percentage(stats.external):.1f}%)")
+        logger.info(f"  Internal transactions: {stats.internal} ({percentage(stats.internal):.1f}%)")
+        logger.info(f"  Balances: {stats.balances} ({percentage(stats.balances):.1f}%)")
+        logger.info(f"Tagged entries: {stats.tagged} ({percentage(stats.tagged):.1f}%)")
