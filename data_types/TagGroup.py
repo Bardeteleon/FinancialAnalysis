@@ -29,3 +29,6 @@ class TagGroup:
     def add(self, tag : 'Tag') -> 'TagGroup':
         self.__tags.append(tag)
         return self
+
+    def get(self) -> 'List[Tag]':
+        return self.__tags

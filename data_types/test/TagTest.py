@@ -23,8 +23,8 @@ def test_new_tag_as_dict_key():
 
 def test_new_tag_get_contained_tags():
     group = TagGroup().add(Tag("TagName"))
-    assert Tag("TagName").get_contained_tags() == group
+    assert Tag("TagName").get_contained_tags() == group.get()
     group = TagGroup().add(Tag("TagName-SubName")).add(Tag("TagName"))
-    assert Tag("TagName-SubName").get_contained_tags() == group
+    assert Tag("TagName-SubName").get_contained_tags() == group.get()
     group = TagGroup().add(Tag("TagName-SubName-SubSubName")).add(Tag("TagName-SubName")).add(Tag("TagName"))
-    assert Tag("TagName-SubName-SubSubName").get_contained_tags() == group
+    assert Tag("TagName-SubName-SubSubName").get_contained_tags() == group.get()
