@@ -122,7 +122,4 @@ class RawEntriesFromCsvExtractor:
             return " ".join(selected_columns)
 
     def cleanup_whitespace(input : str) -> str:
-        result : str = re.sub("\s+", " ", input)
-        result = re.sub("^\s+", "", result)
-        result = re.sub("\s+$", "", result)
-        return str(result)
+        return re.sub(r'\s+', ' ', input).strip()
