@@ -27,6 +27,7 @@ class InterpretedStatementExtractor:
         self.__extract_tags()
         self.__extract_type()
         self.__add_undefined_tag_for_entries_without_tags()
+        self.__ensure_ascending_date_order()
 
     def get_interpreted_entries(self):
         return self.__interpreted_entries
@@ -132,3 +133,40 @@ class InterpretedStatementExtractor:
         for entry in self.__interpreted_entries:
             if len(entry.tags) == 0:
                 entry.tags.append(UndefinedTag)
+
+    def __ensure_ascending_date_order(self):
+        """
+        Ensures entries are in ascending date order.
+        Handles three cases:
+        1. Already ascending -> no change
+        2. Descending order -> reverse
+        3. Mixed order or has None dates -> stable sort by date, None dates will be moved to the end
+        """
+        if len(self.__interpreted_entries) <= 1:
+            return
+
+        # Filter out entries with None dates for ordering check
+        entries_with_dates = [e for e in self.__interpreted_entries if e.date is not None]
+
+        if len(entries_with_dates) <= 1:
+            return
+
+        is_ascending = all(
+            entries_with_dates[i].date <= entries_with_dates[i + 1].date
+            for i in range(len(entries_with_dates) - 1)
+        )
+
+        if is_ascending:
+            return
+
+        is_descending = all(
+            entries_with_dates[i].date >= entries_with_dates[i + 1].date
+            for i in range(len(entries_with_dates) - 1)
+        )
+
+        if is_descending and len(entries_with_dates) == len(self.__interpreted_entries):
+            self.__interpreted_entries.reverse()
+        else:
+            self.__interpreted_entries.sort(
+                key=lambda entry: entry.date if entry.date is not None else datetime.date.max
+            )

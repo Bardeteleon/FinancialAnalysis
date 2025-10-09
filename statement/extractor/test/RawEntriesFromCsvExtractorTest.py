@@ -44,9 +44,10 @@ def test_run_success(mock_csv_reader, run_extractor):
     result = run_extractor()
 
     assert len(result) == 2
-    assert result[0] == RawEntry(date='date2', amount='amount2', comment='comment2',
+    # Entries now preserved in original CSV order (not reversed)
+    assert result[0] == RawEntry(date='date1', amount='amount1', comment='comment1',
                                  account_idx=0, type=RawEntryType.TRANSACTION)
-    assert result[1] == RawEntry(date='date1', amount='amount1', comment='comment1',
+    assert result[1] == RawEntry(date='date2', amount='amount2', comment='comment2',
                                  account_idx=0, type=RawEntryType.TRANSACTION)
 
 @pytest.mark.parametrize("csv_content,headings,accounts", [

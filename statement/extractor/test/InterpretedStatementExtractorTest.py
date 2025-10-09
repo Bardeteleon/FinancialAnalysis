@@ -42,8 +42,6 @@ def run_extractor(mock_config, mock_tags):
 
 
 class TestExtractDate:
-    """Tests for the __extract_date() method via the run() method."""
-
     @pytest.mark.parametrize("date_input,expected_date", [
         pytest.param('15.03. 15.03.2023', datetime.date(2023, 3, 15), id='dd_mm_space_format'),
         pytest.param('25.12.2023', datetime.date(2023, 12, 25), id='dd_mm_yyyy'),
@@ -56,7 +54,6 @@ class TestExtractDate:
     ])
     def test_extract_date_valid_formats(self, date_input, expected_date,
                                        make_raw_entry, run_extractor):
-        """Test date extraction for various valid formats"""
         raw_entries = [make_raw_entry(date=date_input)]
         result = run_extractor(raw_entries)
         assert result[0].date == expected_date
@@ -68,7 +65,6 @@ class TestExtractDate:
     ])
     def test_extract_date_invalid_formats(self, invalid_date, expected_log,
                                          make_raw_entry, run_extractor, caplog):
-        """Test date extraction with invalid formats logs warning and date remains None"""
         raw_entries = [make_raw_entry(date=invalid_date)]
         result = run_extractor(raw_entries)
 
@@ -76,7 +72,6 @@ class TestExtractDate:
         assert expected_log in caplog.text
 
     def test_extract_date_multiple_entries_different_formats(self, make_raw_entry, run_extractor):
-        """Test date extraction with multiple entries in different formats"""
         raw_entries = [
             make_raw_entry(date='15.03.2023', amount='100,00', comment='Test1'),
             make_raw_entry(date='01.06.23', amount='200,00', comment='Test2'),
@@ -88,3 +83,90 @@ class TestExtractDate:
         assert result[0].date == datetime.date(2023, 3, 15)
         assert result[1].date == datetime.date(2023, 6, 1)
         assert result[2].date == datetime.date(2023, 12, 25)
+
+
+class TestDateOrdering:
+    def test_already_ascending_order_unchanged(self, make_raw_entry, run_extractor):
+        raw_entries = [
+            make_raw_entry(date='01.01.2023', amount='100,00', comment='First'),
+            make_raw_entry(date='15.01.2023', amount='200,00', comment='Second'),
+            make_raw_entry(date='31.01.2023', amount='300,00', comment='Third'),
+        ]
+        result = run_extractor(raw_entries)
+
+        assert len(result) == 3
+        assert result[0].date == datetime.date(2023, 1, 1)
+        assert result[1].date == datetime.date(2023, 1, 15)
+        assert result[2].date == datetime.date(2023, 1, 31)
+
+    def test_descending_order_reversed(self, make_raw_entry, run_extractor):
+        raw_entries = [
+            make_raw_entry(date='31.01.2023', amount='300,00', comment='Third'),
+            make_raw_entry(date='15.01.2023', amount='200,00', comment='Second'),
+            make_raw_entry(date='01.01.2023', amount='100,00', comment='First'),
+        ]
+        result = run_extractor(raw_entries)
+
+        assert len(result) == 3
+        assert result[0].date == datetime.date(2023, 1, 1)
+        assert result[1].date == datetime.date(2023, 1, 15)
+        assert result[2].date == datetime.date(2023, 1, 31)
+
+    def test_mixed_order_sorted_stably(self, make_raw_entry, run_extractor):
+        raw_entries = [
+            make_raw_entry(date='15.01.2023', amount='200,00', comment='A'),
+            make_raw_entry(date='01.01.2023', amount='100,00', comment='B'),
+            make_raw_entry(date='31.01.2023', amount='300,00', comment='C'),
+            make_raw_entry(date='15.01.2023', amount='250,00', comment='D'),
+        ]
+        result = run_extractor(raw_entries)
+
+        assert len(result) == 4
+        assert result[0].date == datetime.date(2023, 1, 1)
+        assert result[0].raw.comment == 'B'
+        assert result[1].date == datetime.date(2023, 1, 15)
+        assert result[1].raw.comment == 'A'
+        assert result[2].date == datetime.date(2023, 1, 15)
+        assert result[2].raw.comment == 'D'
+        assert result[3].date == datetime.date(2023, 1, 31)
+        assert result[3].raw.comment == 'C'
+
+    def test_same_date_preserves_order(self, make_raw_entry, run_extractor):
+        raw_entries = [
+            make_raw_entry(date='15.01.2023', amount='100,00', comment='First'),
+            make_raw_entry(date='15.01.2023', amount='200,00', comment='Second'),
+            make_raw_entry(date='15.01.2023', amount='300,00', comment='Third'),
+        ]
+        result = run_extractor(raw_entries)
+
+        assert len(result) == 3
+        assert result[0].raw.comment == 'First'
+        assert result[1].raw.comment == 'Second'
+        assert result[2].raw.comment == 'Third'
+
+    def test_single_entry_unchanged(self, make_raw_entry, run_extractor):
+        raw_entries = [make_raw_entry(date='15.01.2023', amount='100,00', comment='Only')]
+        result = run_extractor(raw_entries)
+
+        assert len(result) == 1
+        assert result[0].date == datetime.date(2023, 1, 15)
+
+    def test_empty_list_unchanged(self, run_extractor):
+        raw_entries = []
+        result = run_extractor(raw_entries)
+
+        assert len(result) == 0
+
+    def test_entries_with_none_dates_moved_to_end(self, make_raw_entry, run_extractor):
+        raw_entries = [
+            make_raw_entry(date='31.01.2023', amount='300,00', comment='Valid2'),
+            make_raw_entry(date='invalid', amount='100,00', comment='Invalid'),
+            make_raw_entry(date='15.01.2023', amount='200,00', comment='Valid1'),
+        ]
+        result = run_extractor(raw_entries)
+
+        assert len(result) == 3
+        assert result[0].date == datetime.date(2023, 1, 15)
+        assert result[1].date == datetime.date(2023, 1, 31)
+        assert result[2].date is None
+        assert result[2].raw.comment == 'Invalid'
