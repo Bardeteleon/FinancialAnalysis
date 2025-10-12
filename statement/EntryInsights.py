@@ -1,4 +1,5 @@
 
+from statement.EntryValidator import EntryValidator
 from user_interface.logger import logger
 from typing import List, Optional
 from statement.EntryFilter import EntryFilter
@@ -13,11 +14,10 @@ class EntryInsights:
     def initial_balance(entries : List[InterpretedEntry], account_id : str) -> float:
         result : float = 0.0
         account_entries = EntryFilter.account(entries, account_id)
-        first_index_with_balance : Optional[int] = None
-        for i, entry in enumerate(account_entries):
-            if entry.type == InterpretedEntryType.BALANCE:
-                first_index_with_balance = i
-                break
+        if not EntryValidator.have_ascending_date_order(account_entries):
+            logger.debug(f"Account entries of {account_id} do not have ascending date order, initial balance not derived")
+            return result
+        first_index_with_balance : Optional[int] = EntryInsights.__get_first_index_with_balance(account_entries)
         if first_index_with_balance is not None:
             result = sum([ -1.0*entry.amount for entry in account_entries[:first_index_with_balance] if entry.is_transaction()])
             result += account_entries[first_index_with_balance].amount
@@ -25,6 +25,13 @@ class EntryInsights:
             logger.debug(f"No entry with type balance found for accound id {account_id}")
         return result
     
+    @staticmethod
+    def __get_first_index_with_balance(entries : List[InterpretedEntry]) -> Optional[int]:
+        for i, entry in enumerate(entries):
+            if entry.type == InterpretedEntryType.BALANCE:
+                return i
+        return None
+
     @staticmethod
     def initial_balance_if_entries_with_unique_account_unless_zero(entries : List[InterpretedEntry]) -> float:
         result : float = 0.0

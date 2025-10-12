@@ -9,6 +9,12 @@ class EntryValidator:
     def __init__(self, interpreted_entries : List[InterpretedEntry]):
         self.__interpreted_entries = interpreted_entries
 
+    def have_ascending_date_order(entries : List[InterpretedEntry]) -> bool:
+        return EntryValidator.have_no_none_dates(entries) and all(entries[i].date <= entries[i+1].date for i in range(len(entries)-1))
+
+    def have_no_none_dates(entries : List[InterpretedEntry]) -> bool:
+        return all(entry.date is not None for entry in entries)
+
     def validate_amounts_with_balances(self) -> bool:
         # Positive validation assumption: From one balance all amounts some up to the value of the next balance.
         validation_successfull = True
