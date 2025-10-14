@@ -1,4 +1,4 @@
-
+import logging
 from datetime import date
 from typing import List
 from statement.EntryInsights import EntryInsights
@@ -38,6 +38,7 @@ def test_no_balance_in_entries():
     assert EntryInsights.initial_balance(entries, "Bank") == 0.0
 
 def test_not_ascending_date_order(caplog):
+    caplog.set_level(logging.DEBUG)
     entries : List[InterpretedEntry] = [
         InterpretedEntry(amount=-50.0, account_id="Bank", type=InterpretedEntryType.TRANSACTION_INTERNAL, date=date(2020, 1, 2)),
         InterpretedEntry(amount=100.0, account_id="Bank", type=InterpretedEntryType.TRANSACTION_EXTERNAL, date=date(2020, 1, 3)),
