@@ -143,8 +143,5 @@ Two main configuration files required:
 ## Important Notes
 
 - **EREF**: Unique transaction identifier (mentioned in README)
-- The codebase has known assumptions to be aware of:
-  - List[InterpretedEntry] order matters for EntryAugmentation (assumption to be removed)
-  - CSV files read order affects EntryInsights.initial_balance (assumption to be removed)
 - Main orchestration happens in `FinancialAnalysis.py` class
 - Entry point for execution is `user_interface/script.py`

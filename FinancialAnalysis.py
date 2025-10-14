@@ -19,23 +19,30 @@ from statement.extractor.RawEntriesFromPdfTextExtractor import RawEntriesFromPdf
 from typing import List
 from data_types.TagConfig import TagConfig, load_tags
 from data_types.Types import *
+from statement.Statement import Statement
+from statement.InMemoryStatementBuilder import InMemoryStatementBuilder
 
 class FinancialAnalysis:
 
     def __init__(self, input : FinancialAnalysisInput):
         self.__input : FinancialAnalysisInput = input
-        
-        self.read_configs()
 
-        self.__interpreted_entries_csv : List[InterpretedEntry] = []
-        self.__interpreted_entries_pdf : List[InterpretedEntry] = []
-        self.__augmented_entries_csv : List[InterpretedEntry] = []
+        self.__read_configs()
+
+        self.__statement : Statement = None
     
-    def read_configs(self):
+    def __read_configs(self):
         self.__config : Config = read_config(self.__input.config_json_file)
         self.__tags : TagConfig = load_tags(self.__input.tags_json_file)
 
-    def interpret_csv_input(self):
+    def read_and_interpret_input(self):
+        statement_builder : InMemoryStatementBuilder = InMemoryStatementBuilder()
+        self.__interpret_csv_input(statement_builder)
+        self.__augment_csv_entries(statement_builder)
+        # self.__interpret_pdf_input(statement_builder) # TODO no merge of data if overlap with csv exists
+        self.__statement = statement_builder.build()
+
+    def __interpret_csv_input(self, statement_builder : InMemoryStatementBuilder):
         input_file_count = 1
         for input_file in self.__get_filtered_input_files("\.csv$"):
 
@@ -48,13 +55,17 @@ class FinancialAnalysis:
             raw_extractor = RawEntriesFromCsvExtractor(csv_reader, self.__config, self.__input.input_base_path)
             raw_extractor.run()
 
-            augmented_raw_entries = EntryAugmentation.replace_alternative_transaction_iban_with_original(raw_extractor.get_raw_entries(), self.__config.internal_accounts) 
+            augmented_raw_entries = EntryAugmentation.replace_alternative_transaction_iban_with_original(raw_extractor.get_raw_entries(), self.__config.internal_accounts)
 
             interpreted_extractor = InterpretedStatementExtractor(augmented_raw_entries, self.__config, self.__tags)
             interpreted_extractor.run()
-            self.__interpreted_entries_csv += interpreted_extractor.get_interpreted_entries()
+            statement_builder.add_entries(interpreted_extractor.get_interpreted_entries())
 
-    def interpret_pdf_input(self):
+    def __augment_csv_entries(self, statement_builder : InMemoryStatementBuilder):
+        statement_builder.add_entries(EntryAugmentation.get_account_transactions_for_accounts_without_input_file_by_other_account_transactions(statement_builder.get_unsorted_entries(), self.__config.internal_accounts))
+        statement_builder.add_entries(EntryAugmentation.get_manual_balances(self.__config.internal_accounts))
+
+    def __interpret_pdf_input(self, statement_builder : InMemoryStatementBuilder):
         input_file_count = 1
         for input_file in self.__get_filtered_input_files("\.pdf$"):
 
@@ -69,14 +80,11 @@ class FinancialAnalysis:
 
             interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), self.__config, self.__tags)
             interpreted_extractor.run()
-            self.__interpreted_entries_pdf += interpreted_extractor.get_interpreted_entries()
+            statement_builder.add_entries(interpreted_extractor.get_interpreted_entries())
 
     def validate_interpreted_input(self):
-        logger.info("csv input validation")
-        validator = EntryValidator([entry for entry in self.__interpreted_entries_csv if entry.raw and entry.raw.type != RawEntryType.UNKNOW])
-        validator.validate_amounts_with_balances()
-        logger.info("pdf input validation")
-        validator = EntryValidator([entry for entry in self.__interpreted_entries_pdf if entry.raw and entry.raw.type != RawEntryType.UNKNOW])
+        logger.info("input validation")
+        validator = EntryValidator([entry for entry in self.__statement.get_entries() if entry.raw and entry.raw.type != RawEntryType.UNKNOW])
         validator.validate_amounts_with_balances()
 
     def print_undefined_external_transaction_csv_entries(self):
@@ -86,7 +94,7 @@ class FinancialAnalysis:
                 EntryFilter.external_transactions(
                 EntryFilter.undefined_transactions(
                     # EntryFilter.from_to_date(
-                    self.__interpreted_entries_csv
+                    self.__statement.get_entries()
                     # , datetime.date.fromisoformat("2023-06-01"), datetime.date.fromisoformat("2023-06-30"))
         ))
         ))
@@ -96,30 +104,23 @@ class FinancialAnalysis:
             EntrySorter.by_amount(
                 EntryFilter.internal_transactions(
                 EntryFilter.undefined_transactions(
-                    self.__interpreted_entries_csv
+                    self.__statement.get_entries()
                 )
                 )
             )
         )
 
-    def augment_csv_entries(self):
-        self.__augmented_entries_csv = self.__interpreted_entries_csv
-        self.__augmented_entries_csv = EntryAugmentation.add_account_transactions_for_accounts_without_input_file_by_other_account_transactions(self.__augmented_entries_csv, self.__config.internal_accounts)
-        self.__augmented_entries_csv = EntryAugmentation.add_manual_balances(self.__augmented_entries_csv, self.__config.internal_accounts)
-
     def write_entries_to_csv(self):
         if not os.path.isdir(self.__get_export_file_path()):
             os.mkdir(self.__get_export_file_path())
-        if len(self.__augmented_entries_csv) > 0:
-            EntryWriter(self.__augmented_entries_csv).write_to_csv(self.__get_export_file_path("interpreted_entries_from_csv.csv"))
-        if len(self.__interpreted_entries_pdf) > 0:
-            EntryWriter(self.__interpreted_entries_pdf).write_to_csv(self.__get_export_file_path("interpreted_entries_from_pdf.csv"))
+        if len(self.__statement.get_entries()) > 0:
+            EntryWriter(self.__statement.get_entries()).write_to_csv(self.__get_export_file_path("interpreted_entries.csv"))
 
     def launch_interactive_overview(self):
-        InteractiveOverviewTkinter(self.__augmented_entries_csv, self.__config, self.__tags)
+        InteractiveOverviewTkinter(self.__statement.get_entries(), self.__config, self.__tags)
 
     def print_entries_statistics(self):
-        EntryPrinter.statistics(self.__augmented_entries_csv)
+        EntryPrinter.statistics(self.__statement.get_entries())
 
     def __get_filtered_input_files(self, filter : str):
         return [file for file in self.__input.input_files if re.search(filter, file)]

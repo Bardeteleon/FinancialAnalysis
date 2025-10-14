@@ -14,8 +14,7 @@ args_interpreter = InputArgumentInterpreter(args_parser.input_dir_path,
 args_interpreter.run()
 
 analysis = FinancialAnalysis(args_interpreter.get_financial_analysis_input())
-analysis.interpret_csv_input()
-analysis.augment_csv_entries()
+analysis.read_and_interpret_input()
 analysis.write_entries_to_csv()
 analysis.print_entries_statistics()
 analysis.launch_interactive_overview()
