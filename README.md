@@ -1,6 +1,6 @@
 # Financial Analysis
 
-A tool to analyse and visualise bank statements. 
+A tool to analyse and visualise bank statements.
 
 ## Setup
 * install git and clone repository
@@ -15,9 +15,6 @@ A tool to analyse and visualise bank statements.
 * python -m package.file
 * pytest directory/
 * pipenv exit
-
-## Deployment
-pyinstaller --onefile FinancialAnalysis.py
 
 ## Help
 * EREF: unique transaction identifier 
