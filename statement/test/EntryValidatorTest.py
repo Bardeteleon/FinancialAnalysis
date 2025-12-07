@@ -469,3 +469,98 @@ def test_balance_only_no_transactions_with_balance_mismatch():
     assert intervals[0].is_valid == False
     assert intervals[0].entry_count == 0
     assert intervals[0].is_unchecked == False
+
+
+def test_print_validation_results(caplog):
+    """Test that print_validation_results correctly logs all interval types"""
+    caplog.set_level(logging.INFO)
+
+    # Create intervals with various statuses
+    intervals = [
+        # Valid interval for Bank
+        BalanceValidationInterval(
+            account_id="Bank",
+            start_date=date(2020, 1, 1),
+            end_date=date(2020, 1, 10),
+            start_balance=1000.0,
+            end_balance=1050.0,
+            calculated_sum=1050.0,
+            is_valid=True,
+            entry_count=5,
+            is_unchecked=False
+        ),
+        # Invalid interval for Bank
+        BalanceValidationInterval(
+            account_id="Bank",
+            start_date=date(2020, 1, 11),
+            end_date=date(2020, 1, 20),
+            start_balance=1050.0,
+            end_balance=1100.0,
+            calculated_sum=1095.0,
+            is_valid=False,
+            entry_count=3,
+            is_unchecked=False
+        ),
+        # Unchecked interval for Bank
+        BalanceValidationInterval(
+            account_id="Bank",
+            start_date=date(2020, 1, 21),
+            end_date=date(2020, 1, 25),
+            start_balance=0.0,
+            end_balance=0.0,
+            calculated_sum=150.0,
+            is_valid=False,
+            entry_count=2,
+            is_unchecked=True,
+            unchecked_reason="after_last_balance"
+        ),
+        # Valid interval for CreditCard
+        BalanceValidationInterval(
+            account_id="CreditCard",
+            start_date=date(2020, 1, 1),
+            end_date=date(2020, 1, 31),
+            start_balance=-100.0,
+            end_balance=-200.0,
+            calculated_sum=-200.0,
+            is_valid=True,
+            entry_count=10,
+            is_unchecked=False
+        ),
+    ]
+
+    # Call the print function
+    EntryValidator.print_validation_results(intervals)
+
+    # Verify output contains expected sections
+    log_output = caplog.text
+
+    # Check account headers
+    assert "Account: Bank" in log_output
+    assert "Account: CreditCard" in log_output
+
+    # Check summaries
+    assert "Summary: " in log_output
+    assert "valid" in log_output
+    assert "invalid" in log_output
+    assert "unchecked" in log_output
+
+    # Check invalid interval details
+    assert "INVALID INTERVALS" in log_output
+    assert "Difference:" in log_output
+
+    # Check unchecked interval details
+    assert "UNCHECKED INTERVALS" in log_output
+    assert "after_last_balance" in log_output
+
+    # Check valid intervals summary
+    assert "VALID INTERVALS" in log_output
+
+    # Check overall summary
+    assert "OVERALL SUMMARY" in log_output
+    assert "Total accounts:" in log_output
+
+
+def test_print_validation_results_empty():
+    """Test that print_validation_results handles empty list"""
+    EntryValidator.print_validation_results([])
+    # Should not raise an exception

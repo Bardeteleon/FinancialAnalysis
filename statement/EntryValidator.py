@@ -45,20 +45,6 @@ class EntryValidator:
             intervals = self._validate_account_balances(account_id, entries)
             all_intervals.extend(intervals)
 
-        # Log summary
-        total_intervals = len(all_intervals)
-        checked_intervals = [i for i in all_intervals if not i.is_unchecked]
-        unchecked_intervals = [i for i in all_intervals if i.is_unchecked]
-        valid_intervals = sum(1 for interval in checked_intervals if interval.is_valid)
-        invalid_intervals = sum(1 for interval in checked_intervals if not interval.is_valid)
-
-        if unchecked_intervals:
-            logger.warning(f"Validation: {valid_intervals} valid, {invalid_intervals} invalid, {len(unchecked_intervals)} unchecked intervals")
-        elif total_intervals == valid_intervals:
-            logger.info(f"Validation OK! {valid_intervals}/{total_intervals} intervals valid")
-        else:
-            logger.warning(f"Validation failed! {valid_intervals}/{total_intervals} intervals valid")
-
         return all_intervals
 
     def _validate_account_balances(self, account_id: str, entries: List[InterpretedEntry]) -> List[BalanceValidationInterval]:
@@ -93,7 +79,6 @@ class EntryValidator:
                             unchecked_reason="before_first_balance"
                         )
                         intervals.append(interval)
-                        logger.debug(f"validate_amounts_with_balance: {len(transactions_before_first_balance)} unchecked transactions before first balance for account {account_id}")
 
                     curr_start_balance_entry = entry
                     curr_sum = curr_start_balance_entry.amount
@@ -122,11 +107,6 @@ class EntryValidator:
                     is_unchecked=False
                 )
                 intervals.append(interval)
-
-                if is_valid:
-                    logger.debug(f"validate_amounts_with_balance: Fine for account {account_id} between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount}")
-                else:
-                    logger.debug(f"validate_amounts_with_balance: Something is not ok for account {account_id} between {curr_start_balance_entry.amount} and {curr_end_balance_entry.amount} (calculated: {curr_sum})")
 
                 # Reset for next interval
                 curr_start_balance_entry = curr_end_balance_entry
@@ -157,7 +137,6 @@ class EntryValidator:
                 unchecked_reason="after_last_balance"
             )
             intervals.append(interval)
-            logger.debug(f"validate_amounts_with_balance: {entry_count} unchecked transactions after last balance for account {account_id}")
 
         # Handle case with no balances at all
         if curr_start_balance_entry is None and transactions_before_first_balance:
@@ -178,6 +157,70 @@ class EntryValidator:
                 unchecked_reason="no_balances"
             )
             intervals.append(interval)
-            logger.debug(f"validate_amounts_with_balance: {len(transactions_before_first_balance)} unchecked transactions (no balances) for account {account_id}")
 
         return intervals
+
+    @staticmethod
+    def print_validation_results(intervals: List[BalanceValidationInterval]):
+        if not intervals:
+            logger.info("No validation intervals to display")
+            return
+
+        # Group intervals by account
+        intervals_by_account = {}
+        for interval in intervals:
+            if interval.account_id not in intervals_by_account:
+                intervals_by_account[interval.account_id] = []
+            intervals_by_account[interval.account_id].append(interval)
+
+        # Print results per account
+        for account_id, account_intervals in intervals_by_account.items():
+            valid_intervals = [i for i in account_intervals if not i.is_unchecked and i.is_valid]
+            invalid_intervals = [i for i in account_intervals if not i.is_unchecked and not i.is_valid]
+            unchecked_intervals = [i for i in account_intervals if i.is_unchecked]
+
+            logger.info(f"\n{'='*80}")
+            logger.info(f"Account: {account_id}")
+            logger.info(f"{'='*80}")
+            logger.info(f"Summary: {len(valid_intervals)} valid, {len(invalid_intervals)} invalid, {len(unchecked_intervals)} unchecked")
+
+            # Print invalid intervals
+            if invalid_intervals:
+                logger.warning(f"\n  INVALID INTERVALS ({len(invalid_intervals)}):")
+                for idx, interval in enumerate(invalid_intervals, 1):
+                    difference = interval.calculated_sum - interval.end_balance
+                    logger.warning(f"    {idx}. {interval.start_date} to {interval.end_date}")
+                    logger.warning(f"       Start balance: {interval.start_balance:.2f}")
+                    logger.warning(f"       End balance:   {interval.end_balance:.2f}")
+                    logger.warning(f"       Calculated:    {interval.calculated_sum:.2f}")
+                    logger.warning(f"       Difference:    {difference:.2f}")
+                    logger.warning(f"       Transactions:  {interval.entry_count}")
+
+            # Print unchecked intervals
+            if unchecked_intervals:
+                logger.warning(f"\n  UNCHECKED INTERVALS ({len(unchecked_intervals)}):")
+                for idx, interval in enumerate(unchecked_intervals, 1):
+                    logger.warning(f"    {idx}. {interval.start_date} to {interval.end_date}")
+                    logger.warning(f"       Reason:        {interval.unchecked_reason}")
+                    logger.warning(f"       Transactions:  {interval.entry_count}")
+                    logger.warning(f"       Total amount:  {interval.calculated_sum:.2f}")
+
+            # Summarize valid intervals
+            if valid_intervals:
+                logger.info(f"\n  VALID INTERVALS: {len(valid_intervals)}")
+                total_transactions = sum(i.entry_count for i in valid_intervals)
+                logger.info(f"    Total transactions validated: {total_transactions}")
+
+        # Overall summary
+        all_valid = [i for i in intervals if not i.is_unchecked and i.is_valid]
+        all_invalid = [i for i in intervals if not i.is_unchecked and not i.is_valid]
+        all_unchecked = [i for i in intervals if i.is_unchecked]
+
+        logger.info(f"\n{'='*80}")
+        logger.info(f"OVERALL SUMMARY")
+        logger.info(f"{'='*80}")
+        logger.info(f"Total accounts: {len(intervals_by_account)}")
+        logger.info(f"Valid intervals: {len(all_valid)}")
+        logger.info(f"Invalid intervals: {len(all_invalid)}")
+        logger.info(f"Unchecked intervals: {len(all_unchecked)}")
+        logger.info(f"{'='*80}\n")
