@@ -85,7 +85,8 @@ class FinancialAnalysis:
     def validate_interpreted_input(self):
         logger.info("input validation")
         validator = EntryValidator([entry for entry in self.__statement.get_entries() if entry.raw and entry.raw.type != RawEntryType.UNKNOW])
-        validator.validate_amounts_with_balances()
+        validation_intervals = validator.validate_amounts_with_balances()
+        return validation_intervals
 
     def print_undefined_external_transaction_csv_entries(self):
         EntryPrinter.date_id_amount_tags_comment(

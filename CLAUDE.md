@@ -58,6 +58,9 @@ Test files follow the pattern `*Test.py` (configured in pytest.ini).
 pyinstaller --onefile FinancialAnalysis.py
 ```
 
+## Code style
+* do not add comments if names of variables or functions describe the same
+
 ## Architecture
 
 ### Core Data Flow
