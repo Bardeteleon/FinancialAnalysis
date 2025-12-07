@@ -372,7 +372,6 @@ def test_empty_entries():
 
 
 def test_virtual_entries_are_included():
-    """Test that virtual entries (without raw data) are included in validation"""
     entries: List[InterpretedEntry] = [
         InterpretedEntry(
             amount=1000.0,
@@ -472,7 +471,6 @@ def test_balance_only_no_transactions_with_balance_mismatch():
 
 
 def test_print_validation_results(caplog):
-    """Test that print_validation_results correctly logs all interval types"""
     caplog.set_level(logging.INFO)
 
     # Create intervals with various statuses
