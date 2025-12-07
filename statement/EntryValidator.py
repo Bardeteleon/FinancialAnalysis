@@ -1,5 +1,5 @@
 
-from data_types.Types import InterpretedEntry, RawEntryType
+from data_types.Types import InterpretedEntry
 from typing import *
 import math
 from user_interface.logger import logger
@@ -72,11 +72,7 @@ class EntryValidator:
         transactions_before_first_balance = []
 
         for entry in entries:
-            # Skip virtual entries as they don't have raw type
-            if entry.is_virtual():
-                continue
-
-            if entry.raw.type == RawEntryType.BALANCE:
+            if entry.is_balance():
                 if curr_start_balance_entry is None:
                     # Found first balance - create unchecked interval for transactions before it
                     if transactions_before_first_balance:
@@ -144,7 +140,7 @@ class EntryValidator:
             # Create unchecked interval for transactions after last balance
             last_transaction_date = None
             for entry in reversed(entries):
-                if not entry.is_virtual() and entry.raw.type != RawEntryType.BALANCE:
+                if entry.is_transaction():
                     last_transaction_date = entry.date
                     break
 

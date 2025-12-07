@@ -47,5 +47,8 @@ class InterpretedEntry:
         return self.type == InterpretedEntryType.TRANSACTION_EXTERNAL or \
                self.type == InterpretedEntryType.TRANSACTION_INTERNAL
 
+    def is_balance(self) -> bool:
+        return self.type == InterpretedEntryType.BALANCE
+
     def is_virtual(self) -> bool:
         return self.raw is None

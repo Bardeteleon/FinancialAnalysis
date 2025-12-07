@@ -2,7 +2,7 @@ import logging
 from datetime import date
 from typing import List
 from statement.EntryValidator import EntryValidator, BalanceValidationInterval
-from data_types.Types import InterpretedEntry, InterpretedEntryType, RawEntry, RawEntryType
+from data_types.Types import InterpretedEntry, InterpretedEntryType
 
 
 def test_normal_case_transactions_between_balances():
@@ -11,29 +11,25 @@ def test_normal_case_transactions_between_balances():
             amount=1000.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
-            date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
+            date=date(2020, 1, 1)
         ),
         InterpretedEntry(
             amount=-50.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_INTERNAL,
-            date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "-50.0", "Payment", 0, RawEntryType.TRANSACTION)
+            date=date(2020, 1, 2)
         ),
         InterpretedEntry(
             amount=100.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
-            date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "100.0", "Deposit", 0, RawEntryType.TRANSACTION)
+            date=date(2020, 1, 3)
         ),
         InterpretedEntry(
             amount=1050.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
-            date=date(2020, 1, 4),
-            raw=RawEntry("2020-01-04", "1050.0", "Balance", 0, RawEntryType.BALANCE)
+            date=date(2020, 1, 4)
         ),
     ]
 
@@ -60,36 +56,31 @@ def test_multiple_intervals_for_same_account():
             amount=1000.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
-            date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
+            date=date(2020, 1, 1)
         ),
         InterpretedEntry(
             amount=50.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
-            date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "50.0", "Deposit", 0, RawEntryType.TRANSACTION)
+            date=date(2020, 1, 2)
         ),
         InterpretedEntry(
             amount=1050.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
-            date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1050.0", "Balance", 0, RawEntryType.BALANCE)
+            date=date(2020, 1, 3)
         ),
         InterpretedEntry(
             amount=-25.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
-            date=date(2020, 1, 4),
-            raw=RawEntry("2020-01-04", "-25.0", "Payment", 0, RawEntryType.TRANSACTION)
+            date=date(2020, 1, 4)
         ),
         InterpretedEntry(
             amount=1025.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
-            date=date(2020, 1, 5),
-            raw=RawEntry("2020-01-05", "1025.0", "Balance", 0, RawEntryType.BALANCE)
+            date=date(2020, 1, 5)
         ),
     ]
 
@@ -123,21 +114,18 @@ def test_multiple_accounts():
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=50.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "50.0", "Deposit", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=1050.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1050.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         # Credit card account
         InterpretedEntry(
@@ -145,21 +133,18 @@ def test_multiple_accounts():
             account_id="CreditCard",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "0.0", "Balance", 1, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=-100.0,
             account_id="CreditCard",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "-100.0", "Purchase", 1, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=-100.0,
             account_id="CreditCard",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "-100.0", "Balance", 1, RawEntryType.BALANCE)
         ),
     ]
 
@@ -188,35 +173,30 @@ def test_transactions_before_first_balance():
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "-50.0", "Payment", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=100.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "100.0", "Deposit", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=1000.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=25.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 4),
-            raw=RawEntry("2020-01-04", "25.0", "Deposit", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=1025.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 5),
-            raw=RawEntry("2020-01-05", "1025.0", "Balance", 0, RawEntryType.BALANCE)
         ),
     ]
 
@@ -253,35 +233,30 @@ def test_transactions_after_last_balance():
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=50.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "50.0", "Deposit", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=1050.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1050.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=-25.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 4),
-            raw=RawEntry("2020-01-04", "-25.0", "Payment", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=100.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 5),
-            raw=RawEntry("2020-01-05", "100.0", "Deposit", 0, RawEntryType.TRANSACTION)
         ),
     ]
 
@@ -318,21 +293,18 @@ def test_no_balances_at_all():
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "-50.0", "Payment", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=100.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "100.0", "Deposit", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=-25.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "-25.0", "Payment", 0, RawEntryType.TRANSACTION)
         ),
     ]
 
@@ -360,21 +332,18 @@ def test_invalid_interval_where_transaction_sum_does_not_match_balances():
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=-50.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
             date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "-50.0", "Payment", 0, RawEntryType.TRANSACTION)
         ),
         InterpretedEntry(
             amount=1000.0,  # Wrong! Should be 950.0
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
     ]
 
@@ -402,36 +371,32 @@ def test_empty_entries():
     assert len(intervals) == 0
 
 
-def test_virtual_entries_are_skipped():
-    """Test that virtual entries (without raw data) are skipped during validation"""
+def test_virtual_entries_are_included():
+    """Test that virtual entries (without raw data) are included in validation"""
     entries: List[InterpretedEntry] = [
         InterpretedEntry(
             amount=1000.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
-            date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
+            date=date(2020, 1, 1)
         ),
         InterpretedEntry(
             amount=50.0,
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_EXTERNAL,
-            date=date(2020, 1, 2),
-            raw=RawEntry("2020-01-02", "50.0", "Deposit", 0, RawEntryType.TRANSACTION)
+            date=date(2020, 1, 2)
         ),
         InterpretedEntry(
             amount=-25.0,  # Virtual entry (no raw)
             account_id="Bank",
             type=InterpretedEntryType.TRANSACTION_INTERNAL,
-            date=date(2020, 1, 2),
-            raw=None
+            date=date(2020, 1, 2)
         ),
         InterpretedEntry(
-            amount=1050.0,
+            amount=1025.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
-            date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1050.0", "Balance", 0, RawEntryType.BALANCE)
+            date=date(2020, 1, 3)
         ),
     ]
 
@@ -440,10 +405,10 @@ def test_virtual_entries_are_skipped():
 
     assert len(intervals) == 1
 
-    # Virtual entry should be skipped, so only 50.0 should be counted
-    assert intervals[0].calculated_sum == 1050.0
+    # Virtual entry should be included, so 50.0 + (-25.0) = 25.0 should be counted
+    assert intervals[0].calculated_sum == 1025.0
     assert intervals[0].is_valid == True
-    assert intervals[0].entry_count == 1  # Only one non-virtual transaction
+    assert intervals[0].entry_count == 2  # Both transactions counted
 
 
 def test_balance_only_no_transactions():
@@ -453,14 +418,12 @@ def test_balance_only_no_transactions():
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=1000.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
     ]
 
@@ -485,14 +448,12 @@ def test_balance_only_no_transactions_with_balance_mismatch():
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 1),
-            raw=RawEntry("2020-01-01", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
         InterpretedEntry(
             amount=1001.0,
             account_id="Bank",
             type=InterpretedEntryType.BALANCE,
             date=date(2020, 1, 3),
-            raw=RawEntry("2020-01-03", "1000.0", "Balance", 0, RawEntryType.BALANCE)
         ),
     ]
 
