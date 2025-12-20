@@ -16,15 +16,16 @@ class EntryAugmentation:
     def get_manual_balances(accounts : List[Account]) -> List[InterpretedEntry]:
         manual_balances : List[InterpretedEntry] = []
         for account in accounts:
-            if account.balance_reference is not None:
-                new_date = date.fromisoformat(account.balance_reference.date)
-                account_id = account.get_id()
-                manual_balances.append(InterpretedEntry(
-                                             date=new_date, 
-                                             amount=account.balance_reference.end_of_day_amount, 
-                                             account_id=account_id,
-                                             type=InterpretedEntryType.BALANCE,
-                                             tags=[]))
+            if account.balance_references is not None:
+                for balance_reference in account.balance_references:
+                    new_date = date.fromisoformat(balance_reference.date)
+                    account_id = account.get_id()
+                    manual_balances.append(InterpretedEntry(
+                                                 date=new_date,
+                                                 amount=balance_reference.end_of_day_amount,
+                                                 account_id=account_id,
+                                                 type=InterpretedEntryType.BALANCE,
+                                                 tags=[]))
         return manual_balances
 
     @staticmethod

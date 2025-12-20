@@ -83,7 +83,8 @@ class FinancialAnalysis:
             statement_builder.add_entries(interpreted_extractor.get_interpreted_entries())
 
     def validate_interpreted_input(self):
-        logger.info("input validation")
+        logger.info("")
+        logger.info("Input validation:")
         validator = EntryValidator(self.__statement.get_entries())
         validation_intervals = validator.validate_amounts_with_balances()
         validator.print_validation_results(validation_intervals)

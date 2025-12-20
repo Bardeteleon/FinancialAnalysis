@@ -15,11 +15,11 @@ class ManualBalance:
 
 @dataclass
 class Account:
-    name : str 
+    name : str
     transaction_iban : str
     transaction_iban_alternative : Optional[str]
     input_directory : Optional[str]
-    balance_reference : Optional[ManualBalance]
+    balance_references : Optional[List[ManualBalance]]
 
     def get_input_directory(self) -> str:
         return self.input_directory if self.input_directory else ""
