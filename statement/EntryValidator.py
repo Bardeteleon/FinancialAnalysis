@@ -166,6 +166,9 @@ class EntryValidator:
 
         return intervals
 
+    def calculate_sum_of_transactions(intervals : List[BalanceValidationInterval]) -> int:
+        return sum(interval.entry_count for interval in intervals)
+
     @staticmethod
     def print_validation_results(intervals: List[BalanceValidationInterval]):
         if not intervals:
@@ -188,19 +191,21 @@ class EntryValidator:
             logger.info(f"{'='*80}")
             logger.info(f"Account: {account_id}")
             logger.info(f"{'='*80}")
-            logger.info(f"Summary: {len(valid_intervals)} valid, {len(invalid_intervals)} invalid, {len(unchecked_intervals)} unchecked")
+            logger.info(f"Summary: {EntryValidator.calculate_sum_of_transactions(valid_intervals)} valid, "
+                        f"{EntryValidator.calculate_sum_of_transactions(invalid_intervals)} invalid, "
+                        f"{EntryValidator.calculate_sum_of_transactions(unchecked_intervals)} unchecked transactions.")
 
             # Print invalid intervals
             if invalid_intervals:
-                logger.warning(f"  INVALID INTERVALS ({len(invalid_intervals)}):")
+                logger.error(f"  INVALID INTERVALS ({len(invalid_intervals)}):")
                 for idx, interval in enumerate(invalid_intervals, 1):
                     difference = interval.calculated_sum - interval.end_balance
-                    logger.warning(f"    {idx}. {interval.start_date} to {interval.end_date}")
-                    logger.warning(f"       Start balance: {interval.start_balance:.2f}")
-                    logger.warning(f"       End balance:   {interval.end_balance:.2f}")
-                    logger.warning(f"       Calculated:    {interval.calculated_sum:.2f}")
-                    logger.warning(f"       Difference:    {difference:.2f}")
-                    logger.warning(f"       Transactions:  {interval.entry_count}")
+                    logger.error(f"    {idx}. {interval.start_date} to {interval.end_date}")
+                    logger.error(f"       Start balance: {interval.start_balance:.2f}")
+                    logger.error(f"       End balance:   {interval.end_balance:.2f}")
+                    logger.error(f"       Calculated:    {interval.calculated_sum:.2f}")
+                    logger.error(f"       Difference:    {difference:.2f}")
+                    logger.error(f"       Transactions:  {interval.entry_count}")
 
             # Print unchecked intervals
             if unchecked_intervals:
@@ -213,19 +218,19 @@ class EntryValidator:
 
         # Overall summary
         all_valid_intervals = [i for i in intervals if not i.is_unchecked and i.is_valid]
-        all_valid_transactions = sum(i.entry_count for i in all_valid_intervals)
+        all_valid_transactions = EntryValidator.calculate_sum_of_transactions(all_valid_intervals)
         all_invalid_intervals = [i for i in intervals if not i.is_unchecked and not i.is_valid]
-        all_invalid_transactions = sum(i.entry_count for i in all_invalid_intervals)
+        all_invalid_transactions = EntryValidator.calculate_sum_of_transactions(all_invalid_intervals)
         all_unchecked_intervals = [i for i in intervals if i.is_unchecked]
-        all_unchecked_transactions = sum(i.entry_count for i in all_unchecked_intervals)
+        all_unchecked_transactions = EntryValidator.calculate_sum_of_transactions(all_unchecked_intervals)
 
         logger.info(f"{'='*80}")
         logger.info(f"OVERALL SUMMARY")
         logger.info(f"{'='*80}")
         logger.info(f"Total accounts: {len(intervals_by_account)}")
-        logger.info(f"Valid intervals:\t\t{len(all_valid_intervals)}\t({all_valid_transactions} transactions)")
+        logger.info(f"Valid transactions:\t\t{all_valid_transactions}\t({len(all_valid_intervals)} intervals)")
         logger_fcn = logger.error if len(all_invalid_intervals) > 0 else logger.info
-        logger_fcn(f"Invalid intervals:\t{len(all_invalid_intervals)}\t({all_invalid_transactions} transactions)")
+        logger_fcn(f"Invalid transactions:\t\t{all_invalid_transactions}\t({len(all_invalid_intervals)} intervals)")
         logger_fcn = logger.warning if len(all_unchecked_intervals) > 0 else logger.info
-        logger_fcn(f"Unchecked intervals:\t{len(all_unchecked_intervals)}\t({all_unchecked_transactions} transactions)")
+        logger_fcn(f"Unchecked transactions:\t{all_unchecked_transactions}\t({len(all_unchecked_intervals)} intervals)")
         logger.info(f"{'='*80}\n")
