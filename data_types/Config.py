@@ -19,9 +19,9 @@ class ManualBalance:
 class Account:
     name : str
     transaction_iban : str
-    transaction_iban_alternative : Optional[str]
-    input_directory : Optional[str]
-    balance_references : Optional[List[ManualBalance]]
+    transaction_iban_alternative : Optional[str] = None
+    input_directory : Optional[str] = None
+    balance_references : Optional[List[ManualBalance]] = None
     currency : Optional[str] = None
 
     def get_input_directory(self) -> str:
@@ -65,7 +65,7 @@ class CurrencyConfig:
 class Config:
     internal_accounts : List[Account]
     headings : List[HeadingConfig]
-    custom_balances : Optional[List[CustomBalance]]
+    custom_balances : Optional[List[CustomBalance]] = None
     currency_config : Optional[CurrencyConfig] = None
 
 def read_config(file_path : str) -> Config:

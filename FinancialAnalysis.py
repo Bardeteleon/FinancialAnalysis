@@ -65,7 +65,7 @@ class FinancialAnalysis:
 
     def __augment_csv_entries(self, statement_builder : InMemoryStatementBuilder):
         statement_builder.add_entries(EntryAugmentation.get_account_transactions_for_accounts_without_input_file_by_other_account_transactions(statement_builder.get_unsorted_entries(), self.__config.internal_accounts))
-        statement_builder.add_entries(EntryAugmentation.get_manual_balances(self.__config.internal_accounts))
+        statement_builder.add_entries(EntryAugmentation.get_manual_balances(self.__config))
 
     def __interpret_pdf_input(self, statement_builder : InMemoryStatementBuilder):
         input_file_count = 1

@@ -1,32 +1,32 @@
 
 from datetime import date
-from re import A
 import re
-from sqlite3 import InternalError
-from typing import List
+from typing import List, Optional
+from statement.CurrencyConverter import CurrencyConverter
 from statement.EntryFilter import EntryFilter
-from statement.EntryMapping import EntryMapping
 from data_types.Types import CardType, InterpretedEntry, InterpretedEntryType, RawEntry
-from data_types.Config import Account
+from data_types.Config import Account, CurrencyConfig
 
 
 class EntryAugmentation:
     
     @staticmethod
-    def get_manual_balances(accounts : List[Account]) -> List[InterpretedEntry]:
+    def get_manual_balances(internal_accounts : List[Account], currency_config : Optional[CurrencyConfig] = None) -> List[InterpretedEntry]:
+        currency_converter : CurrencyConverter = CurrencyConverter(currency_config)
         manual_balances : List[InterpretedEntry] = []
-        for account in accounts:
+        for account in internal_accounts:
             if account.balance_references is not None:
                 for balance_reference in account.balance_references:
                     new_date = date.fromisoformat(balance_reference.date)
                     account_id = account.get_id()
                     account_currency = account.get_currency_code()
+                    converted_amount = currency_converter.convert(balance_reference.end_of_day_amount, account_currency)
                     manual_balances.append(InterpretedEntry(
                                                  date=new_date,
-                                                 amount=balance_reference.end_of_day_amount,
+                                                 amount=converted_amount,
                                                  original_amount=balance_reference.end_of_day_amount,
                                                  original_currency=account_currency,
-                                                 converted_amount=balance_reference.end_of_day_amount, # FIXME!!! currency conversion missing
+                                                 converted_amount=converted_amount,
                                                  account_id=account_id,
                                                  type=InterpretedEntryType.BALANCE,
                                                  tags=[]))

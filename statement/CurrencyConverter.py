@@ -1,11 +1,12 @@
 from typing import Optional, Dict, Tuple
+from data_types.Config import CurrencyConfig
 from user_interface.logger import logger
 from data_types.Currency import CurrencyCode
 
 
 class CurrencyConverter:
 
-    def __init__(self, currency_config: Optional['CurrencyConfig']):
+    def __init__(self, currency_config: Optional[CurrencyConfig]):
         self.__base_currency: Optional[CurrencyCode] = None
         self.__exchange_rates: Dict[Tuple[CurrencyCode, CurrencyCode], float] = {}
 

@@ -11,8 +11,7 @@ class EntryWriter:
         with open(filepath, "w", newline="") as file:
             csvwriter = csv.writer(file, quoting=csv.QUOTE_ALL)
             for entry in self.__entries:
-                currency_str = entry.original_currency.value if entry.original_currency else ""
                 if entry.is_virtual():
-                    csvwriter.writerow([str(entry.date), str(entry.converted_amount), str(entry.original_amount), currency_str, str(entry.tags), str(entry.card_type), str(entry.type), entry.account_id])
+                    csvwriter.writerow([str(entry.date), str(entry.original_amount), str(entry.tags), str(entry.card_type), str(entry.type), entry.account_id])
                 else:
-                    csvwriter.writerow([str(entry.date), str(entry.converted_amount), str(entry.original_amount), currency_str, str(entry.tags), str(entry.card_type), str(entry.type), entry.account_id, str(entry.raw.type), entry.raw.comment])
+                    csvwriter.writerow([str(entry.date), str(entry.original_amount), str(entry.tags), str(entry.card_type), str(entry.type), entry.account_id, str(entry.raw.type), entry.raw.comment])
