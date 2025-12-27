@@ -7,6 +7,7 @@ from data_types.Config import Config, read_config
 from statement.EntryAugmentation import EntryAugmentation
 from statement.EntrySorter import EntrySorter
 from statement.EntryValidator import EntryValidator
+from statement.CurrencyValidator import CurrencyValidator
 from user_interface.InteractiveOverviewTkinter import InteractiveOverviewTkinter
 from statement.extractor.InterpretedStatementExtractor import InterpretedStatementExtractor
 from file_reader.CsvReader import CsvReader
@@ -34,6 +35,7 @@ class FinancialAnalysis:
     def __read_configs(self):
         self.__config : Config = read_config(self.__input.config_json_file)
         self.__tags : TagConfig = load_tags(self.__input.tags_json_file)
+        self.__validate_currency_configuration()
 
     def read_and_interpret_input(self):
         statement_builder : InMemoryStatementBuilder = InMemoryStatementBuilder()
@@ -129,3 +131,10 @@ class FinancialAnalysis:
     
     def __get_export_file_path(self, file_name : str = ""):
         return os.path.join(self.__input.base_path, "export", file_name)
+
+    def __validate_currency_configuration(self):
+        warnings = CurrencyValidator.validate_configuration(self.__config)
+        if warnings:
+            logger.warning("Currency configuration warnings:")
+            for warning in warnings:
+                logger.warning(f"  - {warning}")

@@ -6,6 +6,7 @@ from data_types.Tag import UndefinedTag
 from data_types.TagConfig import TagDefinition, TagConfig
 from data_types.Types import *
 from typing import List
+from statement.CurrencyConverter import CurrencyConverter
 
 
 class InterpretedStatementExtractor:
@@ -18,6 +19,7 @@ class InterpretedStatementExtractor:
         self.__init_interpreted_entries()
 
         self.__tag_definitions : List[TagDefinition] = tags.tag_definitions
+        self.__currency_converter : CurrencyConverter = CurrencyConverter(config.currency_config)
 
     def run(self):
         self.__extract_amount()
@@ -37,28 +39,44 @@ class InterpretedStatementExtractor:
 
     def __extract_amount(self):
         for i, raw_entry in enumerate(self.__raw_entries):
+            parsed_amount = None
+
             match = re.fullmatch(r"([\d\.]+),(\d{2}) ([HS])", raw_entry.amount)
             if match:
                 before_comma : str = re.sub(r"\.", "", match.group(1))
                 after_comma : str = match.group(2)
                 plus_minus : str = match.group(3)
 
-                self.__interpreted_entries[i].amount = float(int(before_comma))
-                self.__interpreted_entries[i].amount += int(after_comma) / 100.0
-                self.__interpreted_entries[i].amount *= -1 if plus_minus == "S" else +1
+                parsed_amount = float(int(before_comma))
+                parsed_amount += int(after_comma) / 100.0
+                parsed_amount *= -1 if plus_minus == "S" else +1
+
+            if parsed_amount is None:
+                match = re.fullmatch(r"(-)*([\d]+)(,\d{1,2})", raw_entry.amount)
+                if match:
+                    dotted_amount = re.sub(",", ".", raw_entry.amount)
+                    parsed_amount = float(dotted_amount)
+
+            if parsed_amount is None:
+                match = re.fullmatch(r"(-)?(\d{1,3}\.)*(\d{1,3})(,\d{1,2})?", raw_entry.amount)
+                if match:
+                    without_thousands_dots = re.sub(r"\.", "", raw_entry.amount)
+                    dotted_amount = re.sub(",", ".", without_thousands_dots)
+                    parsed_amount = float(dotted_amount)
+
+            if parsed_amount is None:
+                logger.warning(f"Could not extract amount from: {raw_entry.amount}")
                 continue
-            match = re.fullmatch(r"(-)*([\d]+)(,\d{1,2})", raw_entry.amount)
-            if match:
-                dotted_amount = re.sub(",", ".", raw_entry.amount)
-                self.__interpreted_entries[i].amount = float(dotted_amount)
-                continue
-            match = re.fullmatch(r"(-)?(\d{1,3}\.)*(\d{1,3})(,\d{1,2})?", raw_entry.amount)
-            if match:
-                without_thousands_dots = re.sub(r"\.", "", raw_entry.amount)
-                dotted_amount = re.sub(",", ".", without_thousands_dots)
-                self.__interpreted_entries[i].amount = float(dotted_amount)
-                continue
-            logger.warning(f"Could not extract amount from: {raw_entry.amount}")
+
+            account = self.__config.internal_accounts[raw_entry.account_idx]
+            account_currency = account.get_currency_code()
+
+            self.__interpreted_entries[i].original_amount = parsed_amount
+            self.__interpreted_entries[i].original_currency = account_currency
+
+            converted = self.__currency_converter.convert(parsed_amount, account_currency)
+            self.__interpreted_entries[i].converted_amount = converted
+            self.__interpreted_entries[i].amount = converted
 
     def __extract_date(self):
         for i, raw_entry in enumerate(self.__raw_entries):

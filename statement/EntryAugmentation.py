@@ -20,9 +20,13 @@ class EntryAugmentation:
                 for balance_reference in account.balance_references:
                     new_date = date.fromisoformat(balance_reference.date)
                     account_id = account.get_id()
+                    account_currency = account.get_currency_code()
                     manual_balances.append(InterpretedEntry(
                                                  date=new_date,
                                                  amount=balance_reference.end_of_day_amount,
+                                                 original_amount=balance_reference.end_of_day_amount,
+                                                 original_currency=account_currency,
+                                                 converted_amount=balance_reference.end_of_day_amount, # FIXME!!! currency conversion missing
                                                  account_id=account_id,
                                                  type=InterpretedEntryType.BALANCE,
                                                  tags=[]))
@@ -38,6 +42,9 @@ class EntryAugmentation:
                     new_entries.append(InterpretedEntry(
                         date=relevant_transaction.date,
                         amount=-1.0*relevant_transaction.amount,
+                        original_amount=-1.0*relevant_transaction.original_amount,
+                        original_currency=relevant_transaction.original_currency,
+                        converted_amount=-1.0*relevant_transaction.converted_amount,
                         tags=relevant_transaction.tags,
                         card_type=CardType.GIRO,
                         account_id=account.get_id(),

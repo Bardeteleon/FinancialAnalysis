@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 from datetime import date
-from typing import List
+from typing import List, Optional
 from data_types.Tag import Tag
+from data_types.Currency import CurrencyCode
 
 class RawEntryType(Enum):
     TRANSACTION = auto()
@@ -30,7 +31,11 @@ class RawEntry:
 @dataclass
 class InterpretedEntry:
     date : date = None
+    # TODO deprecated. Introduce get_amount
     amount : float = 0.0
+    original_amount : float = 0.0
+    original_currency : Optional[CurrencyCode] = None
+    converted_amount : float = 0.0
     tags : List[Tag] = None
     card_type : CardType = None
     account_id : str = ""
@@ -52,3 +57,8 @@ class InterpretedEntry:
 
     def is_virtual(self) -> bool:
         return self.raw is None
+
+    def get_display_amount(self, base_currency: Optional[str] = None) -> str:
+        if self.original_currency is None or self.original_currency.value == base_currency:
+            return f"{self.amount:.2f}"
+        return f"{self.converted_amount:.2f} (orig: {self.original_amount:.2f} {self.original_currency.value})"

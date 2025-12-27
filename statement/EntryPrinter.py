@@ -10,29 +10,39 @@ class EntryPrinter:
     def count(entries : List[InterpretedEntry]):
         print(f"Count: {len(entries)}")
 
+    # TODO entries + base_currency -> Statement ?
+
     @staticmethod
-    def date_id_amount_tags_comment(entries : List[InterpretedEntry]):        
+    def date_id_amount_tags_comment(entries : List[InterpretedEntry], base_currency : str = None):
         for entry in entries:
             comment = entry.raw.comment if entry.raw else ""
-            print(f"{entry.date} | {entry.account_id} | {entry.amount} |\t{entry.tags} | {comment}")
+            amount_display = entry.get_display_amount(base_currency)
+            print(f"{entry.date} | {entry.account_id} | {amount_display} |\t{entry.tags} | {comment}")
         EntryPrinter.count(entries)
 
     @staticmethod
-    def date_id_amount_type_comment(entries : List[InterpretedEntry]):        
+    def date_id_amount_type_comment(entries : List[InterpretedEntry], base_currency : str = None):
         for entry in entries:
-            print(f"{entry.date} | {entry.account_id} | {entry.amount} | \t{entry.raw.type} | {entry.raw.comment}")
+            amount_display = entry.get_display_amount(base_currency)
+            raw_type = entry.raw.type if entry.raw else ""
+            comment = entry.raw.comment if entry.raw else ""
+            print(f"{entry.date} | {entry.account_id} | {amount_display} | \t{raw_type} | {comment}")
         EntryPrinter.count(entries)
         
     @staticmethod
-    def date_amount_type_tags(entries : List[InterpretedEntry]):
+    def date_amount_type_tags(entries : List[InterpretedEntry], base_currency : str = None):
         for entry in entries:
-            print(f"{entry.date} | {entry.amount} | {entry.raw.type} | {entry.tags}")
+            amount_display = entry.get_display_amount(base_currency)
+            raw_type = entry.raw.type if entry.raw else ""
+            print(f"{entry.date} | {amount_display} | {raw_type} | {entry.tags}")
         EntryPrinter.count(entries)
     
     @staticmethod
-    def raw_interpreted_comparison(entries : List[InterpretedEntry]):
+    def raw_interpreted_comparison(entries : List[InterpretedEntry], base_currency : str = None):
         for entry in entries:
-            print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {entry.amount} | {entry.raw.identification} -> {entry.card_type} & {entry.account_id}")
+            if entry.raw:
+                amount_display = entry.get_display_amount(base_currency)
+                print(f"{entry.raw.date} -> {entry.date} | {entry.raw.amount} -> {amount_display} | {entry.raw.identification} -> {entry.card_type} & {entry.account_id}")
         EntryPrinter.count(entries)
 
     @staticmethod
