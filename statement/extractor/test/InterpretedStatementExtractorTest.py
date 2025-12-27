@@ -51,6 +51,7 @@ class TestExtractDate:
         pytest.param('31.12.2024', datetime.date(2024, 12, 31), id='end_of_year'),
         pytest.param('29.02.2024', datetime.date(2024, 2, 29), id='leap_year'),
         pytest.param('10.05. 15.05.2023', datetime.date(2023, 5, 10), id='space_format_different_dates'),
+        pytest.param('2023-03-15', datetime.date(2023, 3, 15), id='english format'),
     ])
     def test_extract_date_valid_formats(self, date_input, expected_date,
                                        make_raw_entry, run_extractor):
@@ -59,12 +60,10 @@ class TestExtractDate:
         assert result[0].date == expected_date
 
     @pytest.mark.parametrize("invalid_date,expected_log", [
-        pytest.param('2023-03-15', "Could not extract date from: 2023-03-15", id='invalid_format'),
         pytest.param('', "Could not extract date from:", id='empty_string'),
         pytest.param('1.2.2023', "Could not extract date from: 1.2.2023", id='single_digit_day_month'),
     ])
-    def test_extract_date_invalid_formats(self, invalid_date, expected_log,
-                                         make_raw_entry, run_extractor, caplog):
+    def test_extract_date_invalid_formats(self, invalid_date, expected_log, make_raw_entry, run_extractor, caplog):
         raw_entries = [make_raw_entry(date=invalid_date)]
         result = run_extractor(raw_entries)
 

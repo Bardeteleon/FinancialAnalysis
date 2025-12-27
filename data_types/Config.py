@@ -68,5 +68,11 @@ class Config:
     custom_balances : Optional[List[CustomBalance]] = None
     currency_config : Optional[CurrencyConfig] = None
 
+    def get_account_name(self, account_id : str) -> Optional[str]:
+        for account in self.internal_accounts:
+            if account.get_id() == account_id:
+                return account.get_name()
+        return None
+
 def read_config(file_path : str) -> Config:
     return dataconf.load(file_path, Config)

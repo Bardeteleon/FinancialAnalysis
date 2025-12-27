@@ -60,7 +60,7 @@ class RawEntriesFromCsvExtractor:
             raw_entry = RawEntry(
                 date = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__date_indices),
                 amount = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__amount_indices),
-                comment = RawEntriesFromCsvExtractor.cleanup_whitespace(RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__comment_indices)),
+                comment = RawEntriesFromCsvExtractor.__get_concatenated_column_content(row, self.__comment_indices),
                 account_idx = self.__account_idx,
                 type = RawEntryType.UNKNOW)
             if raw_entry.amount == "":
@@ -117,7 +117,7 @@ class RawEntriesFromCsvExtractor:
     def __get_concatenated_column_content(column_data : List[str], column_indices : List[int]) -> str:
         if max(column_indices) < len(column_data):
             selected_columns = [column_data[selected_index] for selected_index in column_indices]
-            return " ".join(selected_columns)
+            return RawEntriesFromCsvExtractor.cleanup_whitespace(" ".join(selected_columns))
 
     def cleanup_whitespace(input : str) -> str:
         return re.sub(r'\s+', ' ', input).strip()

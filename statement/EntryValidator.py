@@ -1,4 +1,5 @@
 
+from data_types.Config import Config
 from data_types.Types import InterpretedEntry
 from typing import *
 import math
@@ -170,7 +171,7 @@ class EntryValidator:
         return sum(interval.entry_count for interval in intervals)
 
     @staticmethod
-    def print_validation_results(intervals: List[BalanceValidationInterval]):
+    def print_validation_results(intervals: List[BalanceValidationInterval], config : Optional[Config] = None):
         if not intervals:
             logger.info("No validation intervals to display")
             return
@@ -188,9 +189,9 @@ class EntryValidator:
             invalid_intervals = [i for i in account_intervals if not i.is_unchecked and not i.is_valid]
             unchecked_intervals = [i for i in account_intervals if i.is_unchecked]
 
+            account_name = f"{config.get_account_name(account_id)} / {account_id}" if config else f"{account_id}"
             logger.info(f"{'='*80}")
-            logger.info(f"Account: {account_id}")
-            logger.info(f"{'='*80}")
+            logger.info(f"Account: {account_name}")
             logger.info(f"Summary: {EntryValidator.calculate_sum_of_transactions(valid_intervals)} valid, "
                         f"{EntryValidator.calculate_sum_of_transactions(invalid_intervals)} invalid, "
                         f"{EntryValidator.calculate_sum_of_transactions(unchecked_intervals)} unchecked transactions.")

@@ -202,7 +202,8 @@ def test_validate_currencies_with_different_account_currencies_without_currency_
     warnings = ConfigValidator.validate_currencies(config)
 
     assert len(warnings) == 1
-    assert "Missing currency config. Detected different account currencies: EUR, USD" in warnings[0]
+    assert "Missing currency config. Detected different account currencies: EUR, USD" in warnings[0] or \
+           "Missing currency config. Detected different account currencies: USD, EUR" in warnings[0]
 
 
 def test_validate_currencies_with_mixed_issues():

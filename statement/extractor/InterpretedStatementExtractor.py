@@ -41,18 +41,19 @@ class InterpretedStatementExtractor:
         for i, raw_entry in enumerate(self.__raw_entries):
             parsed_amount = None
 
-            match = re.fullmatch(r"([\d\.]+),(\d{2}) ([HS])", raw_entry.amount)
-            if match:
-                before_comma : str = re.sub(r"\.", "", match.group(1))
-                after_comma : str = match.group(2)
-                plus_minus : str = match.group(3)
+            if parsed_amount is None:
+                match = re.fullmatch(r"([\d\.]+),(\d{2}) ([HS])", raw_entry.amount)
+                if match:
+                    before_comma : str = re.sub(r"\.", "", match.group(1))
+                    after_comma : str = match.group(2)
+                    plus_minus : str = match.group(3)
 
-                parsed_amount = float(int(before_comma))
-                parsed_amount += int(after_comma) / 100.0
-                parsed_amount *= -1 if plus_minus == "S" else +1
+                    parsed_amount = float(int(before_comma))
+                    parsed_amount += int(after_comma) / 100.0
+                    parsed_amount *= -1 if plus_minus == "S" else +1
 
             if parsed_amount is None:
-                match = re.fullmatch(r"(-)*([\d]+)(,\d{1,2})", raw_entry.amount)
+                match = re.fullmatch(r"(-)?([\d]+)([,.]\d{1,2})", raw_entry.amount)
                 if match:
                     dotted_amount = re.sub(",", ".", raw_entry.amount)
                     parsed_amount = float(dotted_amount)
@@ -99,6 +100,13 @@ class InterpretedStatementExtractor:
                 day = int(match.group(1))
                 month = int(match.group(2))
                 year = int(match.group(3)) + 2000
+                self.__interpreted_entries[i].date = datetime.date(year, month, day)
+                continue
+            match = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", raw_entry.date)
+            if match:
+                year = int(match.group(1))
+                month = int(match.group(2))
+                day = int(match.group(3))
                 self.__interpreted_entries[i].date = datetime.date(year, month, day)
                 continue
             logger.warning("Could not extract date from: " + raw_entry.date)
