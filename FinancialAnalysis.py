@@ -7,7 +7,7 @@ from data_types.Config import Config, read_config
 from statement.EntryAugmentation import EntryAugmentation
 from statement.EntrySorter import EntrySorter
 from statement.EntryValidator import EntryValidator
-from statement.CurrencyValidator import CurrencyValidator
+from data_types.ConfigValidator import ConfigValidator
 from user_interface.InteractiveOverviewTkinter import InteractiveOverviewTkinter
 from statement.extractor.InterpretedStatementExtractor import InterpretedStatementExtractor
 from file_reader.CsvReader import CsvReader
@@ -65,7 +65,7 @@ class FinancialAnalysis:
 
     def __augment_csv_entries(self, statement_builder : InMemoryStatementBuilder):
         statement_builder.add_entries(EntryAugmentation.get_account_transactions_for_accounts_without_input_file_by_other_account_transactions(statement_builder.get_unsorted_entries(), self.__config.internal_accounts))
-        statement_builder.add_entries(EntryAugmentation.get_manual_balances(self.__config))
+        statement_builder.add_entries(EntryAugmentation.get_manual_balances(self.__config.internal_accounts, self.__config.currency_config))
 
     def __interpret_pdf_input(self, statement_builder : InMemoryStatementBuilder):
         input_file_count = 1
@@ -133,8 +133,8 @@ class FinancialAnalysis:
         return os.path.join(self.__input.base_path, "export", file_name)
 
     def __validate_currency_configuration(self):
-        warnings = CurrencyValidator.validate_configuration(self.__config)
-        if warnings:
-            logger.warning("Currency configuration warnings:")
-            for warning in warnings:
-                logger.warning(f"  - {warning}")
+        errors = ConfigValidator.validate_currencies(self.__config)
+        if errors:
+            logger.error("Currency configuration errors:")
+            for error in errors:
+                logger.error(f"  - {error}")

@@ -64,7 +64,7 @@ class CurrencyConfig:
 @dataclass
 class Config:
     internal_accounts : List[Account]
-    headings : List[HeadingConfig]
+    headings : Optional[List[HeadingConfig]] = None
     custom_balances : Optional[List[CustomBalance]] = None
     currency_config : Optional[CurrencyConfig] = None
 
