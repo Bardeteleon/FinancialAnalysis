@@ -4,7 +4,8 @@ import re
 from typing import List, Optional
 from statement.CurrencyConverter import CurrencyConverter
 from statement.EntryFilter import EntryFilter
-from data_types.Types import CardType, InterpretedEntry, InterpretedEntryType, RawEntry
+from data_types.InterpretedEntry import CardType, InterpretedEntry, InterpretedEntryType
+from data_types.RawEntry import RawEntry
 from data_types.Config import Account, CurrencyConfig
 
 

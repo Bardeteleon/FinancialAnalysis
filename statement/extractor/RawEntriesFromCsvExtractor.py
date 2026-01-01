@@ -1,5 +1,6 @@
 import os
-from data_types.Types import *
+from dataclasses import dataclass
+from data_types.RawEntry import RawEntry, RawEntryType
 from typing import *
 from data_types.Config import Config
 from file_reader.CsvReader import CsvReader

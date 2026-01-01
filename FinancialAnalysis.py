@@ -19,7 +19,6 @@ from statement.extractor.RawEntriesFromCsvExtractor import RawEntriesFromCsvExtr
 from statement.extractor.RawEntriesFromPdfTextExtractor import RawEntriesFromPdfTextExtractor
 from typing import List
 from data_types.TagConfig import TagConfig, load_tags
-from data_types.Types import *
 from statement.Statement import Statement
 from statement.InMemoryStatementBuilder import InMemoryStatementBuilder
 

@@ -1,4 +1,4 @@
-from data_types.Types import *
+from data_types.InterpretedEntry import InterpretedEntry
 from typing import List
 
 

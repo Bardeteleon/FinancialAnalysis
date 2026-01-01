@@ -12,7 +12,7 @@ from statement.EntryFilter import EntryFilter
 from enum import Enum, auto
 from statement.EntryMapping import EntryMapping
 from data_types.TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
-from data_types.Types import InterpretedEntry, InterpretedEntryType
+from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 from user_interface.VisualizeStatement import VisualizeStatement
 from dateutil.relativedelta import relativedelta
 from data_types.Tag import Tag, UndefinedTag

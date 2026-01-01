@@ -4,7 +4,8 @@ from user_interface.logger import logger
 from data_types.Config import Config
 from data_types.Tag import UndefinedTag
 from data_types.TagConfig import TagDefinition, TagConfig
-from data_types.Types import *
+from data_types.RawEntry import RawEntry, RawEntryType
+from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType, CardType
 from typing import List
 from statement.CurrencyConverter import CurrencyConverter
 

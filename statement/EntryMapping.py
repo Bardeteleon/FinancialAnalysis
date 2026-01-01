@@ -8,7 +8,7 @@ from data_types.Config import Account
 from statement.EntryFilter import EntryFilter
 from statement.EntryInsights import EntryInsights
 from data_types.TimeInterval import TimeInterval, TimeIntervalVariants, YearInterval
-from data_types.Types import InterpretedEntry
+from data_types.InterpretedEntry import InterpretedEntry
 from data_types.TagGroup import TagGroup
 
 

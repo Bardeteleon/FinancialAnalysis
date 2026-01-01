@@ -1,7 +1,7 @@
 import pytest
 from statement.extractor.RawEntriesFromCsvExtractor import RawEntriesFromCsvExtractor
 from data_types.Config import Config, HeadingConfig, Account
-from data_types.Types import RawEntry, RawEntryType
+from data_types.RawEntry import RawEntry, RawEntryType
 from file_reader.CsvReader import CsvReader
 
 @pytest.fixture

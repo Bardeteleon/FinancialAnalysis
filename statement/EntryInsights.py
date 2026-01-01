@@ -3,7 +3,7 @@ from statement.EntryValidator import EntryValidator
 from user_interface.logger import logger
 from typing import List, Optional
 from statement.EntryFilter import EntryFilter
-from data_types.Types import InterpretedEntry, InterpretedEntryType
+from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 from data_types.Tag import UndefinedTag
 from collections import Counter
 from dataclasses import dataclass

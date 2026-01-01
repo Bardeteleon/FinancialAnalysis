@@ -1,7 +1,7 @@
 import re
 
 from matplotlib.pyplot import text
-from data_types.Types import *
+from data_types.RawEntry import RawEntry, RawEntryType
 from typing import List
 
 

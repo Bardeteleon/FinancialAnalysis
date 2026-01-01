@@ -5,7 +5,7 @@ from data_types.Config import Account
 from statement.EntryInsights import EntryInsights
 from statement.EntryMapping import EntryMapping
 from data_types.TimeInterval import TimeInterval, TimeIntervalVariants
-from data_types.Types import *
+from data_types.InterpretedEntry import InterpretedEntry
 import matplotlib
 import matplotlib.pyplot
 import numpy
@@ -15,6 +15,7 @@ import tkinter
 import re
 from statement.EntryFilter import EntryFilter
 from data_types.TagGroup import TagGroup
+from data_types.Tag import Tag
 
 matplotlib.use("TkAgg")
 

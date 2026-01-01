@@ -4,11 +4,7 @@ from datetime import date
 from typing import List, Optional
 from data_types.Tag import Tag
 from data_types.Currency import CurrencyCode
-
-class RawEntryType(Enum):
-    TRANSACTION = auto()
-    BALANCE = auto() 
-    UNKNOW = auto()
+from data_types.RawEntry import RawEntry
 
 class InterpretedEntryType(Enum):
     TRANSACTION_INTERNAL = auto()
@@ -19,14 +15,6 @@ class InterpretedEntryType(Enum):
 class CardType(Enum):
     CREDIT = auto()
     GIRO = auto()
-
-@dataclass
-class RawEntry:
-    date : str
-    amount : str
-    comment : str
-    account_idx : int
-    type : RawEntryType
 
 @dataclass
 class InterpretedEntry:

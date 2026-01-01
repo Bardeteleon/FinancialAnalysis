@@ -2,7 +2,7 @@ from datetime import date
 from typing import List
 from statement.EntryAugmentation import EntryAugmentation
 from data_types.Config import Account, ManualBalance, CurrencyConfig, ExchangeRateConfig
-from data_types.Types import InterpretedEntryType
+from data_types.InterpretedEntry import InterpretedEntryType
 from data_types.Currency import CurrencyCode
 
 

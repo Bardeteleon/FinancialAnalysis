@@ -1,5 +1,5 @@
 from typing import List
-from data_types.Types import InterpretedEntry
+from data_types.InterpretedEntry import InterpretedEntry
 from data_types.Tag import UndefinedTag
 from user_interface.logger import logger
 from statement.EntryInsights import EntryInsights

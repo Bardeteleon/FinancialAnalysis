@@ -2,7 +2,7 @@ import logging
 from datetime import date
 from typing import List
 from statement.EntryInsights import EntryInsights
-from data_types.Types import InterpretedEntry, InterpretedEntryType
+from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 
 
 def test_balance_within_entries():

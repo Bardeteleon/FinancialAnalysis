@@ -1,6 +1,6 @@
 
 from data_types.Config import Config
-from data_types.Types import InterpretedEntry
+from data_types.InterpretedEntry import InterpretedEntry
 from typing import *
 import math
 from user_interface.logger import logger

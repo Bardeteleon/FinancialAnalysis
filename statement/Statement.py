@@ -1,5 +1,5 @@
 from typing import List
-from data_types.Types import InterpretedEntry
+from data_types.InterpretedEntry import InterpretedEntry
 
 
 class Statement:

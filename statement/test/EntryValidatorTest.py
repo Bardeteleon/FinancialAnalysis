@@ -2,7 +2,7 @@ import logging
 from datetime import date
 from typing import List
 from statement.EntryValidator import EntryValidator, BalanceValidationInterval
-from data_types.Types import InterpretedEntry, InterpretedEntryType
+from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 
 
 def test_normal_case_transactions_between_balances():

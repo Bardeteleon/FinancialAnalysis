@@ -3,7 +3,8 @@ import datetime
 from statement.extractor.InterpretedStatementExtractor import InterpretedStatementExtractor
 from data_types.Config import Config, Account
 from data_types.TagConfig import TagConfig
-from data_types.Types import RawEntry, RawEntryType, InterpretedEntry
+from data_types.RawEntry import RawEntry, RawEntryType
+from data_types.InterpretedEntry import InterpretedEntry
 
 @pytest.fixture
 def mock_config(mocker):

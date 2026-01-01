@@ -1,7 +1,8 @@
 from copy import deepcopy
 from typing import Callable, List, Dict, Optional, Set
 from data_types.Config import CustomBalance
-from data_types.Types import InterpretedEntry, InterpretedEntryType, RawEntryType
+from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
+from data_types.RawEntry import RawEntryType
 from data_types.Tag import Tag, UndefinedTag
 import datetime
 from user_interface.logger import logger
