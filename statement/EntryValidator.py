@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import date
 
 @dataclass
-class BalanceValidationInterval:
+class TransactionsWithBalancesValidationInterval:
     account_id: str
     start_date: date
     end_date: date
@@ -16,9 +16,13 @@ class BalanceValidationInterval:
     end_balance: float
     calculated_sum: float
     is_valid: bool
-    entry_count: int
+    transaction_count: int
     is_unchecked: bool = False  # True if transactions couldn't be validated (no balances)
     unchecked_reason: str = ""  # Reason why unchecked: 'before_first_balance', 'after_last_balance', 'no_balances'
+
+@dataclass 
+class ValidationResults:
+    transactions_with_balances: List[TransactionsWithBalancesValidationInterval]
 
 class EntryValidator:
 
@@ -31,7 +35,7 @@ class EntryValidator:
     def have_no_none_dates(entries : List[InterpretedEntry]) -> bool:
         return all(entry.date is not None for entry in entries)
 
-    def validate_amounts_with_balances(self) -> List[BalanceValidationInterval]:
+    def validate_transactions_with_balances(self) -> List[TransactionsWithBalancesValidationInterval]:
         # Positive validation assumption: From one balance all amounts sum up to the value of the next balance.
         # Group entries by account_id
         entries_by_account = {}
@@ -43,17 +47,17 @@ class EntryValidator:
         # Validate each account separately
         all_intervals = []
         for account_id, entries in entries_by_account.items():
-            intervals = self._validate_account_balances(account_id, entries)
+            intervals = self._validate_transactions_with_balances_for_one_account(account_id, entries)
             all_intervals.extend(intervals)
 
         return all_intervals
 
-    def _validate_account_balances(self, account_id: str, entries: List[InterpretedEntry]) -> List[BalanceValidationInterval]:
+    def _validate_transactions_with_balances_for_one_account(self, account_id: str, entries: List[InterpretedEntry]) -> List[TransactionsWithBalancesValidationInterval]:
         intervals = []
         curr_start_balance_entry = None
         curr_end_balance_entry = None
         curr_sum = 0.0
-        entry_count = 0
+        transaction_count = 0
 
         # Track transactions before first balance
         transactions_before_first_balance = []
@@ -67,7 +71,7 @@ class EntryValidator:
                         last_date = transactions_before_first_balance[-1].date
                         total_amount = sum(t.amount for t in transactions_before_first_balance)
 
-                        interval = BalanceValidationInterval(
+                        interval = TransactionsWithBalancesValidationInterval(
                             account_id=account_id,
                             start_date=first_date,
                             end_date=last_date,
@@ -75,7 +79,7 @@ class EntryValidator:
                             end_balance=0.0,
                             calculated_sum=total_amount,
                             is_valid=False,
-                            entry_count=len(transactions_before_first_balance),
+                            transaction_count=len(transactions_before_first_balance),
                             is_unchecked=True,
                             unchecked_reason="before_first_balance"
                         )
@@ -83,12 +87,12 @@ class EntryValidator:
 
                     curr_start_balance_entry = entry
                     curr_sum = curr_start_balance_entry.amount
-                    entry_count = 0
+                    transaction_count = 0
                 elif curr_end_balance_entry is None:
                     curr_end_balance_entry = entry
             elif curr_start_balance_entry is not None:
                 curr_sum += entry.amount
-                entry_count += 1
+                transaction_count += 1
             else:
                 # Transaction before first balance
                 transactions_before_first_balance.append(entry)
@@ -96,7 +100,7 @@ class EntryValidator:
             if curr_start_balance_entry is not None and curr_end_balance_entry is not None:
                 is_valid = math.isclose(curr_sum, curr_end_balance_entry.amount)
 
-                interval = BalanceValidationInterval(
+                interval = TransactionsWithBalancesValidationInterval(
                     account_id=account_id,
                     start_date=curr_start_balance_entry.date,
                     end_date=curr_end_balance_entry.date,
@@ -104,7 +108,7 @@ class EntryValidator:
                     end_balance=curr_end_balance_entry.amount,
                     calculated_sum=curr_sum,
                     is_valid=is_valid,
-                    entry_count=entry_count,
+                    transaction_count=transaction_count,
                     is_unchecked=False
                 )
                 intervals.append(interval)
@@ -113,10 +117,10 @@ class EntryValidator:
                 curr_start_balance_entry = curr_end_balance_entry
                 curr_end_balance_entry = None
                 curr_sum = curr_start_balance_entry.amount
-                entry_count = 0
+                transaction_count = 0
 
         # Handle transactions after last balance
-        if curr_start_balance_entry is not None and entry_count > 0:
+        if curr_start_balance_entry is not None and transaction_count > 0:
             # We have a start balance but no end balance, and some transactions
             # Create unchecked interval for transactions after last balance
             last_transaction_date = None
@@ -125,7 +129,7 @@ class EntryValidator:
                     last_transaction_date = entry.date
                     break
 
-            interval = BalanceValidationInterval(
+            interval = TransactionsWithBalancesValidationInterval(
                 account_id=account_id,
                 start_date=curr_start_balance_entry.date,
                 end_date=last_transaction_date if last_transaction_date else curr_start_balance_entry.date,
@@ -133,7 +137,7 @@ class EntryValidator:
                 end_balance=0.0,
                 calculated_sum=curr_sum,
                 is_valid=False,
-                entry_count=entry_count,
+                transaction_count=transaction_count,
                 is_unchecked=True,
                 unchecked_reason="after_last_balance"
             )
@@ -145,7 +149,7 @@ class EntryValidator:
             last_date = transactions_before_first_balance[-1].date
             total_amount = sum(t.amount for t in transactions_before_first_balance)
 
-            interval = BalanceValidationInterval(
+            interval = TransactionsWithBalancesValidationInterval(
                 account_id=account_id,
                 start_date=first_date,
                 end_date=last_date,
@@ -153,7 +157,7 @@ class EntryValidator:
                 end_balance=0.0,
                 calculated_sum=total_amount,
                 is_valid=False,
-                entry_count=len(transactions_before_first_balance),
+                transaction_count=len(transactions_before_first_balance),
                 is_unchecked=True,
                 unchecked_reason="no_balances"
             )
@@ -161,20 +165,25 @@ class EntryValidator:
 
         # self check if considered transactions equals amount of transactions
         all_transactions_in_entries = sum(1 for entry in entries if entry.is_transaction())
-        all_transactions_in_intervals = sum(interval.entry_count for interval in intervals)
+        all_transactions_in_intervals = sum(interval.transaction_count for interval in intervals)
         if all_transactions_in_entries != all_transactions_in_intervals:
             logger.error(f"Number of transactions in entries ({all_transactions_in_entries}) does not equal number of transactions in intervals ({all_transactions_in_intervals})")
 
         return intervals
 
-    def calculate_sum_of_transactions(intervals : List[BalanceValidationInterval]) -> int:
-        return sum(interval.entry_count for interval in intervals)
+    def validate(self) -> ValidationResults:
+        return ValidationResults(transactions_with_balances=self.validate_transactions_with_balances())
+
+    def calculate_sum_of_transactions(intervals : List[TransactionsWithBalancesValidationInterval]) -> int:
+        return sum(interval.transaction_count for interval in intervals)
 
     @staticmethod
-    def print_validation_results(intervals: List[BalanceValidationInterval], config : Optional[Config] = None):
+    def print_transactions_with_balances_validation_results(intervals: List[TransactionsWithBalancesValidationInterval], config : Optional[Config] = None):
         if not intervals:
             logger.info("No validation intervals to display")
             return
+        
+        logger.info("Transactions with balances validation:")
 
         # Group intervals by account
         intervals_by_account = {}
@@ -206,7 +215,7 @@ class EntryValidator:
                     logger.error(f"       End balance:   {interval.end_balance:.2f}")
                     logger.error(f"       Calculated:    {interval.calculated_sum:.2f}")
                     logger.error(f"       Difference:    {difference:.2f}")
-                    logger.error(f"       Transactions:  {interval.entry_count}")
+                    logger.error(f"       Transactions:  {interval.transaction_count}")
 
             # Print unchecked intervals
             if unchecked_intervals:
@@ -214,8 +223,8 @@ class EntryValidator:
                 for idx, interval in enumerate(unchecked_intervals, 1):
                     logger.warning(f"    {idx}. {interval.start_date} to {interval.end_date}")
                     logger.warning(f"       Reason:        {interval.unchecked_reason}")
-                    logger.warning(f"       Transactions:  {interval.entry_count}")
-                    logger.warning(f"       Total amount:  {interval.calculated_sum:.2f}")
+                    logger.warning(f"       Transactions:  {interval.transaction_count}")
+                    logger.warning(f"       Total amount:  {(interval.calculated_sum-interval.start_balance):.2f}")
 
         # Overall summary
         all_valid_intervals = [i for i in intervals if not i.is_unchecked and i.is_valid]
@@ -235,3 +244,7 @@ class EntryValidator:
         logger_fcn = logger.warning if len(all_unchecked_intervals) > 0 else logger.info
         logger_fcn(f"Unchecked transactions:\t{all_unchecked_transactions}\t({len(all_unchecked_intervals)} intervals)")
         logger.info(f"{'='*80}\n")
+
+    @staticmethod
+    def print_validation_results(results: ValidationResults, config : Optional[Config] = None):
+        EntryValidator.print_transactions_with_balances_validation_results(results.transactions_with_balances, config)

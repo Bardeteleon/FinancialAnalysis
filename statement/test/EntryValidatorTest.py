@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 from typing import List
-from statement.EntryValidator import EntryValidator, BalanceValidationInterval
+from statement.EntryValidator import EntryValidator, TransactionsWithBalancesValidationInterval
 from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 
 
@@ -34,7 +34,7 @@ def test_normal_case_transactions_between_balances():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 1
     interval = intervals[0]
@@ -45,7 +45,7 @@ def test_normal_case_transactions_between_balances():
     assert interval.end_balance == 1050.0
     assert interval.calculated_sum == 1050.0
     assert interval.is_valid == True
-    assert interval.entry_count == 2
+    assert interval.transaction_count == 2
     assert interval.is_unchecked == False
     assert interval.unchecked_reason == ""
 
@@ -85,7 +85,7 @@ def test_multiple_intervals_for_same_account():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 2
 
@@ -94,7 +94,7 @@ def test_multiple_intervals_for_same_account():
     assert intervals[0].start_balance == 1000.0
     assert intervals[0].end_balance == 1050.0
     assert intervals[0].is_valid == True
-    assert intervals[0].entry_count == 1
+    assert intervals[0].transaction_count == 1
     assert intervals[0].is_unchecked == False
 
     # Second interval
@@ -102,7 +102,7 @@ def test_multiple_intervals_for_same_account():
     assert intervals[1].start_balance == 1050.0
     assert intervals[1].end_balance == 1025.0
     assert intervals[1].is_valid == True
-    assert intervals[1].entry_count == 1
+    assert intervals[1].transaction_count == 1
     assert intervals[1].is_unchecked == False
 
 
@@ -149,7 +149,7 @@ def test_multiple_accounts():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 2
 
@@ -157,13 +157,13 @@ def test_multiple_accounts():
     bank_intervals = [i for i in intervals if i.account_id == "Bank"]
     assert len(bank_intervals) == 1
     assert bank_intervals[0].is_valid == True
-    assert bank_intervals[0].entry_count == 1
+    assert bank_intervals[0].transaction_count == 1
 
     # Credit card interval
     cc_intervals = [i for i in intervals if i.account_id == "CreditCard"]
     assert len(cc_intervals) == 1
     assert cc_intervals[0].is_valid == True
-    assert cc_intervals[0].entry_count == 1
+    assert cc_intervals[0].transaction_count == 1
 
 
 def test_transactions_before_first_balance():
@@ -201,7 +201,7 @@ def test_transactions_before_first_balance():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 2
 
@@ -213,7 +213,7 @@ def test_transactions_before_first_balance():
     assert intervals[0].is_valid == False
     assert intervals[0].is_unchecked == True
     assert intervals[0].unchecked_reason == "before_first_balance"
-    assert intervals[0].entry_count == 2
+    assert intervals[0].transaction_count == 2
 
     # Second interval - checked (between balances)
     assert intervals[1].account_id == "Bank"
@@ -223,7 +223,7 @@ def test_transactions_before_first_balance():
     assert intervals[1].end_balance == 1025.0
     assert intervals[1].is_valid == True
     assert intervals[1].is_unchecked == False
-    assert intervals[1].entry_count == 1
+    assert intervals[1].transaction_count == 1
 
 
 def test_transactions_after_last_balance():
@@ -261,7 +261,7 @@ def test_transactions_after_last_balance():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 2
 
@@ -273,7 +273,7 @@ def test_transactions_after_last_balance():
     assert intervals[0].end_balance == 1050.0
     assert intervals[0].is_valid == True
     assert intervals[0].is_unchecked == False
-    assert intervals[0].entry_count == 1
+    assert intervals[0].transaction_count == 1
 
     # Second interval - unchecked (after last balance)
     assert intervals[1].account_id == "Bank"
@@ -283,7 +283,7 @@ def test_transactions_after_last_balance():
     assert intervals[1].is_valid == False
     assert intervals[1].is_unchecked == True
     assert intervals[1].unchecked_reason == "after_last_balance"
-    assert intervals[1].entry_count == 2
+    assert intervals[1].transaction_count == 2
 
 
 def test_no_balances_at_all():
@@ -309,7 +309,7 @@ def test_no_balances_at_all():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 1
 
@@ -321,7 +321,7 @@ def test_no_balances_at_all():
     assert intervals[0].is_valid == False
     assert intervals[0].is_unchecked == True
     assert intervals[0].unchecked_reason == "no_balances"
-    assert intervals[0].entry_count == 3
+    assert intervals[0].transaction_count == 3
 
 
 def test_invalid_interval_where_transaction_sum_does_not_match_balances():
@@ -348,7 +348,7 @@ def test_invalid_interval_where_transaction_sum_does_not_match_balances():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 1
 
@@ -359,14 +359,14 @@ def test_invalid_interval_where_transaction_sum_does_not_match_balances():
     assert intervals[0].calculated_sum == 950.0
     assert intervals[0].is_valid == False
     assert intervals[0].is_unchecked == False
-    assert intervals[0].entry_count == 1
+    assert intervals[0].transaction_count == 1
 
 
 def test_empty_entries():
     entries: List[InterpretedEntry] = []
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 0
 
@@ -400,14 +400,14 @@ def test_virtual_entries_are_included():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 1
 
     # Virtual entry should be included, so 50.0 + (-25.0) = 25.0 should be counted
     assert intervals[0].calculated_sum == 1025.0
     assert intervals[0].is_valid == True
-    assert intervals[0].entry_count == 2  # Both transactions counted
+    assert intervals[0].transaction_count == 2  # Both transactions counted
 
 
 def test_balance_only_no_transactions():
@@ -427,7 +427,7 @@ def test_balance_only_no_transactions():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 1
 
@@ -436,7 +436,7 @@ def test_balance_only_no_transactions():
     assert intervals[0].end_balance == 1000.0
     assert intervals[0].calculated_sum == 1000.0
     assert intervals[0].is_valid == True
-    assert intervals[0].entry_count == 0
+    assert intervals[0].transaction_count == 0
     assert intervals[0].is_unchecked == False
     
 
@@ -457,7 +457,7 @@ def test_balance_only_no_transactions_with_balance_mismatch():
     ]
 
     validator = EntryValidator(entries)
-    intervals = validator.validate_amounts_with_balances()
+    intervals = validator.validate_transactions_with_balances()
 
     assert len(intervals) == 1
 
@@ -466,7 +466,7 @@ def test_balance_only_no_transactions_with_balance_mismatch():
     assert intervals[0].end_balance == 1001.0
     assert intervals[0].calculated_sum == 1000.0
     assert intervals[0].is_valid == False
-    assert intervals[0].entry_count == 0
+    assert intervals[0].transaction_count == 0
     assert intervals[0].is_unchecked == False
 
 
@@ -476,7 +476,7 @@ def test_print_validation_results(caplog):
     # Create intervals with various statuses
     intervals = [
         # Valid interval for Bank
-        BalanceValidationInterval(
+        TransactionsWithBalancesValidationInterval(
             account_id="Bank",
             start_date=date(2020, 1, 1),
             end_date=date(2020, 1, 10),
@@ -484,11 +484,11 @@ def test_print_validation_results(caplog):
             end_balance=1050.0,
             calculated_sum=1050.0,
             is_valid=True,
-            entry_count=5,
+            transaction_count=5,
             is_unchecked=False
         ),
         # Invalid interval for Bank
-        BalanceValidationInterval(
+        TransactionsWithBalancesValidationInterval(
             account_id="Bank",
             start_date=date(2020, 1, 11),
             end_date=date(2020, 1, 20),
@@ -496,11 +496,11 @@ def test_print_validation_results(caplog):
             end_balance=1100.0,
             calculated_sum=1095.0,
             is_valid=False,
-            entry_count=3,
+            transaction_count=3,
             is_unchecked=False
         ),
         # Unchecked interval for Bank
-        BalanceValidationInterval(
+        TransactionsWithBalancesValidationInterval(
             account_id="Bank",
             start_date=date(2020, 1, 21),
             end_date=date(2020, 1, 25),
@@ -508,12 +508,12 @@ def test_print_validation_results(caplog):
             end_balance=0.0,
             calculated_sum=150.0,
             is_valid=False,
-            entry_count=2,
+            transaction_count=2,
             is_unchecked=True,
             unchecked_reason="after_last_balance"
         ),
         # Valid interval for CreditCard
-        BalanceValidationInterval(
+        TransactionsWithBalancesValidationInterval(
             account_id="CreditCard",
             start_date=date(2020, 1, 1),
             end_date=date(2020, 1, 31),
@@ -521,7 +521,7 @@ def test_print_validation_results(caplog):
             end_balance=-200.0,
             calculated_sum=-200.0,
             is_valid=True,
-            entry_count=10,
+            transaction_count=10,
             is_unchecked=False
         ),
     ]
