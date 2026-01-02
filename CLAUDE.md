@@ -145,6 +145,5 @@ Two main configuration files required:
 
 ## Important Notes
 
-- **EREF**: Unique transaction identifier (mentioned in README)
 - Main orchestration happens in `FinancialAnalysis.py` class
 - Entry point for execution is `user_interface/script.py`

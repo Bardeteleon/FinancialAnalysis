@@ -45,6 +45,9 @@ class InterpretedEntry:
 
     def is_virtual(self) -> bool:
         return self.raw is None
+    
+    def is_internal(self) -> bool:
+        return self.type == InterpretedEntryType.TRANSACTION_INTERNAL
 
     def get_display_amount(self, base_currency: Optional[str] = None) -> str:
         if self.original_currency is None or self.original_currency.value == base_currency:
