@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 from typing import List
-from statement.EntryValidator import EntryValidator, TransactionsWithBalancesValidationInterval
+from statement.EntryValidator import EntryValidator, TransactionsWithBalancesValidationInterval, MatchQuality
 from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 
 
@@ -527,7 +527,7 @@ def test_print_validation_results(caplog):
     ]
 
     # Call the print function
-    EntryValidator.print_validation_results(intervals)
+    EntryValidator.print_transactions_with_balances_validation_results(intervals)
 
     # Verify output contains expected sections
     log_output = caplog.text
@@ -560,5 +560,170 @@ def test_print_validation_results(caplog):
 
 def test_print_validation_results_empty():
     """Test that print_validation_results handles empty list"""
-    EntryValidator.print_validation_results([])
+    EntryValidator.print_transactions_with_balances_validation_results([])
     # Should not raise an exception
+
+
+def test_validate_internal_transactions_exact_match():
+    entries: List[InterpretedEntry] = [
+        InterpretedEntry(
+            amount=-100.0,
+            account_id="Bank",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+        InterpretedEntry(
+            amount=100.0,
+            account_id="CreditCard",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+    ]
+
+    validator = EntryValidator(entries)
+    matches = validator.validate_internal_transactions()
+
+    assert len(matches) == 1
+    assert matches[0].transaction.account_id == "Bank"
+    assert matches[0].transaction.amount == -100.0
+    assert matches[0].match_quality == MatchQuality.EXACT_MATCH
+    assert len(matches[0].matched_transactions) == 1
+    assert matches[0].matched_transactions[0].account_id == "CreditCard"
+    assert matches[0].matched_transactions[0].amount == 100.0
+    assert matches[0].date_difference_days == 0
+    assert matches[0].amount_difference == 0.0
+
+
+def test_validate_internal_transactions_no_match():
+    entries: List[InterpretedEntry] = [
+        InterpretedEntry(
+            amount=-100.0,
+            account_id="Bank",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+        InterpretedEntry(
+            amount=-50.0,
+            account_id="CreditCard",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+    ]
+
+    validator = EntryValidator(entries)
+    matches = validator.validate_internal_transactions()
+
+    assert len(matches) == 2
+    unmatched = [m for m in matches if m.match_quality == MatchQuality.NO_MATCH]
+    assert len(unmatched) == 2
+
+
+def test_validate_internal_transactions_multiple_matches():
+    entries: List[InterpretedEntry] = [
+        InterpretedEntry(
+            amount=-100.0,
+            account_id="Bank",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+        InterpretedEntry(
+            amount=100.0,
+            account_id="CreditCard1",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+        InterpretedEntry(
+            amount=100.0,
+            account_id="CreditCard2",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+    ]
+
+    validator = EntryValidator(entries)
+    matches = validator.validate_internal_transactions()
+
+    assert len(matches) == 2
+    assert matches[0].transaction.account_id == "Bank"
+    assert matches[0].match_quality == MatchQuality.MULTIPLE_MATCHES
+    assert len(matches[0].matched_transactions) == 2
+
+
+def test_validate_internal_transactions_date_window():
+    entries: List[InterpretedEntry] = [
+        InterpretedEntry(
+            amount=-100.0,
+            account_id="Bank",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 6)
+        ),
+        InterpretedEntry(
+            amount=100.0,
+            account_id="CreditCard",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 8)
+        ),
+    ]
+
+    validator = EntryValidator(entries)
+    matches = validator.validate_internal_transactions()
+
+    assert len(matches) == 1
+    assert matches[0].match_quality == MatchQuality.EXACT_MATCH
+    assert matches[0].date_difference_days == 2
+
+
+def test_validate_internal_transactions_date_outside_window():
+    entries: List[InterpretedEntry] = [
+        InterpretedEntry(
+            amount=-100.0,
+            account_id="Bank",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 6)
+        ),
+        InterpretedEntry(
+            amount=100.0,
+            account_id="CreditCard",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 16)
+        ),
+    ]
+
+    validator = EntryValidator(entries)
+    matches = validator.validate_internal_transactions()
+
+    assert len(matches) == 2
+    unmatched = [m for m in matches if m.match_quality == MatchQuality.NO_MATCH]
+    assert len(unmatched) == 2
+
+
+def test_validate_internal_transactions_ignores_external():
+    entries: List[InterpretedEntry] = [
+        InterpretedEntry(
+            amount=-100.0,
+            account_id="Bank",
+            type=InterpretedEntryType.TRANSACTION_INTERNAL,
+            date=date(2020, 1, 5)
+        ),
+        InterpretedEntry(
+            amount=100.0,
+            account_id="CreditCard",
+            type=InterpretedEntryType.TRANSACTION_EXTERNAL,
+            date=date(2020, 1, 5)
+        ),
+    ]
+
+    validator = EntryValidator(entries)
+    matches = validator.validate_internal_transactions()
+
+    assert len(matches) == 1
+    assert matches[0].match_quality == MatchQuality.NO_MATCH
+
+
+def test_validate_internal_transactions_empty():
+    entries: List[InterpretedEntry] = []
+
+    validator = EntryValidator(entries)
+    matches = validator.validate_internal_transactions()
+
+    assert len(matches) == 0
