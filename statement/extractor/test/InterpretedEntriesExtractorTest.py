@@ -1,6 +1,6 @@
 import pytest
 import datetime
-from statement.extractor.InterpretedStatementExtractor import InterpretedStatementExtractor
+from statement.extractor.InterpretedEntriesExtractor import InterpretedEntriesExtractor
 from data_types.Config import Config, Account
 from data_types.TagConfig import TagConfig
 from data_types.RawEntry import RawEntry, RawEntryType
@@ -36,7 +36,7 @@ def make_raw_entry():
 def run_extractor(mock_config, mock_tags):
     """Helper to run extractor and return interpreted entries"""
     def _run(raw_entries):
-        extractor = InterpretedStatementExtractor(raw_entries, mock_config, mock_tags)
+        extractor = InterpretedEntriesExtractor(raw_entries, mock_config, mock_tags)
         extractor.run()
         return extractor.get_interpreted_entries()
     return _run

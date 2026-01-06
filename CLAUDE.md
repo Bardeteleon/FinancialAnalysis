@@ -76,7 +76,7 @@ The application follows a pipeline architecture:
    - `RawEntriesFromPdfTextExtractor`: Parses PDF text into RawEntry objects
    - Produces `RawEntry` objects with string-based data
 
-3. **Interpretation** (`statement/extractor/InterpretedStatementExtractor`)
+3. **Interpretation** (`statement/extractor/InterpretedEntriesExtractor`)
    - Converts RawEntry to InterpretedEntry
    - Parses amounts, dates, and identifies card types
    - Applies tag definitions from TagConfig based on comment patterns, date ranges, and account IDs

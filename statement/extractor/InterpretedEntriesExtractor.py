@@ -10,7 +10,7 @@ from typing import List
 from statement.CurrencyConverter import CurrencyConverter
 
 
-class InterpretedStatementExtractor:
+class InterpretedEntriesExtractor:
 
     def __init__(self, raw_entries : List[RawEntry], config : Config, tags : TagConfig):
         self.__raw_entries : List[RawEntry] = raw_entries

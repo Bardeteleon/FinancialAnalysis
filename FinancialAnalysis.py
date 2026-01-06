@@ -9,7 +9,7 @@ from statement.EntrySorter import EntrySorter
 from statement.EntryValidator import EntryValidator
 from data_types.ConfigValidator import ConfigValidator
 from user_interface.InteractiveOverviewTkinter import InteractiveOverviewTkinter
-from statement.extractor.InterpretedStatementExtractor import InterpretedStatementExtractor
+from statement.extractor.InterpretedEntriesExtractor import InterpretedEntriesExtractor
 from file_reader.CsvReader import CsvReader
 from file_reader.PdfReader import PdfReader
 from statement.EntryPrinter import EntryPrinter
@@ -58,7 +58,7 @@ class FinancialAnalysis:
 
             augmented_raw_entries = EntryAugmentation.replace_alternative_transaction_iban_with_original(raw_extractor.get_raw_entries(), self.__config.internal_accounts)
 
-            interpreted_extractor = InterpretedStatementExtractor(augmented_raw_entries, self.__config, self.__tags)
+            interpreted_extractor = InterpretedEntriesExtractor(augmented_raw_entries, self.__config, self.__tags)
             interpreted_extractor.run()
             statement_builder.add_entries(interpreted_extractor.get_interpreted_entries())
 
@@ -79,7 +79,7 @@ class FinancialAnalysis:
             raw_extractor = RawEntriesFromPdfTextExtractor(pdf_reader.get_text())
             raw_extractor.run()
 
-            interpreted_extractor = InterpretedStatementExtractor(raw_extractor.get_raw_entries(), self.__config, self.__tags)
+            interpreted_extractor = InterpretedEntriesExtractor(raw_extractor.get_raw_entries(), self.__config, self.__tags)
             interpreted_extractor.run()
             statement_builder.add_entries(interpreted_extractor.get_interpreted_entries())
 
