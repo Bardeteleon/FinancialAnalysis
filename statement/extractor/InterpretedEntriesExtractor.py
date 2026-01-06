@@ -9,7 +9,8 @@ from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType, 
 from typing import List
 from statement.CurrencyConverter import CurrencyConverter
 
-
+""" Extracts interpreted entries from raw entries. Considering entries individually.
+"""
 class InterpretedEntriesExtractor:
 
     def __init__(self, raw_entries : List[RawEntry], config : Config, tags : TagConfig):
@@ -28,7 +29,6 @@ class InterpretedEntriesExtractor:
         self.__extract_card_type()
         self.__extract_account_id()
         self.__extract_tags()
-        self.__extract_type()
         self.__add_undefined_tag_for_entries_without_tags()
         self.__ensure_ascending_date_order()
 
@@ -139,22 +139,6 @@ class InterpretedEntriesExtractor:
                 if not re.search(tag_definition.comment_pattern, entry.raw.comment):
                     continue
                 entry.tags.append(tag_definition.tag)
-
-    def __extract_type(self):
-        for entry in self.__interpreted_entries:
-            if entry.raw.type == RawEntryType.BALANCE:
-                entry.type = InterpretedEntryType.BALANCE
-            elif entry.raw.type == RawEntryType.UNKNOW:
-                entry.type = InterpretedEntryType.UNKNOWN
-            elif entry.card_type == CardType.CREDIT:
-                entry.type = InterpretedEntryType.TRANSACTION_INTERNAL if entry.amount > 0.0 else InterpretedEntryType.TRANSACTION_EXTERNAL
-            else:
-                all_internal_ibans_regex = "(" + "|".join(self.__get_internal_ibans()) + ")"
-                match = re.search(all_internal_ibans_regex, entry.raw.comment)
-                entry.type = InterpretedEntryType.TRANSACTION_INTERNAL if match else InterpretedEntryType.TRANSACTION_EXTERNAL
-
-    def __get_internal_ibans(self) -> List[str]:
-        return [account.transaction_iban for account in self.__config.internal_accounts]
 
     def __add_undefined_tag_for_entries_without_tags(self):
         for entry in self.__interpreted_entries:

@@ -38,10 +38,12 @@ class InterpretedEntry:
 
     def is_transaction(self) -> bool:
         return self.type == InterpretedEntryType.TRANSACTION_EXTERNAL or \
-               self.type == InterpretedEntryType.TRANSACTION_INTERNAL
+               self.type == InterpretedEntryType.TRANSACTION_INTERNAL or \
+               (self.raw is not None and self.raw.is_transaction())
 
     def is_balance(self) -> bool:
-        return self.type == InterpretedEntryType.BALANCE
+        return self.type == InterpretedEntryType.BALANCE or \
+               (self.raw is not None and self.raw.is_balance())
 
     def is_virtual(self) -> bool:
         return self.raw is None

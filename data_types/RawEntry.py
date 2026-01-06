@@ -13,3 +13,9 @@ class RawEntry:
     comment : str
     account_idx : int
     type : RawEntryType
+
+    def is_transaction(self) -> bool:
+        return self.type == RawEntryType.TRANSACTION
+
+    def is_balance(self) -> bool:
+        return self.type == RawEntryType.BALANCE

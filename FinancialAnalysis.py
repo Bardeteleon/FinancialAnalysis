@@ -37,7 +37,7 @@ class FinancialAnalysis:
         self.__validate_currency_configuration()
 
     def read_and_interpret_input(self):
-        statement_builder : InMemoryStatementBuilder = InMemoryStatementBuilder()
+        statement_builder = InMemoryStatementBuilder(self.__config)
         self.__interpret_csv_input(statement_builder)
         self.__augment_csv_entries(statement_builder)
         # self.__interpret_pdf_input(statement_builder) # TODO no merge of data if overlap with csv exists
@@ -60,6 +60,7 @@ class FinancialAnalysis:
 
             interpreted_extractor = InterpretedEntriesExtractor(augmented_raw_entries, self.__config, self.__tags)
             interpreted_extractor.run()
+
             statement_builder.add_entries(interpreted_extractor.get_interpreted_entries())
 
     def __augment_csv_entries(self, statement_builder : InMemoryStatementBuilder):
