@@ -5,12 +5,12 @@ import tkinter
 import tkinter.ttk
 import matplotlib
 import re
+from statement.EntryInsights import EntryInsights
 from user_interface.logger import logger
 from typing import Callable, Dict, List
 from data_types.Config import Config
 from statement.EntryFilter import EntryFilter
 from enum import Enum, auto
-from statement.EntryMapping import EntryMapping
 from data_types.TimeInterval import MonthInterval, TimeInterval, TimeIntervalVariants
 from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 from user_interface.VisualizeStatement import VisualizeStatement
@@ -220,7 +220,7 @@ class InteractiveOverviewTkinter():
         self.__balance_variant_cmd(None)
 
     def __get_available_time_intervals(self, variant : TimeIntervalVariants) -> List[str]:
-        time_intervals = EntryMapping.balance_per_interval(self.__interpreted_entries, variant).keys()
+        time_intervals = EntryInsights.balance_per_interval(self.__interpreted_entries, variant).keys()
         time_intervals = [interval.to_string() for interval in time_intervals]
         return time_intervals
 

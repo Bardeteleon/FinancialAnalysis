@@ -34,7 +34,7 @@ class VisualizeStatement:
         if not axes:
             fig, axes = matplotlib.pyplot.subplots()
         transactions : List[InterpretedEntry] = EntryFilter.transactions(entries)
-        balance_per_interval : Dict[TimeInterval, float] = EntryMapping.balance_per_interval(transactions, interval_variant)
+        balance_per_interval : Dict[TimeInterval, float] = EntryInsights.balance_per_interval(transactions, interval_variant)
         x = range(len(balance_per_interval.keys()))
         x_labels = [interval.to_string() for interval in balance_per_interval.keys()]
         y = list(balance_per_interval.values())
@@ -50,7 +50,7 @@ class VisualizeStatement:
     @staticmethod
     def draw_balance_per_interval(interpreted_entries : List[InterpretedEntry], interval_variant : TimeIntervalVariants, all_tags : List[Tag], ax=None):
         filtered_entries = EntryFilter.transactions(interpreted_entries)
-        balance_per_interval : Dict[TimeInterval, float] = EntryMapping.balance_per_interval(filtered_entries, interval_variant)
+        balance_per_interval : Dict[TimeInterval, float] = EntryInsights.balance_per_interval(filtered_entries, interval_variant)
         mean_balance = round(mean(balance_per_interval.values()))
         median_balance = round(median(balance_per_interval.values()))
         x = range(len(balance_per_interval))
@@ -87,7 +87,7 @@ class VisualizeStatement:
 
     @staticmethod
     def draw_tag_pie_per_interval(interval : TimeInterval, interpreted_entries : List[InterpretedEntry], all_tags : List[Tag], axs=None, title_prefix="Sum"):
-        balance_per_tag : Dict[TagGroup, float] = EntryMapping.balance_per_tag_of_interval(interpreted_entries, interval)
+        balance_per_tag : Dict[TagGroup, float] = EntryInsights.balance_per_tag_of_interval(interpreted_entries, interval)
         balance_sum = numpy.sum(list(balance_per_tag.values()))
         balance_per_tag_sorted = dict(sorted(balance_per_tag.items(), key=lambda x: abs(x[1]), reverse=False))
         balance_sum_of_abs = numpy.sum(numpy.abs(list(balance_per_tag_sorted.values())))
@@ -118,7 +118,7 @@ class VisualizeStatement:
     
     @staticmethod
     def draw_summed_account_balance_pie_until_interval(all_entries: List[InterpretedEntry], until_interval : TimeInterval, all_accounts : List[Account], axes=None):
-        balance_per_account : Dict[str, float] = EntryMapping.balance_per_account_until_interval(all_entries, until_interval, all_accounts)
+        balance_per_account : Dict[str, float] = EntryInsights.balance_per_account_until_interval(all_entries, until_interval, all_accounts)
         balance_per_account_sorted = dict(sorted(balance_per_account.items(), key=lambda x: x[1], reverse=False))
         balance_sum = numpy.sum(list(balance_per_account_sorted.values()))
         balance_sum_of_abs = numpy.sum(numpy.abs(list(balance_per_account_sorted.values())))

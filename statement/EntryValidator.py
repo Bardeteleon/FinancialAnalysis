@@ -3,6 +3,7 @@ from data_types.Config import Config
 from data_types.InterpretedEntry import InterpretedEntry
 from typing import *
 import math
+from statement.EntryMapping import EntryMapping
 from user_interface.logger import logger
 from dataclasses import dataclass
 from datetime import date
@@ -51,18 +52,10 @@ class EntryValidator:
     def have_no_none_dates(entries : List[InterpretedEntry]) -> bool:
         return all(entry.date is not None for entry in entries)
 
+    """Positive validation assumption: From one balance all amounts sum up to the value of the next balance."""
     def validate_transactions_with_balances(self) -> List[TransactionsWithBalancesValidationInterval]:
-        # Positive validation assumption: From one balance all amounts sum up to the value of the next balance.
-        # Group entries by account_id
-        entries_by_account = {}
-        for entry in self.__interpreted_entries:
-            if entry.account_id not in entries_by_account:
-                entries_by_account[entry.account_id] = []
-            entries_by_account[entry.account_id].append(entry)
-
-        # Validate each account separately
         all_intervals = []
-        for account_id, entries in entries_by_account.items():
+        for account_id, entries in EntryMapping.entries_per_account(self.__interpreted_entries).items():
             intervals = self._validate_transactions_with_balances_for_one_account(account_id, entries)
             all_intervals.extend(intervals)
 
