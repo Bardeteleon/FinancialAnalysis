@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Dict, List
 from data_types.InterpretedEntry import InterpretedEntry
 
@@ -15,3 +16,16 @@ class EntryMapping:
                 entries_per_account[entry.account_id] = []
             entries_per_account[entry.account_id].append(entry)
         return entries_per_account
+    
+    @staticmethod
+    def entries_per_year_and_week(entries : List[InterpretedEntry]) -> Dict[int, Dict[int, List[InterpretedEntry]]]:
+        entries_per_year_and_week : Dict[int, Dict[int, List[InterpretedEntry]]] = defaultdict(dict)
+        for entry in entries:
+            year = entry.date.year
+            week = entry.date.isocalendar().week
+            if year not in entries_per_year_and_week:
+                entries_per_year_and_week[year] = defaultdict(list)
+            if week not in entries_per_year_and_week[year]:
+                entries_per_year_and_week[year][week] = []
+            entries_per_year_and_week[year][week].append(entry)
+        return entries_per_year_and_week
