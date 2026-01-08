@@ -68,7 +68,7 @@ class TestExtractDate:
         raw_entries = [make_raw_entry(date=invalid_date)]
         result = run_extractor(raw_entries)
 
-        assert result[0].date is None
+        assert result[0].date == datetime.date(1970, 1, 1)
         assert expected_log in caplog.text
 
     def test_extract_date_multiple_entries_different_formats(self, make_raw_entry, run_extractor):
@@ -156,17 +156,3 @@ class TestDateOrdering:
         result = run_extractor(raw_entries)
 
         assert len(result) == 0
-
-    def test_entries_with_none_dates_moved_to_end(self, make_raw_entry, run_extractor):
-        raw_entries = [
-            make_raw_entry(date='31.01.2023', amount='300,00', comment='Valid2'),
-            make_raw_entry(date='invalid', amount='100,00', comment='Invalid'),
-            make_raw_entry(date='15.01.2023', amount='200,00', comment='Valid1'),
-        ]
-        result = run_extractor(raw_entries)
-
-        assert len(result) == 3
-        assert result[0].date == datetime.date(2023, 1, 15)
-        assert result[1].date == datetime.date(2023, 1, 31)
-        assert result[2].date is None
-        assert result[2].raw.comment == 'Invalid'

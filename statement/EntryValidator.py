@@ -189,7 +189,7 @@ class EntryValidator:
                                              all_entries: List[InterpretedEntry],
                                              processed_entries: Set[int],
                                              max_days_diff: int = 5, # TODO config
-                                             amount_tolerance: float = 0.01) -> List[InterpretedEntry]:
+                                             amount_tolerance: float = 0.1) -> List[InterpretedEntry]:
         target_amount = -transaction.amount
         matches = []
 

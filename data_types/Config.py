@@ -23,6 +23,7 @@ class Account:
     input_directory : Optional[str] = None
     balance_references : Optional[List[ManualBalance]] = None
     currency : Optional[str] = None
+    owner : Optional[List[str]] = None
 
     def get_input_directory(self) -> str:
         return self.input_directory if self.input_directory else ""

@@ -8,11 +8,11 @@ class RawEntryType(Enum):
 
 @dataclass
 class RawEntry:
-    date : str
-    amount : str
-    comment : str
-    account_idx : int
-    type : RawEntryType
+    date : str = ""
+    amount : str = ""
+    comment : str = ""
+    account_idx : int = 0
+    type : RawEntryType = RawEntryType.UNKNOW
 
     def is_transaction(self) -> bool:
         return self.type == RawEntryType.TRANSACTION

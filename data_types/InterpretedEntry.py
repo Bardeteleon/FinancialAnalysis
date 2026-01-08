@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from datetime import date
 from typing import List, Optional
 from data_types.Tag import Tag
 from data_types.Currency import CurrencyCode
 from data_types.RawEntry import RawEntry
+import datetime
 
 class InterpretedEntryType(Enum):
     TRANSACTION_INTERNAL = auto()
@@ -17,8 +17,8 @@ class CardType(Enum):
     GIRO = auto()
 
 @dataclass
-class InterpretedEntry:
-    date : date = None
+class InterpretedEntry: # TODO update defaults
+    date : datetime.date = datetime.date(1970, 1, 1)
     # TODO deprecated. Introduce get_amount
     amount : float = 0.0
     original_amount : float = 0.0
@@ -50,6 +50,9 @@ class InterpretedEntry:
     
     def is_internal(self) -> bool:
         return self.type == InterpretedEntryType.TRANSACTION_INTERNAL
+    
+    def is_external(self) -> bool:
+        return self.type == InterpretedEntryType.TRANSACTION_EXTERNAL
 
     def get_display_amount(self, base_currency: Optional[str] = None) -> str:
         if self.original_currency is None or self.original_currency.value == base_currency:
