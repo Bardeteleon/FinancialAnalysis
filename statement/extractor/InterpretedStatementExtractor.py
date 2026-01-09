@@ -1,8 +1,9 @@
-from datetime import date
-from typing import List, Optional, Set
+from datetime import date, timedelta
+from typing import Dict, List, Optional, Set
 from data_types.Config import Config
 from data_types.InterpretedEntry import CardType, InterpretedEntry, InterpretedEntryType
 from data_types.RawEntry import RawEntryType
+from statement.EntryMapping import EntryMapping
 from user_interface.logger import logger
 import re
 import numpy
@@ -13,6 +14,7 @@ class InterpretedStatementExtractor:
     def __init__(self, entries : List[InterpretedEntry], config : Config):
         self.__entries : List[InterpretedEntry] = entries
         self.__config : Config = config
+        self.__entries_by_year_week : Dict[int, Dict[int, List[InterpretedEntry]]] = EntryMapping.entries_per_year_and_week(entries)
 
     def run(self):
         self.__extract_type()
@@ -33,7 +35,8 @@ class InterpretedStatementExtractor:
             elif entry.card_type == CardType.CREDIT and entry.amount < 0.0:
                 entry.type = InterpretedEntryType.TRANSACTION_EXTERNAL
             else:
-                matching_entry = self.__find_matching_internal_transaction(entry, self.__entries, processed_entries)
+                nearby_entries = self.__get_entries_near_date(entry.date, plus_minus_weeks=1) # manual sync with max_days_diff, consider possible non busy days (weekends)
+                matching_entry = self.__find_matching_internal_transaction(entry, nearby_entries, processed_entries, max_days_diff=5)
                 if matching_entry and self.__is_internal_transaction_pair(entry, matching_entry):
                     entry.type = InterpretedEntryType.TRANSACTION_INTERNAL
                     matching_entry.type = InterpretedEntryType.TRANSACTION_INTERNAL
@@ -127,6 +130,19 @@ class InterpretedStatementExtractor:
                     references.extend(account.owner)
                 break
         return references
+
+    def __get_entries_near_date(self, target_date: date, plus_minus_weeks: int = 1) -> List[InterpretedEntry]:
+        nearby_entries = []
+
+        for week_offset in range(-plus_minus_weeks, plus_minus_weeks + 1):
+            check_date = target_date + timedelta(weeks=week_offset)
+            check_year = check_date.year
+            check_week = check_date.isocalendar().week
+
+            if check_year in self.__entries_by_year_week and check_week in self.__entries_by_year_week[check_year]:
+                nearby_entries.extend(self.__entries_by_year_week[check_year][check_week])
+
+        return nearby_entries
 
     @staticmethod
     def __calculate_date_difference(date1: date, date2: date) -> int:
