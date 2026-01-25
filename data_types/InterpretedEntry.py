@@ -29,6 +29,7 @@ class InterpretedEntry: # TODO update defaults
     account_id : str = ""
     type : InterpretedEntryType = InterpretedEntryType.UNKNOWN
     raw : RawEntry = None
+    internal_transaction_match : Optional['InterpretedEntry'] = None
 
     def is_untagged(self) -> bool:
         return self.tags is None or len(self.tags) == 0

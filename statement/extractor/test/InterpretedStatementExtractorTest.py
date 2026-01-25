@@ -104,7 +104,7 @@ class TestExtractType:
 
         assert all([entry.is_internal() for entry in entries])
 
-    def test_external_transactions_match_with_virtual(self, mock_config, mock_account_a, mock_account_b):
+    def test_internal_transactions_match_with_virtual(self, mock_config, mock_account_a, mock_account_b):
         entries: List[InterpretedEntry] = [
             InterpretedEntry(
                 amount=-150.0,
@@ -126,7 +126,7 @@ class TestExtractType:
 
         assert all([entry.is_internal() for entry in entries])
 
-    def test_external_transactions_only_one_way_reference_by_account_id(self, mock_config, mock_account_a, mock_account_b):
+    def test_internal_transactions_only_one_way_reference_by_account_id(self, mock_config, mock_account_a, mock_account_b):
         entries: List[InterpretedEntry] = [
             InterpretedEntry(
                 amount=-150.0,
@@ -147,6 +147,28 @@ class TestExtractType:
         InterpretedStatementExtractor(entries, mock_config).run()
 
         assert all([entry.is_internal() for entry in entries])
+
+    def test_external_transactions_which_match_by_date_and_amount(self, mock_config, mock_account_a, mock_account_b):
+        entries: List[InterpretedEntry] = [
+            InterpretedEntry(
+                amount=-150.0,
+                date=date(2020, 3, 15),
+                raw=RawEntry(comment=f"Payment to someone",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            ),
+            InterpretedEntry(
+                amount=150.0,
+                date=date(2020, 3, 15),
+                raw=RawEntry(comment=f"Payment from someone else",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            ),
+        ]
+
+        InterpretedStatementExtractor(entries, mock_config).run()
+
+        assert all([entry.is_external() for entry in entries])
 
     def test_external_transactions_only_one_way_reference_by_owner(self, mock_config, mock_account_a, mock_account_b):
         entries: List[InterpretedEntry] = [
@@ -272,3 +294,176 @@ class TestExtractType:
         InterpretedStatementExtractor(entries, mock_config).run()
 
         assert all([entry.is_external() for entry in entries])
+
+    def test_external_internal_transaction_differentiation_with_missing_references(self, mock_config, mock_account_a, mock_account_b):
+        a1 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Something payed",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a2 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Transfer to {mock_account_b.owner}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a3 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Transfer to {mock_account_b.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a4 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Something else payed",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a5 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"No reference to B",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a6 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Transfer to {mock_account_b.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        b1 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Transfer from {mock_account_a.owner}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        b2 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"No ref to A",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        b3 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Transfer from {mock_account_a.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        b4 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"Transfer from {mock_account_a.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        entries: List[InterpretedEntry] = [a1, a2, a3, a4, a5, a6, b1, b2, b3, b4]
+
+        InterpretedStatementExtractor(entries, mock_config).run()
+
+        assert a1.is_external()
+        assert a2.is_internal()
+        assert a3.is_internal()
+        assert a4.is_external()
+        assert a5.is_external() # should be internal
+        assert a6.is_internal()
+        assert b1.is_internal()
+        assert b2.is_external() # should be internal
+        assert b3.is_internal()
+        assert b4.is_internal()
+
+
+    def test_external_internal_transaction_differentiation(self, mock_config, mock_account_a, mock_account_b):
+        a1 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"a1 - Something payed",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a2 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"a2 - Transfer to {mock_account_b.owner}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a3 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"a3 - Transfer to {mock_account_b.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a4 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"a4 - Something else payed",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a5 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"a5 - Transfer to {mock_account_b.owner}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        a6 = InterpretedEntry(
+                amount=-50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"a6 - Transfer to {mock_account_b.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_a.get_id()
+            )
+        b1 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"b1 - Transfer from {mock_account_a.owner}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        b2 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"b2 - Transfer from {mock_account_a.owner}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        b3 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"b3 - Transfer from {mock_account_a.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        b4 = InterpretedEntry(
+                amount=50.0,
+                date=date(2020, 6, 1),
+                raw=RawEntry(comment=f"b4 - Transfer from {mock_account_a.get_id()}",
+                             type=RawEntryType.TRANSACTION),
+                account_id=mock_account_b.get_id()
+            )
+        entries: List[InterpretedEntry] = [a1, a2, a3, a4, a5, a6, b1, b2, b3, b4]
+
+        InterpretedStatementExtractor(entries, mock_config).run()
+
+        assert a1.is_external()
+        assert a2.is_internal()
+        assert a3.is_internal()
+        assert a4.is_external()
+        assert a5.is_internal()
+        assert a6.is_internal()
+        assert b1.is_internal()
+        assert b2.is_internal()
+        assert b3.is_internal()
+        assert b4.is_internal()

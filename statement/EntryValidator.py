@@ -1,6 +1,6 @@
 
 from data_types.Config import Config
-from data_types.InterpretedEntry import InterpretedEntry
+from data_types.InterpretedEntry import InterpretedEntry, InterpretedEntryType
 from typing import *
 import math
 from statement.EntryMapping import EntryMapping
@@ -25,8 +25,10 @@ class TransactionsWithBalancesValidationInterval:
 
 class MatchQuality(Enum):
     EXACT_MATCH = "exact_match"
-    MULTIPLE_MATCHES = "multiple_matches"
+    NON_SYMETRIC_MATCH = "non_symetric_match"
+    NO_BACKWARDS_MATCH = "no_backwards_match"
     NO_MATCH = "no_match"
+    UNKNOWN = "unknown"
 
 @dataclass
 class InternalTransactionMatch:
@@ -217,49 +219,53 @@ class EntryValidator:
         return matches
 
     def validate_internal_transactions(self) -> List[InternalTransactionMatch]:
-        internal_entries = [e for e in self.__interpreted_entries if e.is_internal()]
-
         matches = []
-        processed_entries = set()
+        for entry in self.__interpreted_entries:
 
-        for transaction in internal_entries:
-            transaction_id = id(transaction)
-            if transaction_id in processed_entries:
-                continue
-
-            processed_entries.add(transaction_id)
-
-            matched = self._find_matching_internal_transactions(transaction, internal_entries, processed_entries)
-
-            if len(matched) == 0:
-                match = InternalTransactionMatch(
-                    transaction=transaction,
+            if entry.type == InterpretedEntryType.TRANSACTION_INTERNAL and \
+               entry.internal_transaction_match and \
+               entry.internal_transaction_match.type == InterpretedEntryType.TRANSACTION_INTERNAL and \
+               entry.internal_transaction_match.internal_transaction_match and \
+               id(entry) == id(entry.internal_transaction_match.internal_transaction_match):
+                
+                matches.append(InternalTransactionMatch(
+                    transaction=entry,
+                    matched_transactions=[entry.internal_transaction_match],
+                    match_quality=MatchQuality.EXACT_MATCH
+                ))
+            elif entry.type == InterpretedEntryType.TRANSACTION_INTERNAL and \
+                 entry.internal_transaction_match and \
+                 not entry.internal_transaction_match.internal_transaction_match:
+                
+                matches.append(InternalTransactionMatch(
+                    transaction=entry,
+                    matched_transactions=[entry.internal_transaction_match],
+                    match_quality=MatchQuality.NO_BACKWARDS_MATCH
+                ))
+            elif entry.type == InterpretedEntryType.TRANSACTION_INTERNAL and \
+                 entry.internal_transaction_match and \
+                 entry.internal_transaction_match.internal_transaction_match and \
+                 id(entry) != id(entry.internal_transaction_match.internal_transaction_match):
+                
+                matches.append(InternalTransactionMatch(
+                    transaction=entry,
+                    matched_transactions=[entry.internal_transaction_match, entry.internal_transaction_match.internal_transaction_match],
+                    match_quality=MatchQuality.NON_SYMETRIC_MATCH
+                ))
+            elif entry.type == InterpretedEntryType.TRANSACTION_INTERNAL and \
+                 not entry.internal_transaction_match:
+                
+                matches.append(InternalTransactionMatch(
+                    transaction=entry,
                     matched_transactions=[],
                     match_quality=MatchQuality.NO_MATCH
-                )
-                matches.append(match)
-            elif len(matched) == 1:
-                date_diff = self._calculate_date_difference(transaction.date, matched[0].date) if transaction.date and matched[0].date else None
-                amount_diff = abs(transaction.amount + matched[0].amount)
-
-                match = InternalTransactionMatch(
-                    transaction=transaction,
-                    matched_transactions=matched,
-                    match_quality=MatchQuality.EXACT_MATCH,
-                    date_difference_days=date_diff,
-                    amount_difference=amount_diff
-                )
-                matches.append(match)
-                processed_entries.add(id(matched[0]))
-            else:
-                matched.sort(key=lambda m: EntryValidator._calculate_date_difference(transaction.date, m.date))
-                processed_entries.add(id(matched[0])) # Consider first as best match
-                match = InternalTransactionMatch(
-                    transaction=transaction,
-                    matched_transactions=matched,
-                    match_quality=MatchQuality.MULTIPLE_MATCHES
-                )
-                matches.append(match)
+                ))
+            elif entry.type == InterpretedEntryType.TRANSACTION_INTERNAL:
+                matches.append(InternalTransactionMatch(
+                    transaction=entry,
+                    matched_transactions=[],
+                    match_quality=MatchQuality.UNKNOWN
+                ))
 
         return matches
 
@@ -346,19 +352,22 @@ class EntryValidator:
             logger.info("No internal transactions to validate")
             return
 
-        analyzed_transactions = sum([1 + (len(m.matched_transactions) if len(m.matched_transactions) < 2 else 1) for m in matches])
-        unmatched = [m for m in matches if m.match_quality == MatchQuality.NO_MATCH]
-        multiple_matches = [m for m in matches if m.match_quality == MatchQuality.MULTIPLE_MATCHES]
+        analyzed_transactions = len(matches)
         exact_matches = [m for m in matches if m.match_quality == MatchQuality.EXACT_MATCH]
+        unmatched = [m for m in matches if m.match_quality == MatchQuality.NO_MATCH]
+        non_symetric_matches = [m for m in matches if m.match_quality == MatchQuality.NON_SYMETRIC_MATCH]
+        no_backwards_matches = [m for m in matches if m.match_quality == MatchQuality.NO_BACKWARDS_MATCH]
 
         logger.info("Internal transactions validation:")
         logger.info(f"{'='*80}")
         logger.info(f"Total internal transactions analyzed: {analyzed_transactions}")
         logger.info(f"Exact matches: {len(exact_matches)}")
-        logger_fcn = logger.warning if len(multiple_matches) > 0 else logger.info
-        logger_fcn(f"Multiple matches (ambiguous): {len(multiple_matches)}")
         logger_fcn = logger.error if len(unmatched) > 0 else logger.info
-        logger_fcn(f"Unmatched (missing counterpart): {len(unmatched)}")
+        logger_fcn(f"No match: {len(unmatched)}")
+        logger_fcn = logger.error if len(non_symetric_matches) > 0 else logger.info
+        logger_fcn(f"Not symetric match: {len(non_symetric_matches)}")
+        logger_fcn = logger.error if len(no_backwards_matches) > 0 else logger.info
+        logger_fcn(f"No backwards match: {len(no_backwards_matches)}")
 
         if unmatched:
             logger.error(f"{'='*80}")
@@ -372,11 +381,27 @@ class EntryValidator:
                 logger.error(f"   Comment: {t.raw.comment[:80] if t.raw else ''}")
                 logger.error(f"   Expected counterpart: {-t.amount:.2f} on another account within +/- 2 days")
 
-        if multiple_matches:
+        if non_symetric_matches:
             logger.warning(f"{'='*80}")
-            logger.warning(f"MULTIPLE MATCHES (AMBIGUOUS) ({len(multiple_matches)}). First match taken as best guess:")
+            logger.warning(f"NON SYMETRIC MATCHES ({len(non_symetric_matches)}):")
             logger.warning(f"{'='*80}")
-            for idx, match in enumerate(multiple_matches, 1):
+            for idx, match in enumerate(non_symetric_matches, 1):
+                t = match.transaction
+                account_name = f"{config.get_account_name(t.account_id)} / {t.account_id}" if config else t.account_id
+                logger.warning(f"{idx}. {t.date} | {account_name}")
+                logger.warning(f"   Amount: {t.amount:.2f}")
+                logger.warning(f"   Comment: {t.raw.comment[:80] if t.raw else ''}")
+                logger.warning(f"   Found {len(match.matched_transactions)} possible matches:")
+                for i, matched in enumerate(match.matched_transactions, 1):
+                    matched_account = f"{config.get_account_name(matched.account_id)} / {matched.account_id}" if config else matched.account_id
+                    date_diff = EntryValidator._calculate_date_difference(t.date, matched.date)
+                    logger.warning(f"      {i}) {matched.date} | {matched_account} | {matched.amount:.2f} | {date_diff} days diff")
+
+        if no_backwards_matches:
+            logger.warning(f"{'='*80}")
+            logger.warning(f"NO BACKWARD MATCHES ({len(no_backwards_matches)}):")
+            logger.warning(f"{'='*80}")
+            for idx, match in enumerate(no_backwards_matches, 1):
                 t = match.transaction
                 account_name = f"{config.get_account_name(t.account_id)} / {t.account_id}" if config else t.account_id
                 logger.warning(f"{idx}. {t.date} | {account_name}")
